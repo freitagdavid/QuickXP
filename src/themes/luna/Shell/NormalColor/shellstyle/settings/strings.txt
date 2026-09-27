@@ -1,0 +1,10 @@
+1	Tahoma
+2	Franklin Gothic Medium
+10	700
+11	700
+12	400
+15	8
+16	10
+17	14
+18	21
+100	0xFBF2EE

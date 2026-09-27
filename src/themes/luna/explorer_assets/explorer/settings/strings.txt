@@ -1,0 +1,113 @@
+300	Opens the My Documents folder, where you can store letters, reports, notes, and other kinds of documents.
+301	Displays recently opened documents and folders.
+302	Opens the My Music folder, where you can store music and other audio files.
+303	Opens the My Pictures folder, where you can store digital photos, images, and graphics files.
+304	Gives access to, and information about, the disk drives, cameras, scanners, and other hardware connected to your computer.
+305	Gives access to, and information about, folders and files on other computers.
+306	Connects to other computers, networks, and the Internet.
+307	Provides options for you to customize the appearance and functionality of your computer, add or remove programs, and set up network connections and user accounts.
+509	Windows Explorer
+510	Start Menu
+513	Windows
+515	Could not load or run '%1' specified in the registry. Make sure the file exists on your computer or remove the reference to it in the registry.
+518	Taskbar
+524	Desktop
+529	There is not enough memory to complete this operation.
+530	Unable to run command.
+The folder '%1' has been removed.
+531	My Computer or Windows Explorer has not been properly initialized yet. Try again later.
+533	Click here to begin
+534	&Undo %s
+535	Cascade
+536	Tile
+537	Minimize All
+538	Windows is running in safe mode.
+
+This special diagnostic mode of Windows enables you to fix a problem which may be caused by your network or hardware settings. Make sure these settings are correct in Control Panel, and then try starting Windows again.  While in safe mode, some of your devices may not be available.
+539	Windows is running in safe mode.
+
+This special diagnostic mode of Windows enables you to fix a problem which may be caused by your network or hardware settings. Make sure these settings are correct in Control Panel, and then try starting Windows again.  While in safe mode, some of your devices may not be available.
+
+To proceed to work in safe mode, click Yes. If you prefer to use System Restore to restore your computer to a previous state, click No.
+542	Hide
+543	Show hidden icons
+578	start
+579	There was an internal error and one of the windows you were using has been closed.
+580	Restrictions
+581	This operation has been cancelled due to restrictions in effect on this computer. Please contact your system administrator.
+590	Hiding your inactive notification icons...
+591	To see the hidden icons, click this button.
+593	Notification Area
+594	Running Applications
+595	Start
+603	The application is either too busy or unable to respond to your request to close.
+604	Forcing it to close may cause that application to lose data.  Do you want to force it to close?
+701	Windows was unable to change the display settings for the new configuration.  Return the computer to the previous state, shut down Windows, and restart the computer in the desired configuration.
+702	There may be a problem with your display settings if you continue. To safely change to a new configuration, you should shut down Windows and restart the computer in the desired configuration. Do you want to continue anyway?
+705	A toolbar is already hidden on this side of your screen.
+You can have only one auto-hide toolbar per side.
+711	You cannot drop an item onto a button on the taskbar.
+
+However, if you drag the item over a button without releasing the mouse button, the window will open after a moment, allowing you to drop the item inside the window.
+716	 (Common)
+717	This pre-release version of "Internet Explorer 4.0" Desktop/Explorer has expired. Please update to the latest release of "Internet Explorer 4.0" from WWW.MICROSOFT.COM
+718	O&pen All Users
+719	E&xplore All Users
+720	P&roperties
+722	Run
+730	&Log Off...
+731	T&urn Off Computer...
+732	helpctr.exe>-FromStartHelp
+733	<no title>
+800	Click on the Start button
+801	You can access all your programs, documents, and settings from the Start Menu. Click on the Start button to begin.
+810	Taskbar and Start Menu Properties
+811	Display Settings
+812	Your computer's screen resolution and color depth are currently set to a very low level. You can get a better picture by increasing these settings. To do this, click this balloon.
+821	Take a tour of Windows XP
+822	To learn about the exciting new features in XP now, click here. To take the tour later, click All Programs on the Start menu, and then click Accessories.
+850	&Show Open Windows
+851	|Go||
+1000	Name
+1001	Behavior
+1002	Hide when inactive
+1003	Always hide
+1004	Always show
+1311	Customize Start Menu
+1403	Current Items
+1404	Past Items
+7000	Opens a window where you can pick search options and work with search results.
+7001	Opens a central location for Help topics, tutorials, troubleshooting, and other support services.
+7003	Opens a program, folder, document, or Web site.
+7004	Opens your Internet browser.
+7005	Opens your e-mail program so you can send or read a message.
+7012	|Undock Comput&er|&Log Off|T&urn Off Computer|D&isconnect||
+7013	|Undock Comput&er|&Log Off|Sh&ut Down|D&isconnect||
+7014	Removes your laptop or notebook computer from a docking station.
+7015	Provides options for closing your programs and logging off, or for leaving your programs running and switching to another user.
+7016	Provides options for turning off or restarting your computer, or for activating Stand By or Hibernate modes.
+7017	Disconnects your session.  You can reconnect to the session when you log on again.
+7020	&Search
+7021	&Help and Support
+7022	&Windows Security
+7023	&Run...
+7024	Internet
+7025	E-mail
+8224	The item you selected is unavailable.  It might have been moved, renamed, or removed.  Do you want to remove it from the list?
+8225	Remove &from This List
+8226	All &Programs
+8227	Displays a list of programs on your computer.
+8229	New programs installed.
+8230	If you want to put the Internet or E-mail icons back on your Start menu, right-click the Start button, click Properties, click Customize, and select the appropriate check box.
+8231	Some items cannot be shown
+8232	There is not enough room to show all the items you have added to the Start menu.  To display them, please choose smaller menu icons, choose a smaller number of items, or unpin some items.
+8233	Connect &To
+8234	&Control Panel
+8235	F&avorites
+8236	My Recent &Documents
+8256	440
+8257	380
+8258	40
+8259	30
+8260	40
+8272	&Show on Desktop

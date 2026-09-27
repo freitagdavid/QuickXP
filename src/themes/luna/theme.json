@@ -23,8 +23,26 @@
   },
   "images": {
     "wallpaper": "wallpaper.png",
-    "taskbarImage": "taskbar.png",
-    "startButtonImage": "start_button.png"
+    "taskbarImage": "luna/images/BLUE_TASKBARBACKGROUND_BMP.png",
+    "startButtonImage": "luna/images/BLUE_STARTBUTTON_BMP.png",
+    "trayImage": "luna/images/BLUE_TASKBARTRAY_BMP.png",
+    "trayChevronImage": "luna/images/BLUE_TRAYCHEVRONHORIZONTAL_BMP.png",
+    "trayChevronOpenImage": "luna/images/BLUE_TRAYCHEVRONHORIZONTALOPEN_BMP.png",
+    "startFlagImage": "explorer_assets/explorer/images/143.png"
+  },
+  "startButton": {
+    "text": "start",
+    "font": "Franklin Gothic Medium",
+    "fontSize": 14,
+    "italic": true,
+    "textColor": "#FFFFFF",
+    "shadowColor": "#454C10",
+    "shadowOffsetX": 2,
+    "shadowOffsetY": 2,
+    "contentLeft": 10,
+    "contentRight": 24,
+    "contentTop": 2,
+    "contentBottom": 4
   },
   "fonts": {
     "ui": "Tahoma"

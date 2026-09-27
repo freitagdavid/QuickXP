@@ -1,0 +1,32 @@
+{
+  "colors": {
+    "desktop": "#3A6EA5",
+    "taskbar": "#245EDC",
+    "taskbarText": "#FFFFFF",
+    "window": "#ECE9D8",
+    "windowText": "#000000",
+    "titleActive": "#0054E3",
+    "titleActiveText": "#FFFFFF",
+    "titleInactive": "#7A96DF",
+    "titleInactiveText": "#D8E4F8",
+    "button": "#ECE9D8",
+    "buttonText": "#000000",
+    "highlight": "#316AC5",
+    "highlightText": "#FFFFFF",
+    "border": "#003C74",
+    "menu": "#FFFFFF",
+    "menuText": "#000000"
+  },
+  "sizes": {
+    "taskbarHeight": 30,
+    "fontSize": 11
+  },
+  "images": {
+    "wallpaper": "wallpaper.png",
+    "taskbarImage": "taskbar.png",
+    "startButtonImage": "start_button.png"
+  },
+  "fonts": {
+    "ui": "Tahoma"
+  }
+}

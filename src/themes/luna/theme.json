@@ -42,7 +42,8 @@
     "contentLeft": 10,
     "contentRight": 24,
     "contentTop": 2,
-    "contentBottom": 4
+    "contentBottom": 4,
+    "extraWidth": 10
   },
   "fonts": {
     "ui": "Tahoma"

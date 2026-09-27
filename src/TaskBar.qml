@@ -41,7 +41,7 @@ PanelWindow {
         readonly property int capLeft: Math.round(6 * frameScale)
         readonly property int capRight: Math.round(52 * frameScale)
         readonly property real bitmapWidth: sprite.sourceSize.width * frameScale
-        width: bitmapWidth
+        width: bitmapWidth + Theme.value("startButton", "extraWidth", 0)
 
         Image {
             id: sprite
@@ -127,7 +127,7 @@ PanelWindow {
 
             Item {
                 anchors.left: flag.right
-                anchors.leftMargin: 4
+                
                 anchors.verticalCenter: parent.verticalCenter
                 width: label.implicitWidth + Theme.value("startButton", "shadowOffsetX", 2)
                 height: label.implicitHeight + Theme.value("startButton", "shadowOffsetY", 2)

@@ -182,7 +182,10 @@ Item {
     onPagingChanged: syncPage()
     onPerPageChanged: syncPage()
     onPageCountChanged: syncPage()
-    onPageChanged: taskMenu.dismiss()
+    onPageChanged: {
+        taskMenu.dismiss()
+        dismissPreview()
+    }
     Component.onCompleted: syncPage()
 
     TaskPager {
@@ -225,7 +228,91 @@ Item {
 
     readonly property bool taskMenuOpen: taskMenu.visible
 
+    property int previewSerial: 0
+    property var previewButton: null
+    property var previewToplevel: null
+    property bool previewOnButton: false
+
+    function requestPreview(button, toplevel) {
+        previewOnButton = true
+        previewCloseTimer.stop()
+        if (previewButton !== button) {
+            previewPopup.dismiss()
+            previewSerial += 1
+            if (capture.running)
+                capture.running = false
+        } else if (previewPopup.visible) {
+            return
+        }
+        previewButton = button
+        previewToplevel = toplevel
+        previewTimer.restart()
+    }
+
+    function cancelPreviewButton() {
+        previewOnButton = false
+        previewCloseTimer.restart()
+    }
+
+    function dismissPreview() {
+        previewOnButton = false
+        previewTimer.stop()
+        previewCloseTimer.stop()
+        previewSerial += 1
+        if (capture.running)
+            capture.running = false
+        previewPopup.dismiss()
+    }
+
+    function closePreviewIfIdle() {
+        if (previewOnButton || previewPopup.hovered)
+            return
+        dismissPreview()
+    }
+
+    function startCapture() {
+        if (!previewOnButton || previewToplevel === null || taskMenu.visible)
+            return
+        if (!previewToplevel.kwin) {
+            if (previewButton !== null)
+                previewButton.showFallbackTip()
+            return
+        }
+        const serial = ++previewSerial
+        const windowId = previewToplevel.windowId
+        capture.pendingSerial = serial
+        capture.running = false
+        Qt.callLater(() => {
+            if (serial !== previewSerial || !previewOnButton)
+                return
+            capture.command = [
+                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
+                "org.quickxp.Tasks.Preview", windowId
+            ]
+            capture.running = true
+        })
+    }
+
+    function previewReady(serial, path) {
+        if (serial !== previewSerial)
+            return
+        if (!previewOnButton && !previewPopup.hovered)
+            return
+        if (path === "") {
+            if (previewButton !== null)
+                previewButton.showFallbackTip()
+            return
+        }
+        if (previewButton !== null)
+            previewButton.hideTip()
+        previewPopup.title = previewToplevel !== null ? (previewToplevel.title || "") : ""
+        previewPopup.imagePath = path
+        previewPopup.anchorItem = previewButton
+        previewPopup.open()
+    }
+
     function openTaskMenu(button, toplevel) {
+        dismissPreview()
         taskMenu.dismiss()
         taskMenu.toplevel = toplevel
         taskMenu.anchorItem = button
@@ -259,5 +346,36 @@ Item {
     TaskMenu {
         id: taskMenu
         onChosen: action => root.runMenuAction(action)
+    }
+
+    Timer {
+        id: previewTimer
+        interval: 400
+        onTriggered: root.startCapture()
+    }
+
+    Timer {
+        id: previewCloseTimer
+        interval: 250
+        onTriggered: root.closePreviewIfIdle()
+    }
+
+    Process {
+        id: capture
+
+        property int pendingSerial: 0
+
+        stdout: SplitParser {
+            onRead: data => root.previewReady(capture.pendingSerial, data.trim())
+        }
+
+        stderr: SplitParser {
+            onRead: data => console.warn("QuickXP preview:", data.trim())
+        }
+    }
+
+    TaskPreview {
+        id: previewPopup
+        onHoverLeft: root.previewCloseTimer.restart()
     }
 }

@@ -88,6 +88,15 @@ Item {
         tooltip.visible = false
     }
 
+    function showFallbackTip() {
+        tooltipTimer.stop()
+        const elided = label.truncated || !label.visible
+        if (root.title !== "" && elided && area.containsMouse) {
+            tooltip.title = root.title
+            tooltip.visible = true
+        }
+    }
+
     onXChanged: updateRect()
     onYChanged: updateRect()
     onWidthChanged: updateRect()
@@ -254,10 +263,16 @@ Item {
         hoverEnabled: true
 
         onContainsMouseChanged: {
-            if (containsMouse && (taskList === null || !taskList.taskMenuOpen))
-                root.showTip()
-            else
+            if (containsMouse && (taskList === null || !taskList.taskMenuOpen)) {
+                if (taskList !== null && toplevel !== null && toplevel.kwin)
+                    taskList.requestPreview(root, toplevel)
+                else
+                    root.showTip()
+            } else {
                 root.hideTip()
+                if (taskList !== null)
+                    taskList.cancelPreviewButton()
+            }
         }
 
         // clicked() is the release. A right-click release often never

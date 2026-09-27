@@ -31,6 +31,11 @@ Item {
 
     readonly property int spacing: 3
     readonly property int maxButtonWidth: 160
+    // Floor before the Luna caps collide. Past this the band pages.
+    readonly property int minButtonWidth: 48 
+    property int page: 0
+    property string trackedFocusKey: ""
+
     readonly property var windows: {
         if (root.useKwin) {
             const shown = []
@@ -44,6 +49,12 @@ Item {
                     appId: row.appId || "",
                     activated: !!row.active,
                     minimized: !!row.minimized,
+                    maximized: !!row.maximized,
+                    closeable: row.closeable !== false,
+                    minimizable: row.minimizable !== false,
+                    maximizable: row.maximizable !== false,
+                    moveable: row.moveable !== false,
+                    resizeable: row.resizeable !== false,
                     parent: null
                 })
             }
@@ -84,30 +95,169 @@ Item {
         onFileChanged: reload()
         onLoaded: root.applyTasks(text())
     }
+    readonly property real pagerWidth: height / 2
+    readonly property bool paging: {
+        const count = windows.length
+        if (count === 0 || width <= 0)
+            return false
+        const needed = count * minButtonWidth + spacing * Math.max(0, count - 1)
+        return needed > width
+    }
+    readonly property int perPage: {
+        if (!paging)
+            return Math.max(1, windows.length)
+        const available = Math.max(0, width - pagerWidth - spacing)
+        const slot = minButtonWidth + spacing
+        return Math.max(1, Math.floor((available + spacing) / slot))
+    }
+    readonly property int pageCount: {
+        if (!paging)
+            return 1
+        return Math.max(1, Math.ceil(windows.length / perPage))
+    }
     readonly property int buttonWidth: {
         const count = windows.length
         if (count === 0 || width <= 0)
             return 0
+        if (paging)
+            return minButtonWidth
         const gaps = spacing * Math.max(0, count - 1)
         const share = (width - gaps) / count
-        return Math.max(0, Math.min(maxButtonWidth, Math.floor(share)))
+        return Math.max(minButtonWidth, Math.min(maxButtonWidth, Math.floor(share)))
+    }
+    readonly property var pageWindows: {
+        const all = windows
+        if (!paging)
+            return all
+        const start = page * perPage
+        const shown = []
+        const end = Math.min(all.length, start + perPage)
+        for (let i = start; i < end; ++i)
+            shown.push(all[i])
+        return shown
+    }
+
+    function windowKey(win) {
+        if (win === null || win === undefined)
+            return ""
+        if (win.kwin)
+            return "k:" + String(win.windowId)
+        return "w:" + String(win)
+    }
+
+    // Follow a newly focused window onto its page. A manual page change
+    // stays put until focus moves again.
+    function syncPage() {
+        const all = windows
+        let focusKey = ""
+        let focusIndex = -1
+        for (let i = 0; i < all.length; ++i) {
+            const win = all[i]
+            if (win.activated && !win.minimized) {
+                focusIndex = i
+                focusKey = windowKey(win)
+                break
+            }
+        }
+
+        let next = page
+        if (focusKey !== "" && focusKey !== trackedFocusKey) {
+            trackedFocusKey = focusKey
+            if (paging)
+                next = Math.floor(focusIndex / perPage)
+        } else if (focusKey === "") {
+            trackedFocusKey = ""
+        }
+
+        const last = Math.max(0, pageCount - 1)
+        if (next > last)
+            next = last
+        if (next < 0)
+            next = 0
+        if (page !== next)
+            page = next
+    }
+
+    onWindowsChanged: syncPage()
+    onPagingChanged: syncPage()
+    onPerPageChanged: syncPage()
+    onPageCountChanged: syncPage()
+    onPageChanged: taskMenu.dismiss()
+    Component.onCompleted: syncPage()
+
+    TaskPager {
+        id: pager
+
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        visible: root.paging
+        width: root.paging ? implicitWidth : 0
+        upEnabled: root.page > 0
+        downEnabled: root.page < root.pageCount - 1
+        onUpClicked: root.page = Math.max(0, root.page - 1)
+        onDownClicked: root.page = Math.min(root.pageCount - 1, root.page + 1)
     }
 
     Row {
         id: row
+
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: pager.left
+        anchors.rightMargin: root.paging ? root.spacing : 0
         spacing: root.spacing
-        height: parent.height
 
         Repeater {
-            model: root.windows
+            model: root.pageWindows
 
             delegate: TaskButton {
                 required property var modelData
 
+                taskList: root
                 toplevel: modelData
                 width: root.buttonWidth
                 height: row.height
             }
         }
+    }
+
+    readonly property bool taskMenuOpen: taskMenu.visible
+
+    function openTaskMenu(button, toplevel) {
+        taskMenu.dismiss()
+        taskMenu.toplevel = toplevel
+        taskMenu.anchorItem = button
+        taskMenu.open()
+    }
+
+    function runMenuAction(action) {
+        const target = taskMenu.toplevel
+        if (target === null)
+            return
+        if (target.kwin) {
+            Quickshell.execDetached([
+                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
+                "org.quickxp.Tasks.Command", target.windowId, action
+            ])
+            return
+        }
+        if (action === "close" && typeof target.close === "function")
+            target.close()
+        else if (action === "minimize")
+            target.minimized = true
+        else if (action === "maximize")
+            target.maximized = true
+        else if (action === "restore") {
+            target.minimized = false
+            target.maximized = false
+            target.activate()
+        }
+    }
+
+    TaskMenu {
+        id: taskMenu
+        onChosen: action => root.runMenuAction(action)
     }
 }

@@ -7,6 +7,7 @@ Item {
     clip: true
 
     property var toplevel: null
+    property Item taskList: null
 
     readonly property bool focused: toplevel !== null && toplevel.activated && !toplevel.minimized
     readonly property int frames: 6
@@ -249,26 +250,38 @@ Item {
     MouseArea {
         id: area
         anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
 
         onContainsMouseChanged: {
-            if (containsMouse)
+            if (containsMouse && (taskList === null || !taskList.taskMenuOpen))
                 root.showTip()
             else
                 root.hideTip()
         }
 
-        onClicked: {
+        // clicked() is the release. A right-click release often never
+        // arrives, so the menu opens on the press.
+        onPressed: (mouse) => {
+            if (mouse.button !== Qt.RightButton || taskList === null)
+                return
+            const target = root.toplevel
+            if (target === null)
+                return
+            root.hideTip()
+            taskList.openTaskMenu(root, target)
+        }
+
+        onClicked: (mouse) => {
+            if (mouse.button === Qt.RightButton)
+                return
             const target = root.toplevel
             if (target === null)
                 return
             root.hideTip()
             if (target.kwin) {
                 const action = target.activated && !target.minimized ? "minimize" : "activate"
-                Quickshell.execDetached([
-                    "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
-                    "org.quickxp.Tasks.Command", target.windowId, action
-                ])
+                root.sendCommand(target.windowId, action)
                 return
             }
             if (target.activated && !target.minimized)
@@ -278,5 +291,12 @@ Item {
                 target.activate()
             }
         }
+    }
+
+    function sendCommand(windowId: string, action: string) {
+        Quickshell.execDetached([
+            "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
+            "org.quickxp.Tasks.Command", windowId, action
+        ])
     }
 }

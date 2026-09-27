@@ -29,7 +29,9 @@
     "trayChevronImage": "luna/images/BLUE_TRAYCHEVRONHORIZONTAL_BMP.png",
     "trayChevronOpenImage": "luna/images/BLUE_TRAYCHEVRONHORIZONTALOPEN_BMP.png",
     "startFlagImage": "explorer_assets/explorer/images/143.png",
-    "taskButtonImage": "luna/images/BLUE_TASKBANDBUTTON_BMP.png"
+    "taskButtonImage": "luna/images/BLUE_TASKBANDBUTTON_BMP.png",
+    "taskScrollArrowImage": "luna/images/BLUE_TASKBANDSCROLLARROWS_BMP.png",
+    "taskScrollArrowGlyphImage": "luna/images/BLUE_TASKBANDSCROLLARROWGLYPHS_BMP.png"
   },
   "startButton": {
     "text": "start",

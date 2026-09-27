@@ -26,18 +26,75 @@ function findWindow(id) {
     return found
 }
 
-function applyCommand(command) {
-    const window = findWindow(command.id)
-    if (!window)
-        return
-    if (command.action === "minimize") {
-        window.minimized = true
-        return
+function flag(window, name, fallback) {
+    try {
+        const value = window[name]
+        if (value === undefined || value === null)
+            return fallback
+        return !!value
+    } catch (error) {
+        return fallback
     }
+}
+
+function isMaximized(window) {
+    try {
+        const mode = window.maximizeMode
+        if (mode === undefined || mode === null)
+            return false
+        if (typeof mode === "number")
+            return mode !== 0
+        const text = String(mode)
+        return text !== "0" && text !== "MaximizeRestore" && text !== ""
+    } catch (error) {
+        return false
+    }
+}
+
+function activate(window) {
     window.minimized = false
     // WindowsRunner ids are "0_" plus the window uuid. Activating that way
     // restores a minimized window and gives it focus.
     callDBus("org.kde.KWin", "/WindowsRunner", "org.kde.krunner1", "Run", "0_" + String(window.internalId), "")
+}
+
+function applyCommand(command) {
+    const window = findWindow(command.id)
+    if (!window)
+        return
+    const action = command.action
+    if (action === "minimize") {
+        window.minimized = true
+        return
+    }
+    if (action === "close") {
+        window.closeWindow()
+        return
+    }
+    if (action === "maximize") {
+        window.minimized = false
+        window.setMaximize(true, true)
+        return
+    }
+    if (action === "restore") {
+        window.minimized = false
+        window.setMaximize(false, false)
+        return
+    }
+    if (action === "move" || action === "resize") {
+        window.minimized = false
+        try { workspace.activeWindow = window } catch (error) {}
+        try {
+            if (action === "move")
+                workspace.slotWindowMove()
+            else
+                workspace.slotWindowResize()
+        } catch (error) {
+            console.warn("quickxp-tasks: " + action + " failed: " + error)
+        }
+        return
+    }
+    activate(window)
 }
 
 function publish() {
@@ -51,7 +108,13 @@ function publish() {
             title: window.caption || "",
             appId: String(appId).replace(/\.desktop$/, ""),
             minimized: !!window.minimized,
-            active: !!window.active
+            active: !!window.active,
+            maximized: isMaximized(window),
+            closeable: flag(window, "closeable", true),
+            minimizable: flag(window, "minimizable", true),
+            maximizable: flag(window, "maximizable", true),
+            moveable: flag(window, "moveable", true),
+            resizeable: flag(window, "resizeable", true)
         })
     })
     callDBus("org.quickxp.Tasks", "/org/quickxp/Tasks", "org.quickxp.Tasks", "SetWindows", JSON.stringify(windows))
@@ -64,6 +127,7 @@ function watch(window) {
     const bump = () => { dirty = true }
     try { window.captionChanged.connect(bump) } catch (error) {}
     try { window.minimizedChanged.connect(bump) } catch (error) {}
+    try { window.maximizedChanged.connect(bump) } catch (error) {}
     try { window.activeChanged.connect(bump) } catch (error) {}
     try { window.desktopFileNameChanged.connect(bump) } catch (error) {}
     try {

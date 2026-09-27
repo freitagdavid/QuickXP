@@ -159,7 +159,19 @@ PanelWindow {
         }
     }
 
+    TaskList {
+        anchors.left: startButton.right
+        anchors.right: tray.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 4
+        anchors.rightMargin: 4
+        anchors.topMargin: 3
+        anchors.bottomMargin: 2
+    }
+
     Tray {
+        id: tray
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom

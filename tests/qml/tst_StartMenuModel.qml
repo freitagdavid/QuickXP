@@ -30,6 +30,14 @@ TestCase {
     verify(actions.indexOf("run") >= 0)
   }
 
+  function test_classicSessionItems() {
+    const rows = StartMenuModel.classicSessionItems()
+    compare(rows[0].kind, "separator")
+    const actions = rows.filter(function(r) { return r.kind === "action" }).map(function(r) { return r.action })
+    verify(actions.indexOf("logoff") >= 0)
+    verify(actions.indexOf("shutdown") >= 0)
+  }
+
   function test_buildCategoryTree() {
     const entries = [
       { id: "a", name: "Alpha", icon: "a", categories: ["Network"], noDisplay: false },

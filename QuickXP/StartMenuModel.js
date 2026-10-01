@@ -104,6 +104,14 @@ function classicShellItems() {
   ]
 }
 
+function classicSessionItems() {
+  return [
+    separatorNode("sep-session"),
+    actionNode("logoff", "Log Off...", "system-log-out"),
+    actionNode("shutdown", "Shut Down...", "system-shutdown")
+  ]
+}
+
 function isFolder(node) {
   return node && node.kind === "folder"
 }

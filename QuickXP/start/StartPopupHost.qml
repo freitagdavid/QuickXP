@@ -17,6 +17,7 @@ PopupWindow {
   grabFocus: true
 
   property bool armed: false
+  property string pendingSessionAction: ""
 
   readonly property int menuWidth: 200
   readonly property int menuMinHeight: 120
@@ -77,7 +78,34 @@ PopupWindow {
       stubBox.open("The Run dialog lands in Epic R. Use a terminal or app launcher for now.", false)
       return
     }
+    if (id === "logoff") {
+      close()
+      pendingSessionAction = "logoff"
+      confirmBox.title = "Log Off"
+      confirmBox.open("Do you want to log off?", true)
+      return
+    }
+    if (id === "shutdown") {
+      close()
+      pendingSessionAction = "poweroff"
+      confirmBox.title = "Shut Down"
+      confirmBox.open("Do you want to turn off the computer?\n\n(Full Turn Off dialog is Epic 7.)", true)
+      return
+    }
     console.warn("QuickXP Start: action not implemented:", id)
+  }
+
+  function runSessionAction(action) {
+    const act = String(action || "")
+    if (!act)
+      return
+    sessionProc.command = [
+      "/usr/bin/python3",
+      Quickshell.shellPath("QuickXP/services/SessionBridge.py"),
+      "run",
+      act
+    ]
+    sessionProc.running = true
   }
 
   Timer {
@@ -95,6 +123,29 @@ PopupWindow {
     ]
     stderr: SplitParser {
       onRead: data => console.warn("QuickXP Start Documents:", data.trim())
+    }
+  }
+
+  Process {
+    id: sessionProc
+    running: false
+    command: ["true"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        const text = this.text.trim()
+        if (!text)
+          return
+        try {
+          const result = JSON.parse(text)
+          if (!result.ok)
+            console.warn("QuickXP SessionBridge:", result.error || text)
+        } catch (error) {
+          console.warn("QuickXP SessionBridge: bad JSON", error)
+        }
+      }
+    }
+    stderr: SplitParser {
+      onRead: data => console.warn("QuickXP SessionBridge:", data.trim())
     }
   }
 
@@ -153,5 +204,16 @@ PopupWindow {
   XpMessageBox {
     id: stubBox
     title: "QuickXP"
+  }
+
+  XpMessageBox {
+    id: confirmBox
+    title: "QuickXP"
+    onAccepted: {
+      const act = host.pendingSessionAction
+      host.pendingSessionAction = ""
+      host.runSessionAction(act)
+    }
+    onRejected: host.pendingSessionAction = ""
   }
 }

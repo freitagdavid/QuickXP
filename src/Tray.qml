@@ -1,4 +1,5 @@
 import QtQuick
+import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Services.SystemTray
 
@@ -211,15 +212,34 @@ Item {
                     }
                 }
 
-                Image {
+                Item {
                     anchors.centerIn: parent
-                    width: root.iconSize
-                    height: root.iconSize
-                    source: iconItem.modelData.icon
-                    sourceSize.width: root.iconSize
-                    sourceSize.height: root.iconSize
-                    fillMode: Image.PreserveAspectFit
-                    asynchronous: true
+                    width: root.iconSize + 1
+                    height: root.iconSize + 1
+
+                    // 1px black silhouette offset — reads as a crisp drop shadow / outline.
+                    // Keep Image sync: ColorOverlay + async pixmap load trips cross-thread QObject warnings.
+                    ColorOverlay {
+                        x: 1
+                        y: 1
+                        width: root.iconSize
+                        height: root.iconSize
+                        source: trayIcon
+                        color: "black"
+                        visible: trayIcon.status === Image.Ready
+                    }
+
+                    Image {
+                        id: trayIcon
+                        width: root.iconSize
+                        height: root.iconSize
+                        source: iconItem.modelData.icon
+                        sourceSize.width: root.iconSize
+                        sourceSize.height: root.iconSize
+                        fillMode: Image.PreserveAspectFit
+                        asynchronous: false
+                        smooth: false
+                    }
                 }
 
                 MouseArea {

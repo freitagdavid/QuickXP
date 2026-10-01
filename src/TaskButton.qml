@@ -1,4 +1,5 @@
 import QtQuick
+import Qt5Compat.GraphicalEffects
 import Quickshell
 
 Item {
@@ -227,18 +228,35 @@ Item {
         anchors.topMargin: root.frame === 2 ? 3 : 2
         anchors.bottomMargin: root.frame === 2 ? 1 : 2
 
-        Image {
+        Item {
             id: icon
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            width: status === Image.Ready ? 16 : 0
-            height: 16
-            source: root.iconSource
-            sourceSize.width: 16
-            sourceSize.height: 16
-            fillMode: Image.PreserveAspectFit
-            asynchronous: true
-            smooth: false
+            width: iconImage.status === Image.Ready ? 17 : 0
+            height: 17
+
+            // Keep Image sync: ColorOverlay + async pixmap load trips cross-thread QObject warnings.
+            ColorOverlay {
+                x: 1
+                y: 1
+                width: 16
+                height: 16
+                source: iconImage
+                color: "black"
+                visible: iconImage.status === Image.Ready
+            }
+
+            Image {
+                id: iconImage
+                width: 16
+                height: 16
+                source: root.iconSource
+                sourceSize.width: 16
+                sourceSize.height: 16
+                fillMode: Image.PreserveAspectFit
+                asynchronous: false
+                smooth: false
+            }
         }
 
         Text {

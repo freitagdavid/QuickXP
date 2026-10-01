@@ -376,6 +376,6 @@ Item {
 
     TaskPreview {
         id: previewPopup
-        onHoverLeft: root.previewCloseTimer.restart()
+        onHoverLeft: previewCloseTimer.restart()
     }
 }

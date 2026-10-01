@@ -46,10 +46,10 @@ PopupWindow {
         if (anchorItem === null || imagePath === "")
             return
         Qt.callLater(() => {
-            if (anchorItem === null || imagePath === "")
+            if (preview.anchorItem === null || preview.imagePath === "")
                 return
-            visible = true
-            reposition()
+            preview.visible = true
+            preview.anchor.updateAnchor()
         })
     }
 
@@ -61,7 +61,7 @@ PopupWindow {
 
     onImplicitHeightChanged: {
         if (visible)
-            reposition()
+            preview.anchor.updateAnchor()
     }
 
     anchor.window: anchorItem !== null ? anchorItem.QsWindow.window : null

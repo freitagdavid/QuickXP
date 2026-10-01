@@ -22,10 +22,12 @@ Item {
 
   readonly property var rootRows: {
     const __hl = StartHighlightStore._revision
+    const __pers = StartPersonalizeStore._revision
     let programs = programsNode && programsNode.kind === "folder"
       ? StartMenuModel.withMnemonic(programsNode, "p")
       : StartMenuModel.folderNode("programs", "Programs", "folder", [], "p")
     programs = StartHighlightStore.decoratePrograms(programs)
+    programs = StartPersonalizeStore.decoratePrograms(programs)
     if (!programs.icon)
       programs.icon = "folder"
     const _ = RecentCatalog._revision
@@ -48,12 +50,17 @@ Item {
       const entry = AppCatalog.byId(node.entryId || node.id)
       if (entry && AppCatalog.launch(entry)) {
         StartHighlightStore.markSeen(node.entryId || node.id)
+        StartPersonalizeStore.bump(node.entryId || node.id)
         host.close()
       }
       return
     }
     if (node.kind === "folder")
       return
+    if (node.kind === "action" && node.action === "expand-personalized") {
+      StartPersonalizeStore.expandFolder(node.folderId || node.id)
+      return
+    }
     if (node.kind === "action" && typeof host.runAction === "function") {
       if (node.action === "open-uri" && node.uri)
         host.openUri(node.uri)

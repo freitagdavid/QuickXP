@@ -15,6 +15,7 @@ ShellRoot {
   readonly property var programsCatalog: ProgramsCatalog
   readonly property var recentCatalog: RecentCatalog
   readonly property var startHighlightStore: StartHighlightStore
+  readonly property var startPersonalizeStore: StartPersonalizeStore
   // Keep dropdown exclusivity gate alive.
   readonly property var dropdownGate: DropdownGate
 

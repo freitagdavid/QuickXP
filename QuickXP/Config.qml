@@ -66,6 +66,11 @@ Singleton {
       // JSON string array of desktop ids already seen (seeded on first use).
       property string startSeenApps: "[]"
       property bool startSeenAppsSeeded: false
+      // Hide rarely used Classic Programs entries until ">>" expand.
+      property bool startPersonalizedMenus: false
+      property int startPersonalizedThreshold: 1
+      // JSON object map desktopId -> launch count
+      property string startAppUsage: "{}"
 
       // Per-feature generation overrides. Empty string = use shell generation.
       property JsonObject generationOverrides: JsonObject {

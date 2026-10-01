@@ -29,7 +29,16 @@ Singleton {
   function refresh() {
     root._revision++
     if (root.source === "xdgMenu")
-      xdgProc.running = true
+      xdgDebounce.restart()
+  }
+
+  Timer {
+    id: xdgDebounce
+    interval: 150
+    onTriggered: {
+      if (root.source === "xdgMenu")
+        xdgProc.running = true
+    }
   }
 
   function appsPayload() {

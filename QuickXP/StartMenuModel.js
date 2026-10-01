@@ -93,6 +93,17 @@ function actionNode(action, label, icon) {
   }
 }
 
+function classicShellItems() {
+  return [
+    separatorNode("sep-shell"),
+    actionNode("documents", "Documents", "folder-documents"),
+    actionNode("settings", "Settings", "preferences-system"),
+    actionNode("search", "Search...", "system-search"),
+    actionNode("help", "Help and Support", "help-browser"),
+    actionNode("run", "Run...", "system-run")
+  ]
+}
+
 function isFolder(node) {
   return node && node.kind === "folder"
 }

@@ -98,6 +98,21 @@ def desktop_id(raw: str) -> str:
     return text
 
 
+def desktop_entry_id(desktop: Any) -> str:
+    """Resolve a pyxdg DesktopEntry id without relying on getId() (not always present)."""
+    for attr in ("getId", "getFileName"):
+        fn = getattr(desktop, attr, None)
+        if callable(fn):
+            try:
+                value = fn()
+                if value:
+                    return desktop_id(str(value))
+            except Exception:
+                pass
+    filename = getattr(desktop, "filename", None) or getattr(desktop, "Filename", None) or ""
+    return desktop_id(Path(str(filename)).name)
+
+
 def primary_category(categories: list[str]) -> str:
     cats = [str(c) for c in categories or []]
     for key in CATEGORY_ORDER:
@@ -266,8 +281,9 @@ def build_xdg_tree_pyxdg(menu_path: Path | None) -> dict | None:
                 label = desktop.getName() or ""
                 if not label.strip():
                     continue
-                raw_id = desktop.getId() or Path(desktop.filename).name
-                eid = desktop_id(raw_id)
+                eid = desktop_entry_id(desktop)
+                if not eid:
+                    continue
                 children.append(app_node(eid, label, desktop.getIcon() or ""))
         if not children:
             return None
@@ -277,9 +293,18 @@ def build_xdg_tree_pyxdg(menu_path: Path | None) -> dict | None:
             icon = node.getIcon() or ""
         except Exception:
             icon = ""
-        return folder_node(f"menu:{node.getPath()}", label, icon, children)
+        path_name = ""
+        try:
+            path_name = node.getPath() or node.Name or label
+        except Exception:
+            path_name = label
+        return folder_node(f"menu:{path_name}", label, icon, children)
 
-    walked = walk(menu)
+    try:
+        walked = walk(menu)
+    except Exception as error:
+        print(f"quickxp menu: pyxdg walk failed: {error}", file=sys.stderr)
+        return None
     if walked is None:
         return folder_node("programs", "Programs", "", [])
     return folder_node("programs", "Programs", "", walked.get("children") or [])
@@ -339,7 +364,11 @@ def main(argv: list[str] | None = None) -> int:
     menu_path = find_menu_file(args.menu or None)
     tree: dict[str, Any] | None = None
     if not args.apps_json and not args.menu:
-        tree = build_xdg_tree_pyxdg(menu_path)
+        try:
+            tree = build_xdg_tree_pyxdg(menu_path)
+        except Exception as error:
+            print(f"quickxp menu: pyxdg failed: {error}", file=sys.stderr)
+            tree = None
     if tree is None:
         if menu_path is None:
             print("quickxp menu: no applications.menu found", file=sys.stderr)

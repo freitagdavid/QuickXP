@@ -273,7 +273,7 @@ Ship first for Start UX. Classic Windows menu: one column of cascaded folders an
 
 - [x] **Open from Start button** — Wire [QuickXP/taskbar/TaskBar.qml](QuickXP/taskbar/TaskBar.qml) Start `MouseArea`: left-click opens classic Start; right-click Properties / Settings ([`StartChromeMenu.qml`](../QuickXP/settings/StartChromeMenu.qml)). Placeholder Programs row until cascade lands.
 - [x] **Programs cascade** — Recursive flyouts via [`MenuBridge.py`](../QuickXP/services/MenuBridge.py) (XDG) or category buckets ([`StartMenuModel.js`](../QuickXP/StartMenuModel.js)); toggle `Config.options.startProgramsSource` in Settings → Start Menu.
-- **Fixed shell items** — Documents / settings / Help / Search / Run as classic menu rows (Run → Epic R; Search stub → later Search Companion).
+- [x] **Fixed shell items** — Documents / Settings / Help / Search / Run as classic menu rows (Run → Epic R stub; Search stub → later Search Companion).
 - **Favorites / recent docs (optional)** — Classic Documents / Recent Documents submenu if cheap after Programs; clear list separately from MFU.
 - **Bottom session rows** — Log Off, Shut Down / Turn Off Computer — open Epic 7 dialogs or call session APIs.
 - **Keyboard nav** — Up/down, Enter, Escape, mnemonics, open submenu on hover/timeout; Classic mnemonic model differs from XP dual-column (SMS-24).

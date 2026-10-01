@@ -18,6 +18,18 @@ TestCase {
     compare(StartMenuModel.primaryCategory([]), "")
   }
 
+  function test_classicShellItems() {
+    const rows = StartMenuModel.classicShellItems()
+    verify(rows.length >= 5)
+    compare(rows[0].kind, "separator")
+    const actions = rows.filter(function(r) { return r.kind === "action" }).map(function(r) { return r.action })
+    verify(actions.indexOf("documents") >= 0)
+    verify(actions.indexOf("settings") >= 0)
+    verify(actions.indexOf("search") >= 0)
+    verify(actions.indexOf("help") >= 0)
+    verify(actions.indexOf("run") >= 0)
+  }
+
   function test_buildCategoryTree() {
     const entries = [
       { id: "a", name: "Alpha", icon: "a", categories: ["Network"], noDisplay: false },

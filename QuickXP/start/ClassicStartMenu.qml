@@ -1,5 +1,6 @@
 import QtQuick
 import qs.QuickXP
+import "../StartMenuModel.js" as StartMenuModel
 
 Column {
   id: root
@@ -10,11 +11,12 @@ Column {
   width: parent ? parent.width : 200
   spacing: 0
 
-  readonly property var programsChildren: {
-    const node = programsNode
-    if (!node || !node.children)
-      return []
-    return node.children
+  readonly property var rootRows: {
+    const programs = programsNode && programsNode.kind === "folder"
+      ? programsNode
+      : StartMenuModel.folderNode("programs", "Programs", "", [])
+    const shell = StartMenuModel.classicShellItems()
+    return [programs].concat(shell)
   }
 
   property int openIndex: -1
@@ -29,10 +31,8 @@ Column {
         host.close()
       return
     }
-    if (node.kind === "folder") {
-      // click on folder keeps flyout; hover opens
+    if (node.kind === "folder")
       return
-    }
     if (node.kind === "action" && typeof host.runAction === "function")
       host.runAction(node.action)
   }
@@ -45,13 +45,13 @@ Column {
       if (pending < 0)
         return
       root.openIndex = pending
-      const node = root.programsChildren[pending]
+      const node = root.rootRows[pending]
       if (!node || node.kind !== "folder") {
         if (submenu.visible)
           submenu.close()
         return
       }
-      const delegate = programsList.itemAt(pending)
+      const delegate = rowList.itemAt(pending)
       if (!delegate)
         return
       submenu.nodes = node.children || []
@@ -67,47 +67,34 @@ Column {
       submenu.close()
   }
 
-  // Programs cascade root rows (category / XDG folders and apps).
   Repeater {
-    id: programsList
-    model: root.programsChildren
+    id: rowList
+    model: root.rootRows
 
     delegate: StartMenuItem {
       required property var modelData
       required property int index
 
       node: modelData
-      selected: root.openIndex === index
+      selected: root.openIndex === index && modelData && modelData.kind === "folder"
       onActivated: {
         if (modelData && modelData.kind === "folder") {
           hoverOpen.pending = index
           hoverOpen.interval = 0
           hoverOpen.restart()
           hoverOpen.interval = 300
+        } else if (modelData && modelData.kind === "separator") {
+          // no-op
         } else {
           root.activateNode(modelData)
         }
       }
       onHovered: {
+        if (modelData && modelData.kind === "separator")
+          return
         hoverOpen.pending = index
         hoverOpen.restart()
       }
-    }
-  }
-
-  Item {
-    width: parent.width
-    height: 28
-    visible: root.programsChildren.length === 0
-
-    Text {
-      anchors.verticalCenter: parent.verticalCenter
-      anchors.left: parent.left
-      anchors.leftMargin: 8
-      text: "No programs"
-      color: Theme.value("button", "disabledText", "#A1A192")
-      font.family: Theme.value("fonts", "ui", "Tahoma")
-      font.pixelSize: Theme.size("fontSize", 11)
     }
   }
 

@@ -4,8 +4,7 @@ import qs.QuickXP
 import qs.QuickXP.controls
 
 // Classic Start host — open/close, Esc/outside dismiss, position above Start.
-// Body is classic single-column chrome; Programs cascade lands in Epic 1 #60.
-// Until Epic 2 dual-column exists, this host serves all startMenu generations.
+// Programs cascade via ClassicStartMenu + ProgramsCatalog (#60).
 PopupWindow {
   id: host
 
@@ -20,13 +19,11 @@ PopupWindow {
   readonly property int menuWidth: 200
   readonly property int menuMinHeight: 120
 
-  // Classic is the only implemented layout; XP/Vista/7 reuse it until their hosts ship.
-  readonly property bool useClassicChrome: true
-
   function open() {
     if (anchorItem === null)
       return
     armed = false
+    classicMenu.closeSubmenus()
     Qt.callLater(() => {
       visible = true
       armTimer.restart()
@@ -35,6 +32,7 @@ PopupWindow {
   }
 
   function close() {
+    classicMenu.closeSubmenus()
     visible = false
     armed = false
     armTimer.stop()
@@ -47,20 +45,24 @@ PopupWindow {
       open()
   }
 
+  function runAction(action) {
+    // Shell / session actions arrive in later Epic 1 tickets.
+    console.warn("QuickXP Start: action not implemented:", action)
+  }
+
   Timer {
     id: armTimer
     interval: 250
     onTriggered: host.armed = true
   }
 
-  // Sit flush on the taskbar: attach to the Start button's top-left and expand up/right.
   anchor.item: anchorItem
   anchor.edges: Edges.Top | Edges.Left
   anchor.gravity: Edges.Top | Edges.Right
   anchor.adjustment: PopupAdjustment.Slide
 
   implicitWidth: menuWidth
-  implicitHeight: Math.max(menuMinHeight, body.implicitHeight + 2)
+  implicitHeight: Math.max(menuMinHeight, Math.min(480, body.implicitHeight + 4))
 
   Rectangle {
     id: frame
@@ -72,6 +74,9 @@ PopupWindow {
     HoverHandler {
       onHoveredChanged: {
         if (!host.armed || hovered)
+          return
+        // Keep root open while a Programs flyout is showing.
+        if (classicMenu.submenuOpen)
           return
         host.close()
       }
@@ -92,22 +97,11 @@ PopupWindow {
         anchors.margins: 2
         spacing: 0
 
-        // Placeholder until #60 Programs cascade fills the column.
-        Item {
+        ClassicStartMenu {
+          id: classicMenu
           width: parent.width
-          height: 28
-
-          Text {
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            anchors.leftMargin: 8
-            anchors.right: parent.right
-            anchors.rightMargin: 8
-            text: "Programs"
-            color: Theme.value("button", "disabledText", "#A1A192")
-            font.family: Theme.value("fonts", "ui", "Tahoma")
-            font.pixelSize: Theme.size("fontSize", 11)
-          }
+          host: host
+          programsNode: ProgramsCatalog.programsNode
         }
       }
     }

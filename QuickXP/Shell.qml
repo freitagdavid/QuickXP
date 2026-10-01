@@ -11,6 +11,8 @@ ShellRoot {
   readonly property var generationPolicy: GenerationPolicy
   // Keep app catalog bound for Start / pins / search.
   readonly property var appCatalog: AppCatalog
+  // Keep Programs tree loader alive for Classic Start.
+  readonly property var programsCatalog: ProgramsCatalog
   // Keep dropdown exclusivity gate alive.
   readonly property var dropdownGate: DropdownGate
 

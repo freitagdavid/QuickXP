@@ -2,7 +2,7 @@
 
 A [Quickshell](https://quickshell.org/) desktop shell inspired by Windows XP, with room to grow toward Vista and Windows 7. The goal is an XP-like taskbar and shell that can also pick up later-era features (window peek, icon-only taskbar, Win7-style volume mixer, and so on).
 
-Today the project is a Luna-themed taskbar: Start button chrome, task buttons, paging, system menus, tray, clock, and KWin window peeks. The Start menu and most of the rest of the shell are still on the roadmap — see [docs/ROADMAP.md](docs/ROADMAP.md).
+Today the project is a Luna-themed taskbar with a classic single-column Start menu (Programs cascade), task buttons, paging, system menus, tray, clock, and KWin window peeks. Dual-column XP Start and most of the rest of the shell are still on the roadmap — see [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Requirements
 
@@ -10,6 +10,7 @@ Today the project is a Luna-themed taskbar: Start button chrome, task buttons, p
 - Qt 6
 - On KDE / Plasma: KWin (window list + peeks go through a small KWin script and D-Bus bridge)
 - Python 3 with `dbus-python` and PyGObject (for `TasksBridge.py` on KDE)
+- Optional: `pyxdg` for fuller XDG `applications.menu` parsing in Classic Start (falls back to a stdlib XML path / category folders)
 - Optional theme tooling: Python 3 only (stdlib)
 
 Window peeks also need the `quickxp-preview` helper (see below).

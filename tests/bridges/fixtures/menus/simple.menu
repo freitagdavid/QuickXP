@@ -1,0 +1,20 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+  "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<Menu>
+  <Name>Applications</Name>
+  <Menu>
+    <Name>Internet</Name>
+    <Include>
+      <Category>Network</Category>
+    </Include>
+  </Menu>
+  <Menu>
+    <Name>Accessories</Name>
+    <Include>
+      <Category>Utility</Category>
+    </Include>
+    <Include>
+      <Filename>fixed.desktop</Filename>
+    </Include>
+  </Menu>
+</Menu>

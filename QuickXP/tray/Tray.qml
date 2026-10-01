@@ -2,6 +2,7 @@ import QtQuick
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Services.SystemTray
+import qs.QuickXP
 
 Item {
     id: root

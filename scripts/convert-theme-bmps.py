@@ -286,12 +286,12 @@ def main():
         "root",
         nargs="?",
         type=Path,
-        help="theme directory to scan (default: src/themes next to this repo)",
+        help="theme directory to scan (default: QuickXP/themes next to this repo)",
     )
     args = parser.parse_args()
     root = args.root
     if root is None:
-        root = Path(__file__).resolve().parents[1] / "src" / "themes"
+        root = Path(__file__).resolve().parents[1] / "QuickXP" / "themes"
     root = root.resolve()
     if not root.is_dir():
         print(f"not a directory: {root}", file=sys.stderr)

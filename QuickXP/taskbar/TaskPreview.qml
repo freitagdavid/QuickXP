@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import qs.QuickXP
 
 PopupWindow {
     id: preview

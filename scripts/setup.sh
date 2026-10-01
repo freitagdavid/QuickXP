@@ -59,9 +59,10 @@ if [ "$ok" -ne 1 ]; then
 fi
 
 echo "==> Building quickxp-preview"
+preview="$root/QuickXP/services/preview/quickxp-preview"
 if ! "$root/scripts/build-preview.sh"; then
-  if [ -x "$root/src/quickxp-preview" ]; then
-    echo "  build failed; keeping existing src/quickxp-preview" >&2
+  if [ -x "$preview" ]; then
+    echo "  build failed; keeping existing $preview" >&2
   else
     echo "  build failed and no preview binary is present (KDE peeks will not work)" >&2
     echo "  install Qt6DBus/Qt6Gui dev packages and a C++ compiler, then:" >&2

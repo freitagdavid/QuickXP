@@ -1,6 +1,7 @@
 import QtQuick
 import Qt5Compat.GraphicalEffects
 import Quickshell
+import qs.QuickXP
 
 Item {
     id: root

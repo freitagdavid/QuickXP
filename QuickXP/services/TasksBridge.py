@@ -49,7 +49,7 @@ class Tasks(dbus.service.Object):
 
     @dbus.service.method(IFACE, in_signature="s", out_signature="s")
     def Preview(self, window_id):
-        helper = Path(__file__).resolve().parent / "quickxp-preview"
+        helper = Path(__file__).resolve().parent / "preview" / "quickxp-preview"
         window_id = str(window_id).strip()
         if not helper.is_file() or not window_id:
             return ""
@@ -77,7 +77,7 @@ class Tasks(dbus.service.Object):
 
     def ensure_preview_desktop(self):
         # KWin only allows ScreenShot2 for executables named by a desktop file.
-        helper = Path(__file__).resolve().parent / "quickxp-preview"
+        helper = Path(__file__).resolve().parent / "preview" / "quickxp-preview"
         if not helper.is_file():
             return
         desktop = Path.home() / ".local/share/applications/org.quickxp.preview.desktop"

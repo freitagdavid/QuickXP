@@ -1,4 +1,5 @@
 import QtQuick
+import qs.QuickXP
 
 // Up/down page arrows for the task band. Luna uses the 16-frame scrollbar
 // arrow strip: 0-3 up (normal, hot, pressed, disabled), 4-7 down.

@@ -5,4 +5,4 @@ __pycache__/
 .DS_Store
 
 # Built locally; run scripts/build-preview.sh after clone
-src/quickxp-preview
+QuickXP/services/preview/quickxp-preview

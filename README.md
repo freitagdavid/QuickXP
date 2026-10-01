@@ -17,13 +17,13 @@ Window peeks also need the `quickxp-preview` helper (see below).
 ## Quick start
 
 ```sh
-git clone <repo-url> QuickXP
+git clone https://github.com/freitagdavid/QuickXP.git
 cd QuickXP
 ./scripts/setup.sh
 quickshell
 ```
 
-`scripts/setup.sh` checks for Quickshell / Python D-Bus deps, builds the KWin peek helper, and runs [`deploy.sh`](deploy.sh) (symlink into `~/.config/quickshell/default`). On Plasma, hide or disable the stock panel so it does not cover the QuickXP taskbar.
+`scripts/setup.sh` checks for Quickshell / Python D-Bus deps, builds the KWin peek helper, and runs [`deploy.sh`](deploy.sh) (symlink the `QuickXP/` module into `~/.config/quickshell/default`). On Plasma, hide or disable the stock panel so it does not cover the QuickXP taskbar.
 
 Rebuild only the peek helper:
 
@@ -37,7 +37,7 @@ Deploy without rebuilding:
 ./deploy.sh
 ```
 
-The active theme defaults to Luna (`theme: "luna"` in [`src/Shell.qml`](src/Shell.qml)). Themes live under [`src/themes/`](src/themes/) as `theme.json` plus image assets.
+The active theme defaults to Luna (`theme: "luna"` in [`QuickXP/Shell.qml`](QuickXP/Shell.qml)). Themes live under [`QuickXP/themes/`](QuickXP/themes/) as `theme.json` plus image assets.
 
 ## What works now
 
@@ -46,14 +46,14 @@ The active theme defaults to Luna (`theme: "luna"` in [`src/Shell.qml`](src/Shel
 - Activate / minimize, right-click system menu, crowding pager
 - Hover window peek on KDE (falls back to title tooltip otherwise)
 - System tray (StatusNotifier) with hide-inactive chevron and clock
-- Live-reloading themes via [`src/Theme.qml`](src/Theme.qml)
+- Live-reloading themes via [`QuickXP/Theme.qml`](QuickXP/Theme.qml)
 
 ## Theme tooling
 
 Extract bitmaps and settings from a Windows XP `.msstyles` / `Shellstyle.dll` tree:
 
 ```sh
-python3 src/scripts/extract_xp_theme.py /path/to/theme -o /path/to/out
+python3 scripts/extract_xp_theme.py /path/to/theme -o /path/to/out
 ```
 
 Convert extracted BMPs to PNGs that keep transparency (alpha or color key from the theme INI):
@@ -72,25 +72,25 @@ On KDE, peeks call a small binary that uses KWin’s ScreenShot2 interface. Pref
 ./scripts/build-preview.sh
 ```
 
-`TasksBridge.py` installs a companion `.desktop` file so KWin allows the restricted D-Bus call. The binary is gitignored — always build after cloning.
+That writes `QuickXP/services/preview/quickxp-preview`. `TasksBridge.py` installs a companion `.desktop` file so KWin allows the restricted D-Bus call. The binary is gitignored — always build after cloning.
 
 ## Layout
 
 | Path | Role |
 | --- | --- |
-| `shell.qml` | Quickshell entry (loads `Shell`) |
-| `src/Shell.qml` | Shell root, theme name |
-| `src/TaskBar.qml` | Taskbar, Start button, tray host |
-| `src/TaskList.qml` / `TaskButton.qml` / … | Task band, menus, peeks, pager |
-| `src/Tray.qml` | Notification area + clock |
-| `src/Theme.qml` | Theme singleton |
-| `src/themes/` | Luna, Aero stubs, extracted assets |
-| `src/kwin/tasks.js` | KWin script for the window list |
-| `src/TasksBridge.py` | Session-bus bridge + preview helper |
+| `shell.qml` | Quickshell entry (`import qs.QuickXP`) |
+| `QuickXP/` | Runtime Quickshell module (deployed) |
+| `QuickXP/Shell.qml` | Shell root, theme name |
+| `QuickXP/Theme.qml` | Theme singleton |
+| `QuickXP/taskbar/` | Taskbar, buttons, menus, peeks, pager |
+| `QuickXP/tray/` | Notification area + clock |
+| `QuickXP/services/` | KWin bridge, tasks script, preview helper |
+| `QuickXP/themes/` | Luna, Aero stubs, extracted assets |
+| `scripts/` | Setup, build-preview, theme extract/convert |
 | `docs/ROADMAP.md` | Epic roadmap |
-| `scripts/setup.sh` | Clone → check deps → build peek helper → deploy |
-| `scripts/build-preview.sh` | Compile `src/quickxp-preview` |
-| `deploy.sh` | Symlink into `~/.config/quickshell/default` |
+| `deploy.sh` | Symlink module into `~/.config/quickshell/default` |
+
+Future features (Start, Settings, Desktop, …) land as sibling folders under `QuickXP/`.
 
 ## Roadmap
 

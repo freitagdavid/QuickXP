@@ -1,5 +1,7 @@
 import Quickshell // for PanelWindow
 import QtQuick // for Text
+import qs.QuickXP
+import qs.QuickXP.tray
 
 PanelWindow {
     anchors {

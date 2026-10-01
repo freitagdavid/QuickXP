@@ -1,11 +1,11 @@
 #!/bin/sh
-# Build src/quickxp-preview (KWin ScreenShot2 helper for window peeks).
+# Build QuickXP/services/preview/quickxp-preview (KWin ScreenShot2 helper).
 set -eu
 
 root="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
-src="$root/src"
-out="$src/quickxp-preview"
-cpp="$src/quickxp-preview.cpp"
+dir="$root/QuickXP/services/preview"
+out="$dir/quickxp-preview"
+cpp="$dir/quickxp-preview.cpp"
 
 CXX="${CXX:-}"
 if [ -z "$CXX" ]; then

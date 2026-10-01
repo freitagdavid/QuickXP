@@ -16,7 +16,7 @@ Item {
         return desktop.toUpperCase().indexOf("KDE") !== -1 || session === "true"
     }
     readonly property string stateFile: Quickshell.statePath("quickxp-tasks.json")
-    readonly property string scriptFile: Quickshell.shellPath("QuickXP/kwin/tasks.js")
+    readonly property string scriptFile: Quickshell.shellPath("QuickXP/services/kwin/tasks.js")
 
     property var kwinTasks: []
 
@@ -75,7 +75,7 @@ Item {
         id: bridge
 
         running: root.useKwin
-        command: ["/usr/bin/python3", Quickshell.shellPath("QuickXP/TasksBridge.py"), root.stateFile, root.scriptFile]
+        command: ["/usr/bin/python3", Quickshell.shellPath("QuickXP/services/TasksBridge.py"), root.stateFile, root.scriptFile]
 
         stderr: SplitParser {
             onRead: data => console.warn("QuickXP tasks:", data.trim())

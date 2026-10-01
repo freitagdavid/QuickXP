@@ -8,8 +8,28 @@ Singleton {
   id: root
 
   property string name: "luna"
+  // Empty = theme.json activeScheme (or sole/default scheme).
+  property string scheme: ""
 
-  readonly property string themeDir: Quickshell.shellPath("QuickXP/themes/" + name)
+  // Prefer ThemeRegistry path (covers user-data imports); else shell builtin.
+  readonly property string themeDir: {
+    const entry = ThemeRegistry.themeBySlug(name)
+    if (entry !== undefined && entry !== null && entry.path)
+      return entry.path
+    return Quickshell.shellPath("QuickXP/themes/" + name)
+  }
+
+  property var _raw: ({})
+
+  // Drop previous theme's relative image paths as soon as the slug changes;
+  // otherwise themeDir updates first and resolves e.g. whistler/luna/images/….
+  onNameChanged: {
+    root._raw = ({})
+    root._data = root.blankDocument()
+    themeFile.reload()
+  }
+
+  onSchemeChanged: root.applySchemeSelection()
 
   readonly property var defaults: ({
     "colors": {
@@ -28,17 +48,15 @@ Singleton {
       "highlightText": "#FFFFFF",
       "border": "#003C74",
       "menu": "#FFFFFF",
-      "menuText": "#000000",
-      "taskbarImage": "taskbar.png"
+      "menuText": "#000000"
     },
     "sizes": {
       "taskbarHeight": 30,
       "fontSize": 11
     },
-    "images": {
-      "wallpaper": "wallpaper.png",
-      "taskbarImage": "taskbar.png"
-    },
+    // No placeholder image paths — missing keys resolve to "" via image().
+    "images": ({
+    }),
     "fonts": {
       "ui": "Tahoma"
     }
@@ -68,6 +86,13 @@ Singleton {
     return copy
   }
 
+  // Empty image map while switching — avoids resolving prior theme paths under the new themeDir.
+  function blankDocument() {
+    const blank = cloneDefaults()
+    blank.images = {}
+    return blank
+  }
+
   function mergeDocument(overlay) {
     const merged = cloneDefaults()
     if (!isGroup(overlay))
@@ -76,7 +101,11 @@ Singleton {
     for (const key in overlay) {
       const base = merged[key]
       const extra = overlay[key]
-      if (isGroup(base) && isGroup(extra))
+      // images: take the theme's map as authoritative (plus tiny defaults only
+      // for keys the theme omits). Avoid carrying stale keys across switches.
+      if (key === "images" && isGroup(extra))
+        merged[key] = Object.assign({}, base, extra)
+      else if (isGroup(base) && isGroup(extra))
         merged[key] = Object.assign({}, base, extra)
       else
         merged[key] = extra
@@ -90,11 +119,36 @@ Singleton {
 
   function applyText(text: string) {
     try {
-      root._data = mergeDocument(JSON.parse(text))
+      root._raw = JSON.parse(text)
+      root.applySchemeSelection()
     } catch (error) {
       console.warn("QuickXP theme", root.name, "is invalid:", error)
+      root._raw = ({})
       root._data = cloneDefaults()
     }
+  }
+
+  function applySchemeSelection() {
+    const doc = root._raw
+    if (!isGroup(doc)) {
+      root._data = cloneDefaults()
+      return
+    }
+    const schemeData = isGroup(doc.schemeData) ? doc.schemeData : null
+    let want = root.scheme
+    if (want === undefined || want === null)
+      want = ""
+    want = String(want)
+    if (want === "" && doc.activeScheme)
+      want = String(doc.activeScheme)
+    if (want === "" && Array.isArray(doc.schemes) && doc.schemes.length)
+      want = String(doc.schemes[0].id || "")
+
+    let overlay = doc
+    if (want !== "" && schemeData && isGroup(schemeData[want])) {
+      overlay = Object.assign({}, doc, schemeData[want], { activeScheme: want })
+    }
+    root._data = mergeDocument(overlay)
   }
 
   function color(key: string, fallback): color {
@@ -111,14 +165,25 @@ Singleton {
     return value
   }
 
+  // XP Start flag lives in explorer resources, not .msstyles — fall back to Luna's.
+  readonly property string defaultStartFlag: Quickshell.shellPath(
+    "QuickXP/themes/luna/explorer_assets/explorer/images/143.png"
+  )
+
   function image(key: string): string {
     const value = root.images[key]
-    if (value === undefined || value === null || value === "")
+    if (value === undefined || value === null || value === "") {
+      if (key === "startFlagImage")
+        return root.defaultStartFlag
       return ""
+    }
 
     const path = String(value)
     if (path.startsWith("/") || path.startsWith("file:"))
       return path
+    // Relative explorer/flag paths only exist on the Luna fixture tree.
+    if (key === "startFlagImage" && path.indexOf("explorer_assets/") === 0)
+      return root.defaultStartFlag
     return root.themeDir + "/" + path
   }
 
@@ -141,7 +206,7 @@ Singleton {
     onLoaded: root.applyText(text())
     onLoadFailed: function(error) {
       console.warn("QuickXP theme", root.name, "failed to load:", FileViewError.toString(error))
-      root._data = root.cloneDefaults()
+      root._data = root.blankDocument()
     }
   }
 

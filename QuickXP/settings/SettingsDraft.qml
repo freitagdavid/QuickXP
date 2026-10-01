@@ -5,6 +5,7 @@ QtObject {
   id: draft
 
   property string theme: "luna"
+  property string themeScheme: ""
   property string generation: ""
   property var generationOverrides: GenerationPolicy.emptyOverrides()
   property int taskbarHeight: 0
@@ -19,6 +20,7 @@ QtObject {
   readonly property bool dirty: {
     const o = Config.options
     return draft.theme !== o.theme
+      || draft.themeScheme !== o.themeScheme
       || draft.generation !== o.generation
       || !GenerationPolicy.overridesEqual(draft.generationOverrides, o.generationOverrides)
       || draft.taskbarHeight !== o.taskbarHeight
@@ -33,6 +35,7 @@ QtObject {
   function loadFromConfig() {
     const o = Config.options
     draft.theme = o.theme
+    draft.themeScheme = o.themeScheme || ""
     draft.generation = o.generation
     draft.generationOverrides = GenerationPolicy.copyOverrides(o.generationOverrides)
     draft.taskbarHeight = o.taskbarHeight
@@ -48,6 +51,7 @@ QtObject {
   function applyToConfig() {
     const o = Config.options
     o.theme = draft.theme
+    o.themeScheme = draft.themeScheme || ""
     o.generation = draft.generation
     GenerationPolicy.applyOverridesToConfig(draft.generationOverrides)
     o.taskbarHeight = draft.taskbarHeight
@@ -59,6 +63,7 @@ QtObject {
     o.matchWindowBorders = draft.matchWindowBorders
     o.lastSettingsTab = draft.activeTab
     Theme.name = draft.theme
+    Theme.scheme = draft.themeScheme || ""
   }
 
   function setOverride(itemId: string, generation: string) {

@@ -14,6 +14,7 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Start search filters apps; A–Z / Z–A and letter combo change the list; launching an app closes Start
 - [ ] Start → “About QuickXP…” opens the themed message box
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload
+- [ ] Settings → Theme → Import… an XP `.msstyles` → one theme with schemes → Color scheme dropdown → Apply reloads chrome; Delete removes user-data themes only
 - [ ] Post a freedesktop notification; tray / balloon / queue behaves as expected for the generation
 - [ ] Run dialog (Epic R) — Win+R / Start → Run when implemented
 - [ ] Shell hotkeys (Epic H) — Win, Win+R/E/D/L, etc. when implemented

@@ -9,6 +9,7 @@ Singleton {
 
   property var themes: []
   readonly property string themesDir: Quickshell.shellPath("QuickXP/themes")
+  readonly property string userThemesDir: Quickshell.dataPath("themes")
   readonly property string indexPath: Quickshell.dataPath("themes-index.json")
 
   function refresh() {
@@ -34,6 +35,38 @@ Singleton {
     return undefined
   }
 
+  // Insert or replace a theme row immediately (used after Import before rescan finishes).
+  function upsertTheme(entry: var) {
+    if (entry === undefined || entry === null || !entry.slug)
+      return
+    const next = []
+    let replaced = false
+    const list = root.themes
+    for (let i = 0; i < list.length; ++i) {
+      if (list[i].slug === entry.slug) {
+        next.push(entry)
+        replaced = true
+      } else {
+        next.push(list[i])
+      }
+    }
+    if (!replaced)
+      next.push(entry)
+    root.themes = next
+  }
+
+  function removeTheme(slug: string) {
+    if (!slug)
+      return
+    const next = []
+    const list = root.themes
+    for (let i = 0; i < list.length; ++i) {
+      if (list[i].slug !== slug)
+        next.push(list[i])
+    }
+    root.themes = next
+  }
+
   function applyScan(text: string) {
     const trimmed = String(text).trim()
     if (trimmed === "")
@@ -54,6 +87,7 @@ Singleton {
       "/usr/bin/python3",
       Quickshell.shellPath("QuickXP/services/list_themes.py"),
       root.themesDir,
+      root.userThemesDir,
       root.indexPath
     ]
 

@@ -40,3 +40,37 @@ def test_scan_skips_dirs_without_theme_json(tmp_path: Path):
     assert themes[0]["slug"] == "good"
     assert themes[0]["name"] == "Good"
     assert themes[0]["generation"] == "xp"
+
+
+def test_scan_many_prefers_first_root(tmp_path: Path):
+    shell = tmp_path / "shell"
+    user = tmp_path / "user"
+    shell.mkdir()
+    user.mkdir()
+    (shell / "luna").mkdir()
+    (shell / "luna" / "theme.json").write_text(
+        '{"name":"Shell Luna","generation":"xp"}',
+        encoding="utf-8",
+    )
+    (user / "luna").mkdir()
+    (user / "luna" / "theme.json").write_text(
+        '{"name":"User Luna","generation":"xp"}',
+        encoding="utf-8",
+    )
+    (user / "imported").mkdir()
+    (user / "imported" / "theme.json").write_text(
+        '{"name":"Imported","generation":"xp","activeScheme":"NORMALBLUE",'
+        '"schemes":[{"id":"NORMALBLUE","label":"Blue"}],'
+        '"schemeData":{"NORMALBLUE":{"colors":{"desktop":"#010101"}}}}',
+        encoding="utf-8",
+    )
+    themes = list_themes.scan_many([shell, user])
+    by_slug = {t["slug"]: t for t in themes}
+    assert by_slug["luna"]["name"] == "Shell Luna"
+    assert by_slug["luna"]["deletable"] is False
+    assert by_slug["imported"]["name"] == "Imported"
+    assert by_slug["imported"]["deletable"] is True
+    assert by_slug["imported"]["activeScheme"] == "NORMALBLUE"
+    assert by_slug["imported"]["schemes"][0]["id"] == "NORMALBLUE"
+    assert "NORMALBLUE" in by_slug["imported"]["schemeData"]
+    assert len(themes) == 2

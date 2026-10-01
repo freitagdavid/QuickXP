@@ -9,9 +9,9 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 
 - [x] Epic 0 — Shell foundation (generation policy, theme seams, config store, Start popup host, app catalog, shared controls atlas)
 - [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, Appearance, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
-- [ ] Epic T — Theme import: load `.msstyles` → auto-map extracted INI/assets → Apply (no hand-authored theme.json)
+- [ ] Epic T — Theme import (partial: XP detect → project → user-data install → Settings Import…; Vista/7 #32 still open)
 - [ ] Epic K — Generate and sync matching KWin Aurorae window decorations
-- [ ] Epic QA — Testing (partial: harness + extract/convert/list_themes + QML normalize + smoke checklist; full pipeline coverage with Epic T/K)
+- [ ] Epic QA — Testing (partial: harness + detect/project/pipeline + extract/convert/list_themes + QML normalize + smoke checklist; Aurorae with Epic K)
 - [ ] Epic H — Shell hotkeys (Win/Ctrl+Esc, Win+R/E/F/D/M/L, Alt+Esc, Win+Tab taskbar cycle, …)
 - [ ] Epic R — Run dialog (Win+R + Start → Run)
 - [ ] Epic 1 — Classic Start menu (single-column)
@@ -121,7 +121,7 @@ One tabbed configuration UI for the shell (XP-styled dialog chrome). This is the
 
 ### Tabs (initial set)
 
-- [x] **Theme** — Installed list + taskbar/Start preview + “Match window borders” + shell generation / per-feature generation overrides. Import… / Delete disabled stubs (Epic T).
+- [x] **Theme** — Installed list + color-scheme dropdown + taskbar/Start preview + “Match window borders” + shell generation / per-feature generation overrides. Import… installs one pack (all schemes embedded); Delete removes user-data themes.
 - [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets (flags persist; behavior lands with later epics). Height applies on Apply. Later: keep-on-top, grouping policy (crowding vs always), multi-row.
 - [ ] **Start Menu** — Classic vs XP dual-column (when both exist); Customize depth (icon size, program count, clear list, Internet/E-mail handlers, link/menu/hidden for special folders, hover-open, highlight new, Scroll Programs, Admin Tools, Favorites, Recent Documents); later search-related toggles for Vista/7 (SMS-01–17).
 - [ ] **Desktop** — Wallpaper path/fit, icon arrange/align defaults, special-icon visibility, Show Desktop Icons (when Epic 6 exists).
@@ -171,32 +171,33 @@ flowchart LR
   pick --> detect --> extract --> convert --> project --> deco --> install --> apply
 ```
 
-- **Pick input** — Folder, `.theme`, `.msstyles`, or `Shellstyle.dll` (file dialog + drag-drop). Default happy path: single `.msstyles` file.
-- **Detect generation** — Heuristics: file layout, PE resources, INI section names, Aero/glass assets, `.theme` keys. Output: `xp` | `vista` | `win7` | `unknown` (+ confidence / override in UI).
+- [x] **Pick input** — Settings file dialog for `.msstyles` (folder / `.theme` later). CLI: [`scripts/import_xp_theme.py`](../scripts/import_xp_theme.py).
+- [x] **Detect generation** — [`quickxp_theme.detect`](../scripts/quickxp_theme/detect.py): TEXTFILE/BMP → `xp`; PNG-heavy / no INI → `vista`/`win7`/`unknown`. XP Import refuses non-XP until #32.
 - [x] **Extract** — Library at [`scripts/quickxp_theme/extract.py`](../scripts/quickxp_theme/extract.py); thin CLI [`scripts/extract_xp_theme.py`](../scripts/extract_xp_theme.py). Bitmaps + TEXTFILE/INI land in a theme working tree.
 - [x] **Convert transparency** — Library at [`scripts/quickxp_theme/convert.py`](../scripts/quickxp_theme/convert.py); thin CLI [`scripts/convert-theme-bmps.py`](../scripts/convert-theme-bmps.py). PNGs keep the extract layout so INI paths resolve 1:1.
-- **Project INI → `theme.json`** — Parse the active size/color INI (e.g. `NORMALBLUE.ini` / Homestead / Metallic). For each logical key, read `ImageFile` (+ DPI `ImageFileN` pick), `SizingMargins`, `ContentMargins`, `imageCount`, `ImageLayout`, and color hints; write relative PNG paths under the installed theme. Also emit `name`, `generation`, `fonts`, SysMetrics-derived `colors`, and caption/frame metadata for Epic K. **No manual mapping step for the user.**
+- [x] **Project INI → `theme.json`** — [`quickxp_theme.project`](../scripts/quickxp_theme/project.py) + [`class_key_map`](../scripts/quickxp_theme/class_key_map.py). Parses size/color INI; resolves `ImageFile` → `BLUE_*_BMP.png`; emits colors/sizes/control groups. Missing keys omit (Theme defaults); warnings collected.
 - **Generate KWin decoration** — See Epic K (same import pass or on Apply), driven by the same projected caption assets.
-- **Install** — Write under `themes/<slug>/` (extracted tree + generated `theme.json` + optional `aurorae/`); prefer user data location for imports (`Quickshell.dataPath` / config tree) so repo Luna stays the reference fixture.
-- **Apply live** — Set `Config` / `Theme.name` to the new slug; [QuickXP/Theme.qml](QuickXP/Theme.qml) live-reloads `theme.json`. Sync KWin when “Match window borders” is on.
+- [x] **Install** — User data `Quickshell.dataPath("themes/<slug>/")` via [`pipeline.import_theme`](../scripts/quickxp_theme/pipeline.py); multi-root [`list_themes.py`](../QuickXP/services/list_themes.py) + [`ThemeRegistry.qml`](../QuickXP/ThemeRegistry.qml); [`Theme.qml`](../QuickXP/Theme.qml) prefers registry path.
+- [x] **Apply live** — Import selects the new slug in the Settings draft; Apply sets `Theme.name` and live-reloads `theme.json`. Sync KWin when “Match window borders” is on (Epic K).
 
 ### GUI features (Theme tab + Import)
 
-- **Theme tab content** — Installed themes list, preview (taskbar + Start + sample titlebar + button/tab chrome), Apply / Delete. Toggle: “Match window borders” (default on).
-- **Import…** — Browse / drop `.msstyles`. Flow: detect → optional color-scheme pick → progress (extract / convert / project / deco) → preview → installed → user Applies via Settings. **That is the entire user workflow.**
-- **Color scheme picker** — When one package has NormalColor / Homestead / Metallic (or Vista/7 variants), pick which INI/color folder to project; default to the package’s primary scheme.
-- **Error reporting** — Missing Start/caption/button resources, unsupported generation, partial projection (shell uses `Theme` defaults for gaps; deco can fall back to last good / Breeze). Surface which INI keys failed.
+- [x] **Theme tab content** — Installed themes list, preview (taskbar + Start), Apply / Delete stub. Toggle: “Match window borders” (default on).
+- [x] **Import…** — Browse `.msstyles` → probe → install one theme with all schemes in `schemeData` → refresh registry. ([`ThemeTab.qml`](../QuickXP/settings/ThemeTab.qml))
+- [x] **Color scheme picker** — Theme list + scheme dropdown for the selected pack (`Config.themeScheme` / `Theme.scheme`); schemes listed by [`quickxp_theme.schemes`](../scripts/quickxp_theme/schemes.py).
+- [x] **Delete** — Removes user-data themes only (`delete_theme.py`); builtins stay.
+- [x] **Error reporting** — JSON `{ ok, warnings, errors }` from probe/install; `XpMessageBox` + status text. Vista+ blocked with clear message.
 
 ### Generation-specific work
 
-- **XP (first)** — Prove the loop on Luna and at least one third-party XP `.msstyles`: taskbar / Start / tray / task buttons / dialog chrome (`button`, `Tab.*`, checkbox) / `[Window.*]` caption assets from INI (reference: [NORMALBLUE.ini](../QuickXP/themes/luna/luna/settings/NORMALBLUE.ini)). Homestead/Metallic are the same projector with a different INI path.
-- **Vista / 7 (later in this epic)** — Extend PE/resource understanding for Aero `.msstyles` (PNG/TGA-style resources, different INI), project glass vs solid taskbar assets, set `generation` so Start/Quick Launch layout follows Epic 2–4 policies. Full glass blur may still depend on compositor.
+- [x] **XP** — Proven on checked-in Luna extract (pytest golden) + alternate `ImageFile` names fixture; Settings Import wired for real `.msstyles`. Homestead/Metallic are the same projector with a different INI path.
+- [ ] **Vista / 7 (#32)** — Extend for Aero binary property store + PNG/TGA; use msstyleEditor/`libmsstyle` as reference. Not in this XP pass.
 
-### Acceptance (Epic T done when)
+### Acceptance (Epic T XP slice)
 
-- User selects an XP `.msstyles` in Settings → Theme → Import…, picks a color scheme if prompted, Applies, and taskbar + Settings chrome + (when Epic K is ready) window borders reflect that style **without editing any JSON or renaming bitmaps**.
-- Re-import / CI can regenerate Luna’s `theme.json` from the checked-in extract and match (or replace) the hand-authored fixture.
-- pytest covers INI projection for Luna Blue (+ one fixture with alternate `ImageFile` names).
+- [x] Settings → Theme → Import… XP `.msstyles` → scheme pick if needed → install under data path → Apply live-reloads chrome without hand JSON.
+- [x] pytest covers detect + Luna Blue projection (+ alt ImageFile fixture) + pipeline install.
+- [ ] Vista/7 (#32) remains open — epic stays partial until then.
 
 ### Out of scope for v1 of this epic
 
@@ -550,7 +551,7 @@ Not started until Start, Quick Launch, and desktop exist.
 
 **Partial.** Harness lives under [`tests/`](../tests/); library wrap in [`scripts/quickxp_theme/`](../scripts/quickxp_theme/). Prefer cheap, reliable coverage on the theme pipeline and pure logic; keep full-shell checks thin. **New pipeline / helper features must land with tests** (see [`.cursor/rules/testing.mdc`](../.cursor/rules/testing.mdc)). Run `./scripts/run-tests.sh` before every push (`.githooks/pre-push`).
 
-- [x] **pytest scaffolding + theme tooling (partial)** — Importable [`quickxp_theme.extract`](../scripts/quickxp_theme/extract.py) / [`convert`](../scripts/quickxp_theme/convert.py); thin CLIs unchanged. Real tests for parsers, BMP→PNG, extract helpers, `list_themes.scan`. Skip stubs for detect / INI projection / Aurorae until Epic T/K. Run `python3 -m pytest tests/` or `./scripts/run-tests.sh`.
+- [x] **pytest scaffolding + theme tooling** — Importable [`quickxp_theme`](../scripts/quickxp_theme/) (extract/convert/detect/project/pipeline/schemes). Real tests for parsers, BMP→PNG, detect, INI→`theme.json`, import install, `list_themes.scan_many`. Aurorae still skipped until Epic K. Run `python3 -m pytest tests/` or `./scripts/run-tests.sh`.
 - [ ] **pytest for other Python bridges** — Optional coverage for [QuickXP/services/TasksBridge.py](QuickXP/services/TasksBridge.py) helpers once notification or theme install logic lands in Python (`tests/bridges/`).
 - [x] **QML helper tests (`qmltestrunner`) (scaffold)** — [`GenerationNormalize.js`](../QuickXP/GenerationNormalize.js) + [`tests/qml/tst_GenerationNormalize.qml`](../tests/qml/tst_GenerationNormalize.qml). Expand for paging / grouping / Start model as those land. `./scripts/run-qml-tests.sh`.
 - [x] **Shell smoke checks** — Manual checklist [docs/SMOKE.md](SMOKE.md) (REF-01); `./scripts/smoke-notes.sh` prints it. Not hermetic CI.

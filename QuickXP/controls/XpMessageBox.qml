@@ -22,19 +22,19 @@ FloatingWindow {
   implicitWidth: Math.max(Theme.value("messageBox", "minWidth", 280), body.implicitWidth + 40)
   implicitHeight: Math.max(Theme.value("messageBox", "minHeight", 120), body.implicitHeight + buttonRow.height + 48)
 
-  function open(message: string, showCancelButton: bool) {
+  function open(message: string, showCancelButton: bool): void {
     text = message
     if (showCancelButton !== undefined)
       showCancel = showCancelButton
     visible = true
   }
 
-  function accept() {
+  function accept(): void {
     visible = false
     accepted()
   }
 
-  function reject() {
+  function reject(): void {
     visible = false
     rejected()
   }

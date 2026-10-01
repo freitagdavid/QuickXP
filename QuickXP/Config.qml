@@ -13,6 +13,7 @@ Singleton {
   function applyTheme() {
     if (adapter.theme !== "")
       Theme.name = adapter.theme
+    Theme.scheme = adapter.themeScheme || ""
   }
 
   Process {
@@ -46,6 +47,8 @@ Singleton {
       id: adapter
 
       property string theme: "luna"
+      // Color/size scheme id within the theme (NORMALBLUE, …). Empty = theme default.
+      property string themeScheme: ""
       // Empty = follow Theme.generation. Else classic | xp | vista | win7.
       property string generation: ""
       property int taskbarHeight: 0

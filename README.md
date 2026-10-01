@@ -62,7 +62,7 @@ Convert extracted BMPs to PNGs that keep transparency (alpha or color key from t
 python3 scripts/convert-theme-bmps.py /path/to/extracted
 ```
 
-Core logic is importable as `quickxp_theme` under [`scripts/quickxp_theme/`](scripts/quickxp_theme/). Mapping into QuickXP’s `theme.json` is still manual for Luna; automating import and Settings UI is planned in the roadmap.
+Core logic is importable as `quickxp_theme` under [`scripts/quickxp_theme/`](scripts/quickxp_theme/). XP import: Settings → Theme → Import… or `python3 scripts/import_xp_theme.py --install path.msstyles --dest <themes-root>`. Vista/7 projection is still open (roadmap #32).
 
 ## Testing
 

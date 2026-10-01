@@ -69,7 +69,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 
 - [ ] Epic 0 — Shell foundation (generation policy, theme seams, config store, shared controls atlas) — partial: config store, theme registry, generation policy, `Settings.open` landed; Start popup host / app catalog / controls atlas still open
 - [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, Appearance, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
-- [ ] Epic T — Theme import: load `.msstyles` → auto-map extracted INI/assets → Apply (no hand-authored theme.json)
+- [ ] Epic T — Theme import (partial: XP detect → project → user-data install → Settings Import…; Vista/7 #32 still open)
 - [ ] Epic K — Generate and sync matching KWin Aurorae window decorations
 - [ ] Epic QA — Testing (pytest theme pipeline, QML helpers, shell smoke)
 - [ ] Epic H — Shell hotkeys (Win/Ctrl+Esc, Win+R/E/F/D/M/L, Alt+Esc, Win+Tab taskbar cycle, …)

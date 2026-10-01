@@ -1,10 +1,12 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs.QuickXP
 import qs.QuickXP.controls
+import qs.QuickXP.settings
 
 // Classic Start host — open/close, Esc/outside dismiss, position above Start.
-// Programs cascade via ClassicStartMenu + ProgramsCatalog (#60).
+// Programs cascade via ClassicStartMenu + ProgramsCatalog; fixed shell rows via runAction.
 PopupWindow {
   id: host
 
@@ -46,14 +48,54 @@ PopupWindow {
   }
 
   function runAction(action) {
-    // Shell / session actions arrive in later Epic 1 tickets.
-    console.warn("QuickXP Start: action not implemented:", action)
+    const id = String(action || "")
+    if (id === "documents") {
+      close()
+      docsProc.running = true
+      return
+    }
+    if (id === "settings") {
+      close()
+      Settings.open("start")
+      return
+    }
+    if (id === "help") {
+      close()
+      stubBox.title = "Help and Support"
+      stubBox.open("QuickXP help will expand later. For now see docs/ROADMAP.md in the project.", false)
+      return
+    }
+    if (id === "search") {
+      close()
+      stubBox.title = "Search"
+      stubBox.open("Search Companion is not implemented yet.", false)
+      return
+    }
+    if (id === "run") {
+      close()
+      stubBox.title = "Run"
+      stubBox.open("The Run dialog lands in Epic R. Use a terminal or app launcher for now.", false)
+      return
+    }
+    console.warn("QuickXP Start: action not implemented:", id)
   }
 
   Timer {
     id: armTimer
     interval: 250
     onTriggered: host.armed = true
+  }
+
+  Process {
+    id: docsProc
+    running: false
+    command: [
+      "sh", "-c",
+      "xdg-open \"$(xdg-user-dir DOCUMENTS 2>/dev/null || echo \"$HOME/Documents\")\""
+    ]
+    stderr: SplitParser {
+      onRead: data => console.warn("QuickXP Start Documents:", data.trim())
+    }
   }
 
   anchor.item: anchorItem
@@ -75,7 +117,6 @@ PopupWindow {
       onHoveredChanged: {
         if (!host.armed || hovered)
           return
-        // Keep root open while a Programs flyout is showing.
         if (classicMenu.submenuOpen)
           return
         host.close()
@@ -108,4 +149,9 @@ PopupWindow {
   }
 
   XpDropdownDismiss {}
+
+  XpMessageBox {
+    id: stubBox
+    title: "QuickXP"
+  }
 }

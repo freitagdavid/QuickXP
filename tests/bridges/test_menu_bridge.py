@@ -55,6 +55,16 @@ def test_desktop_id_strips_suffix():
     assert mb.desktop_id("foo") == "foo"
 
 
+def test_desktop_entry_id_from_filename():
+    class FakeDesktop:
+        filename = "/usr/share/applications/firefox.desktop"
+
+        def getNoDisplay(self):
+            return False
+
+    assert mb.desktop_entry_id(FakeDesktop()) == "firefox"
+
+
 def test_build_category_tree_buckets():
     tree = mb.build_category_tree(APPS)
     assert tree["kind"] == "folder"

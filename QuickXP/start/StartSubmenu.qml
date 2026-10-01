@@ -49,7 +49,19 @@ PopupWindow {
   function ensureChildMenu() {
     if (childMenu)
       return childMenu
-    childMenu = childComponent.createObject(popup)
+    // Runtime create avoids QML static "instantiated recursively" on Component { StartSubmenu {} }.
+    const comp = Qt.createComponent(Qt.resolvedUrl("StartSubmenu.qml"))
+    if (comp.status === Component.Error) {
+      console.warn("QuickXP StartSubmenu: create failed:", comp.errorString())
+      return null
+    }
+    if (comp.status !== Component.Ready) {
+      console.warn("QuickXP StartSubmenu: component not ready:", comp.status)
+      return null
+    }
+    childMenu = comp.createObject(popup)
+    if (!childMenu)
+      console.warn("QuickXP StartSubmenu: createObject failed")
     return childMenu
   }
 
@@ -64,6 +76,8 @@ PopupWindow {
     if (!delegate)
       return
     const child = ensureChildMenu()
+    if (!child)
+      return
     child.nodes = node.children || []
     child.host = popup.host
     child.openAt(delegate)
@@ -85,11 +99,6 @@ PopupWindow {
       popup.openIndex = pending
       popup.openChildFor(pending)
     }
-  }
-
-  Component {
-    id: childComponent
-    StartSubmenu {}
   }
 
   anchor.item: anchorItem

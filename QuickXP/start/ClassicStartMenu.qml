@@ -21,9 +21,11 @@ Item {
   implicitHeight: Math.max(banner.height, rowsCol.implicitHeight + 4)
 
   readonly property var rootRows: {
-    const programs = programsNode && programsNode.kind === "folder"
+    const __hl = StartHighlightStore._revision
+    let programs = programsNode && programsNode.kind === "folder"
       ? StartMenuModel.withMnemonic(programsNode, "p")
       : StartMenuModel.folderNode("programs", "Programs", "folder", [], "p")
+    programs = StartHighlightStore.decoratePrograms(programs)
     if (!programs.icon)
       programs.icon = "folder"
     const _ = RecentCatalog._revision
@@ -44,8 +46,10 @@ Item {
       return
     if (node.kind === "app") {
       const entry = AppCatalog.byId(node.entryId || node.id)
-      if (entry && AppCatalog.launch(entry))
+      if (entry && AppCatalog.launch(entry)) {
+        StartHighlightStore.markSeen(node.entryId || node.id)
         host.close()
+      }
       return
     }
     if (node.kind === "folder")

@@ -92,6 +92,7 @@ Item {
     color: root.hot ? Theme.color("highlightText", "white") : Theme.color("menuText", "black")
     font.family: Theme.value("fonts", "ui", "Tahoma")
     font.pixelSize: Theme.size("fontSize", 11)
+    font.bold: !!(root.node && (root.node.isNew || root.node.hasNew))
   }
 
   readonly property string mnemonicLabel: {

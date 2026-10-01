@@ -14,6 +14,7 @@ ShellRoot {
   // Keep Programs tree loader alive for Classic Start.
   readonly property var programsCatalog: ProgramsCatalog
   readonly property var recentCatalog: RecentCatalog
+  readonly property var startHighlightStore: StartHighlightStore
   // Keep dropdown exclusivity gate alive.
   readonly property var dropdownGate: DropdownGate
 

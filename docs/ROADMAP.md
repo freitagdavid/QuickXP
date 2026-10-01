@@ -277,7 +277,7 @@ Ship first for Start UX. Classic Windows menu: one column of cascaded folders an
 - [x] **Favorites / recent docs** — Documents submenu includes recent from `recently-used.xbel`; Favorites from GTK bookmarks when present ([`RecentBridge.py`](../QuickXP/services/RecentBridge.py)). Clear list in Customize (#67).
 - [x] **Bottom session rows** — Log Off / Shut Down with confirm → [`SessionBridge.py`](../QuickXP/services/SessionBridge.py) (`loginctl` / `systemctl`); Epic 7 replaces confirms with full dialogs.
 - [x] **Keyboard nav** — Up/down, Enter/Right open, Left/Esc close submenu then menu, letter mnemonics (`StartMenuModel` helpers + host Keys).
-- **Highlight newly installed** — Optional; after Programs works.
+- [x] **Highlight newly installed** — Bold Programs entries not yet launched; seen ids in `Config.startSeenApps` ([`StartHighlightStore`](../QuickXP/StartHighlightStore.qml)).
 - **Personalized menus (later)** — Hide infrequently used Classic entries until expand (SMS-23).
 - **Customize (Settings → Start Menu)** — Classic Add/Remove/Advanced/Clear and expand-as-menu options as the Customize surface grows (SMS-18–22).
 

@@ -61,6 +61,11 @@ Singleton {
       property string lastSettingsTab: "theme"
       // Classic Start Programs tree: xdgMenu | categories
       property string startProgramsSource: "xdgMenu"
+      // Highlight newly installed apps in Classic Start Programs.
+      property bool startHighlightNew: true
+      // JSON string array of desktop ids already seen (seeded on first use).
+      property string startSeenApps: "[]"
+      property bool startSeenAppsSeeded: false
 
       // Per-feature generation overrides. Empty string = use shell generation.
       property JsonObject generationOverrides: JsonObject {

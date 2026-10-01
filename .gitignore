@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*.qmlc
+*~
+.DS_Store
+
+# Built locally; run scripts/build-preview.sh after clone
+src/quickxp-preview

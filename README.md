@@ -16,14 +16,26 @@ Window peeks also need the `quickxp-preview` helper (see below).
 
 ## Quick start
 
-From the repo root:
-
 ```sh
-./deploy.sh
+git clone <repo-url> QuickXP
+cd QuickXP
+./scripts/setup.sh
 quickshell
 ```
 
-`deploy.sh` symlinks `src` into `~/.config/quickshell/default/QuickXP` and copies `shell.qml` into that config. Restart or reload Quickshell after pulling changes.
+`scripts/setup.sh` checks for Quickshell / Python D-Bus deps, builds the KWin peek helper, and runs [`deploy.sh`](deploy.sh) (symlink into `~/.config/quickshell/default`). On Plasma, hide or disable the stock panel so it does not cover the QuickXP taskbar.
+
+Rebuild only the peek helper:
+
+```sh
+./scripts/build-preview.sh
+```
+
+Deploy without rebuilding:
+
+```sh
+./deploy.sh
+```
 
 The active theme defaults to Luna (`theme: "luna"` in [`src/Shell.qml`](src/Shell.qml)). Themes live under [`src/themes/`](src/themes/) as `theme.json` plus image assets.
 
@@ -54,14 +66,13 @@ Mapping into QuickXP’s `theme.json` is still manual for Luna; automating impor
 
 ## Building `quickxp-preview`
 
-On KDE, peeks call a small binary that uses KWin’s ScreenShot2 interface:
+On KDE, peeks call a small binary that uses KWin’s ScreenShot2 interface. Prefer:
 
 ```sh
-cd src
-g++ -O2 -o quickxp-preview quickxp-preview.cpp $(pkg-config --cflags --libs Qt6DBus Qt6Gui)
+./scripts/build-preview.sh
 ```
 
-`TasksBridge.py` installs a companion `.desktop` file so KWin allows the restricted D-Bus call. Rebuild after changing the C++ source; `deploy.sh` does not compile it.
+`TasksBridge.py` installs a companion `.desktop` file so KWin allows the restricted D-Bus call. The binary is gitignored — always build after cloning.
 
 ## Layout
 
@@ -77,6 +88,9 @@ g++ -O2 -o quickxp-preview quickxp-preview.cpp $(pkg-config --cflags --libs Qt6D
 | `src/kwin/tasks.js` | KWin script for the window list |
 | `src/TasksBridge.py` | Session-bus bridge + preview helper |
 | `docs/ROADMAP.md` | Epic roadmap |
+| `scripts/setup.sh` | Clone → check deps → build peek helper → deploy |
+| `scripts/build-preview.sh` | Compile `src/quickxp-preview` |
+| `deploy.sh` | Symlink into `~/.config/quickshell/default` |
 
 ## Roadmap
 

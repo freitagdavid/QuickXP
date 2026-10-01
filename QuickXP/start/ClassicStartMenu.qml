@@ -32,6 +32,7 @@ Item {
   }
 
   property int openIndex: -1
+  property int focusIndex: -1
   readonly property bool submenuOpen: submenu.visible
 
   function activateNode(node) {
@@ -49,6 +50,104 @@ Item {
       host.runAction(node.action)
   }
 
+  function openFolderAt(index) {
+    if (index < 0 || index >= rootRows.length)
+      return
+    const node = rootRows[index]
+    if (!node || node.kind !== "folder")
+      return
+    focusIndex = index
+    openIndex = index
+    hoverOpen.stop()
+    const delegate = rowList.itemAt(index)
+    if (!delegate)
+      return
+    submenu.nodes = node.children || []
+    submenu.host = root
+    submenu.openAt(delegate)
+  }
+
+  function activateFocused() {
+    if (focusIndex < 0 || focusIndex >= rootRows.length)
+      return
+    const node = rootRows[focusIndex]
+    if (!node)
+      return
+    if (node.kind === "folder")
+      openFolderAt(focusIndex)
+    else
+      activateNode(node)
+  }
+
+  function moveFocus(delta) {
+    focusIndex = StartMenuModel.nextSelectableIndex(rootRows, focusIndex, delta)
+    if (focusIndex >= 0 && rootRows[focusIndex] && rootRows[focusIndex].kind === "folder") {
+      hoverOpen.pending = focusIndex
+      hoverOpen.restart()
+    } else {
+      openIndex = -1
+      hoverOpen.stop()
+      if (submenu.visible)
+        submenu.close()
+    }
+  }
+
+  function handleKey(event) {
+    if (!event)
+      return false
+    if (event.key === Qt.Key_Escape) {
+      if (submenu.visible) {
+        submenu.close()
+        openIndex = -1
+        event.accepted = true
+        return true
+      }
+      if (host)
+        host.close()
+      event.accepted = true
+      return true
+    }
+    if (event.key === Qt.Key_Up) {
+      moveFocus(-1)
+      event.accepted = true
+      return true
+    }
+    if (event.key === Qt.Key_Down) {
+      moveFocus(1)
+      event.accepted = true
+      return true
+    }
+    if (event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+      activateFocused()
+      event.accepted = true
+      return true
+    }
+    if (event.key === Qt.Key_Left) {
+      if (submenu.visible) {
+        submenu.close()
+        openIndex = -1
+      }
+      event.accepted = true
+      return true
+    }
+    const text = String(event.text || "")
+    if (text.length === 1 && /[a-zA-Z0-9]/.test(text)) {
+      const idx = StartMenuModel.mnemonicIndex(rootRows, text)
+      if (idx >= 0) {
+        focusIndex = idx
+        activateFocused()
+        event.accepted = true
+        return true
+      }
+    }
+    return false
+  }
+
+  function resetFocus() {
+    focusIndex = StartMenuModel.nextSelectableIndex(rootRows, -1, 1)
+    openIndex = -1
+  }
+
   Timer {
     id: hoverOpen
     interval: 300
@@ -56,6 +155,7 @@ Item {
     onTriggered: {
       if (pending < 0)
         return
+      root.focusIndex = pending
       root.openIndex = pending
       const node = root.rootRows[pending]
       if (!node || node.kind !== "folder") {
@@ -74,6 +174,7 @@ Item {
 
   function closeSubmenus() {
     openIndex = -1
+    focusIndex = -1
     hoverOpen.stop()
     if (submenu.visible)
       submenu.close()
@@ -110,13 +211,11 @@ Item {
           width: rowsCol.width
           rowHeight: 22
           node: modelData
-          selected: root.openIndex === index && modelData && modelData.kind === "folder"
+          selected: root.focusIndex === index || (root.openIndex === index && modelData && modelData.kind === "folder")
           onActivated: {
+            root.focusIndex = index
             if (modelData && modelData.kind === "folder") {
-              hoverOpen.pending = index
-              hoverOpen.interval = 0
-              hoverOpen.restart()
-              hoverOpen.interval = 300
+              root.openFolderAt(index)
             } else if (modelData && modelData.kind === "separator") {
               // no-op
             } else {
@@ -126,6 +225,7 @@ Item {
           onHovered: {
             if (modelData && modelData.kind === "separator")
               return
+            root.focusIndex = index
             hoverOpen.pending = index
             hoverOpen.restart()
           }

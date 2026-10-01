@@ -146,6 +146,51 @@ function isApp(node) {
   return node && node.kind === "app"
 }
 
+function isSelectable(node) {
+  return !!(node && node.kind && node.kind !== "separator")
+}
+
+function nextSelectableIndex(rows, from, delta) {
+  const list = Array.isArray(rows) ? rows : []
+  if (!list.length)
+    return -1
+  const step = delta < 0 ? -1 : 1
+  let i = from
+  if (i < 0 || i >= list.length)
+    i = step > 0 ? -1 : list.length
+  for (let n = 0; n < list.length; ++n) {
+    i += step
+    if (i < 0)
+      i = list.length - 1
+    if (i >= list.length)
+      i = 0
+    if (isSelectable(list[i]))
+      return i
+  }
+  return -1
+}
+
+function mnemonicIndex(rows, ch) {
+  const key = String(ch || "").toLowerCase()
+  if (!key || key.length !== 1)
+    return -1
+  const list = Array.isArray(rows) ? rows : []
+  for (let i = 0; i < list.length; ++i) {
+    if (!isSelectable(list[i]))
+      continue
+    if (String(list[i].mnemonic || "").toLowerCase() === key)
+      return i
+  }
+  for (let j = 0; j < list.length; ++j) {
+    if (!isSelectable(list[j]))
+      continue
+    const label = String(list[j].label || "").trim()
+    if (label.length && label.charAt(0).toLowerCase() === key)
+      return j
+  }
+  return -1
+}
+
 function primaryCategory(categories) {
   const list = Array.isArray(categories) ? categories : []
   for (let i = 0; i < CATEGORY_ORDER.length; ++i) {

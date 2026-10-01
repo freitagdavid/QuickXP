@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import qs.QuickXP
 import qs.QuickXP.controls
 
@@ -94,30 +93,37 @@ Item {
 
       XpGroupBox {
         width: parent.width
-        height: 64
+        height: 56
         title: "Taskbar height"
 
         Row {
           anchors.left: parent.left
-          anchors.right: parent.right
           anchors.verticalCenter: parent.verticalCenter
-          spacing: 10
+          spacing: 8
 
-          Slider {
-            id: heightSlider
-            width: parent.width - 56
+          Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Height:"
+            color: Theme.color("windowText", "black")
+            font.family: Theme.value("fonts", "ui", "Tahoma")
+            font.pixelSize: Theme.size("fontSize", 11)
+          }
+
+          XpSpinBox {
             from: 24
             to: 72
             stepSize: 1
             value: root.draft.taskbarHeight > 0
               ? root.draft.taskbarHeight
               : Theme.sizes.taskbarHeight
-            onMoved: root.draft.taskbarHeight = Math.round(value)
+            onValueModified: function(v) {
+              root.draft.taskbarHeight = v
+            }
           }
 
           Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: Math.round(heightSlider.value) + " px"
+            text: "pixels"
             color: Theme.color("windowText", "black")
             font.family: Theme.value("fonts", "ui", "Tahoma")
             font.pixelSize: Theme.size("fontSize", 11)

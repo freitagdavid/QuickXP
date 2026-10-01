@@ -40,7 +40,12 @@
     "tabPaneEdgeImage": "luna/images/BLUE_TABPANEEDGE_BMP.png",
     "tabBackgroundImage": "luna/images/BLUE_TABBACKGROUND_BMP.png",
     "checkBoxImage": "luna/images/BLUE_CHECKBOX13_BMP.png",
-    "groupBoxImage": "luna/images/BLUE_GROUPBOX_BMP.png"
+    "groupBoxImage": "luna/images/BLUE_GROUPBOX_BMP.png",
+    "spinUpBackgroundImage": "luna/images/BLUE_SPINBUTTONBACKGROUNDUP_BMP.png",
+    "spinDownBackgroundImage": "luna/images/BLUE_SPINBUTTONBACKGROUNDDOWN_BMP.png",
+    "spinUpGlyphImage": "luna/images/BLUE_SPINUPGLYPH_BMP.png",
+    "spinDownGlyphImage": "luna/images/BLUE_SPINDOWNGLYPH_BMP.png",
+    "spinOutlineImage": "luna/images/BLUE_FIELDOUTLINEBLUE_BMP.png"
   },
   "button": {
     "frames": 5,
@@ -70,6 +75,14 @@
   "edit": {
     "border": "#7F9DB9",
     "fill": "#FFFFFF"
+  },
+  "spin": {
+    "frames": 4,
+    "borderLeft": 4,
+    "borderRight": 4,
+    "borderTop": 4,
+    "borderBottom": 4,
+    "buttonWidth": 15
   },
   "startButton": {
     "text": "start",

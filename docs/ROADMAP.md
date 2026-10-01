@@ -1,23 +1,27 @@
 # QuickXP shell roadmap (epics and features)
 
 > Canonical product roadmap for future work. Also mirrored at [`.cursor/plans/xp_shell_gap_analysis.plan.md`](../.cursor/plans/xp_shell_gap_analysis.plan.md).
-> Last saved: 2026-10-01.
+> Last saved: 2026-10-01 (Spec-derived shell gaps: Epic R/H, fidelity policy, Start/taskband/tray/session expansions).
+
+Long-form XP shell inventory (reference checklist, not epic sizing): research attachment *Windows XP Shell Clone Specification* (~814 items). This roadmap stays epic-sized; IDs like STA-*/TSK-* below point at that inventory.
 
 ## Epic checklist
 
-- [ ] Epic 0 — Shell foundation (generation policy, theme seams, config store) — partial: config store, theme registry, `Settings.open` landed; Start popup host / app catalog / generation policy still open
-- [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
-- [ ] Epic T — Theme import (detect XP/Vista/7, extract, map, apply) via Settings → Theme
+- [ ] Epic 0 — Shell foundation (generation policy, theme seams, config store, shared controls atlas) — partial: config store, theme registry, `Settings.open` landed; Start popup host / app catalog / generation policy / controls atlas still open
+- [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, Appearance, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
+- [ ] Epic T — Theme import: load `.msstyles` → auto-map extracted INI/assets → Apply (no hand-authored theme.json)
 - [ ] Epic K — Generate and sync matching KWin Aurorae window decorations
 - [ ] Epic QA — Testing (pytest theme pipeline, QML helpers, shell smoke)
+- [ ] Epic H — Shell hotkeys (Win/Ctrl+Esc, Win+R/E/F/D/M/L, Alt+Esc, Win+Tab taskbar cycle, …)
+- [ ] Epic R — Run dialog (Win+R + Start → Run)
 - [ ] Epic 1 — Classic Start menu (single-column)
 - [ ] Epic 2 — XP dual-column Start menu
 - [ ] Epic 3 — Vista/7 Start search
-- [ ] Epic 4 — Quick Launch and Show Desktop
-- [ ] Epic 5 — Taskband (grouping, icon-only, height scale, chrome menu)
-- [ ] Epic C — Tray system controls (volume mixer, BT, brightness, network, drives)
+- [ ] Epic 4 — Quick Launch, Show Desktop, and taskbar toolbars
+- [ ] Epic 5 — Taskband (grouping policy, icon-only, height/multi-row, chrome menu)
+- [ ] Epic C — Tray system controls (volume mixer, BT, brightness, network, drives, battery)
 - [ ] Epic A — Alt+Tab switcher (adapt quickshell-overview UI; KWin/Hypr backends)
-- [ ] Epic 6 — Desktop wallpaper and icons
+- [ ] Epic 6 — Desktop wallpaper, icons, special objects, Recycle Bin
 - [ ] Epic 8 — Tray notification queue (view/dismiss) plus balloons and attention flash
 - [ ] Epic 7 — Session dialogs + Windows-style lock screen
 - [ ] Epic 9 — Explorer (later track)
@@ -34,6 +38,8 @@ flowchart TB
   settings[Settings UI]
   themes[Theme import]
   kwinDeco[KWin decorations]
+  hotkeys[Shell hotkeys]
+  runDlg[Run dialog]
   classic[Start classic]
   xpStart[Start XP dual]
   search[Start search]
@@ -48,7 +54,10 @@ flowchart TB
   foundation --> settings
   settings --> themes
   themes --> kwinDeco
+  foundation --> hotkeys
   foundation --> classic
+  classic --> runDlg
+  hotkeys --> runDlg
   classic --> xpStart
   xpStart --> search
   classic --> session
@@ -61,6 +70,17 @@ flowchart TB
   themes --> xpStart
 ```
 
+## Fidelity policy
+
+Where stock XP and later/modern shell behavior disagree, generation (or an explicit setting) chooses the default. Do not silently ship Win7+ UX as “XP mode.”
+
+| Area | Stock XP | Modern / Vista–7 path | QuickXP rule |
+|---|---|---|---|
+| Notification retention | No history after balloon dismiss (TRY-12) | Persistent tray queue / Action Center–like flyout | Queue off or minimal for `generation: xp`; full queue for `vista` / `win7` (or “retain notifications” setting) |
+| Win+Tab | Cycles **taskbar button focus** | Flip 3D / overview | XP default = taskbar cycle (Epic H); Super+Tab overview is optional modern/generation policy (Epic A), not XP default |
+| Taskbar grouping | Crowd-triggered when space is tight (TSK-16) | Always-grouped combined buttons | Support both; “Windows XP taskbar” preset = crowding-triggered; modern preset may keep always-on |
+| Live peeks | No stock Aero thumbnails (TSK-22) | Icon-only thumbnail strips | Gated by `iconsOnly` / generation (Epic 5); XP list groups stay title menus |
+
 ## Already implemented (baseline)
 
 - Themes with live reload; Luna sprites; Aero color-only stub.
@@ -68,7 +88,7 @@ flowchart TB
 - **Offline theme tooling (CLI only):**
   - [scripts/extract_xp_theme.py](scripts/extract_xp_theme.py) — PE resource dump from `.msstyles` / `Shellstyle.dll` (bitmaps + TEXTFILE/UIFILE/strings).
   - [scripts/convert-theme-bmps.py](scripts/convert-theme-bmps.py) — BMP → PNG with alpha / color-key from theme INI.
-  - Hand-authored [QuickXP/themes/luna/theme.json](QuickXP/themes/luna/theme.json) mapping logical keys → image paths (not generated by the scripts today).
+  - Hand-authored [QuickXP/themes/luna/theme.json](QuickXP/themes/luna/theme.json) mapping logical keys → image paths (Epic T replaces this with INI-driven generation so new `.msstyles` need no hand edits).
 
 Key shell files: [QuickXP/taskbar/TaskBar.qml](QuickXP/taskbar/TaskBar.qml), [QuickXP/taskbar/TaskList.qml](QuickXP/taskbar/TaskList.qml), [QuickXP/tray/Tray.qml](QuickXP/tray/Tray.qml), [QuickXP/Theme.qml](QuickXP/Theme.qml), [QuickXP/services/kwin/tasks.js](QuickXP/services/kwin/tasks.js), [QuickXP/services/TasksBridge.py](QuickXP/services/TasksBridge.py).
 
@@ -84,6 +104,7 @@ Shared seams so later epics do not hardcode XP-only assumptions.
 - [ ] **App catalog adapter** — Resolve `.desktop` entries, icons, launch; shared by classic Start, XP pins, and later search.
 - [x] **Installed theme registry** — [`QuickXP/ThemeRegistry.qml`](../QuickXP/ThemeRegistry.qml) lists `themes/*/theme.json` (name, generation, path); Apply switches `Theme.name` without restart.
 - [x] **Open Settings API** — [`QuickXP/settings/Settings.qml`](../QuickXP/settings/Settings.qml) `Settings.open(tab)` for Start/taskbar/desktop Properties deep-links.
+- [ ] **Shared controls atlas** — Reusable themed pushbutton, checkbox, radio, edit, combo, tab, scrollbar, tooltip, message-box, and focus-rect states (VIS-11–23) for Settings, Start chrome, Run, and session dialogs. Grow logical keys via Epic T as each control lands; a screenshot of the normal state is not enough — cover hover/pressed/disabled/focus.
 
 ---
 
@@ -101,10 +122,12 @@ One tabbed configuration UI for the shell (XP-styled dialog chrome). This is the
 ### Tabs (initial set)
 
 - [x] **Theme** — Installed list + taskbar/Start preview + “Match window borders”. Import… / Delete disabled stubs (Epic T).
-- [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets (flags persist; behavior lands with later epics). Height applies on Apply.
-- [ ] **Start Menu** — Classic vs XP dual-column (when both exist); later search-related toggles for Vista/7.
-- [ ] **Desktop** — Wallpaper path/fit, icon arrange/align defaults (when Epic 6 exists).
-- [ ] **Notification Area** — Hide inactive icons; which system control icons to show (volume, network, Bluetooth, brightness, drives); notification queue retention; balloon on/off (Epic 8 / Epic C).
+- [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets (flags persist; behavior lands with later epics). Height applies on Apply. Later: keep-on-top, grouping policy (crowding vs always), multi-row.
+- [ ] **Start Menu** — Classic vs XP dual-column (when both exist); Customize depth (icon size, program count, clear list, Internet/E-mail handlers, link/menu/hidden for special folders, hover-open, highlight new, Scroll Programs, Admin Tools, Favorites, Recent Documents); later search-related toggles for Vista/7 (SMS-01–17).
+- [ ] **Desktop** — Wallpaper path/fit, icon arrange/align defaults, special-icon visibility, Show Desktop Icons (when Epic 6 exists).
+- [ ] **Notification Area** — Hide inactive icons; per-icon Always show / Always hide / Hide when inactive + Customize list + Restore Defaults; which system control icons to show (volume, network, Bluetooth, brightness, drives, battery); Show Clock; notification queue retention (generation-gated); balloon on/off (Epic 8 / Epic C).
+- [ ] **Appearance / Effects** (Display Properties–shaped) — Windows and Buttons style (**Luna vs Windows Classic**, independent of Classic Start — REF-11 / VIS-03), color scheme, font size; Effects: menu/tooltip fade vs scroll, menu shadows, hide mnemonic underlines until Alt (DSP-09–17). Can ship as Theme sub-pages or a dedicated tab.
+- [ ] **Screen Saver** — Select saver, wait time, “On resume, display Welcome screen” / password → lock integration (DSP-06–07 / Epic 7).
 - [ ] **About** (optional) — Version, links, “Open theme folder”. (Placeholder tab present.)
 
 Tabs can ship empty/disabled until their epic lands; Theme + skeleton Taskbar first.
@@ -118,50 +141,67 @@ Tabs can ship empty/disabled until their epic lands; Theme + skeleton Taskbar fi
 
 ## Epic T — Theme import (Settings → Theme)
 
-**Feasible.** Most of the hard work already exists as CLI. The gap is: generation detection, INI → `theme.json` mapping, Vista/7 parsers, and wiring the pipeline into **Settings → Theme** (Import wizard), not a separate app by default.
+**Goal:** an end user loads an `.msstyles` (or `.theme` / folder) and gets a working QuickXP theme with **no hand-authored `theme.json` and no per-theme art edits**. Extracted uxtheme assets and INI are the source of truth; the importer projects them onto QuickXP’s logical keys automatically.
+
+Most of the hard work already exists as CLI extract/convert. The gap is: generation detection, a **deterministic INI → logical-key projector**, Vista/7 parsers, and wiring that into **Settings → Theme** (Import wizard).
 
 Library stays callable from CLI for testing/CI; GUI is the Settings Theme tab.
+
+### Design principle — use extracted assets directly
+
+- **INI is authoritative.** Classes like `[button.pushbutton]`, `[Tab.TopTabItem]`, `[Tab.Pane]`, `[button.checkbox]`, `[TaskBar.*]`, `[Start.*]`, `[Window.*]`, `[SysMetrics]` already name images, `SizingMargins`, `imageCount`, `ImageLayout`, and colors. Do not invent parallel art; resolve `ImageFile` / `ImageFileN` to the converted PNG beside the extract.
+- **`theme.json` is generated output**, not a hand-maintained skin. It is a thin projection: logical key → relative path + margins/frames/colors needed by QML (`Theme.image` / `Theme.value`). Re-running import on the same `.msstyles` should regenerate it.
+- **Stable logical key set** for shell + Settings chrome (already consumed by taskbar / [`QuickXP/controls/`](../QuickXP/controls/)): e.g. `taskbarImage`, `startButtonImage`, `taskButtonImage`, tray chevrons, `buttonImage`, `tabItemTopImage`, `tabPaneEdgeImage`, `checkBoxImage`, caption/frame keys for Epic K. Grow the set as QML gains controls (Epic 0 atlas); each new key must cite the INI section it reads.
+- **One shared class→key table** (code, versioned, tested) maps uxtheme section names → logical keys. Per-theme differences are only which files the INI points at (Blue vs Homestead vs Metallic vs third-party names).
+- **Fallbacks stay in `Theme.qml` defaults** when a section/file is missing; never require the user to patch JSON.
+- **Classic visual style** — Windows Classic is a first-class appearance path (bevels, system colors), not a recolor of Luna; may be a built-in theme / generation path rather than an `.msstyles` import.
 
 ### Pipeline (shared, not GUI-only)
 
 ```mermaid
 flowchart LR
-  pick[Pick path]
+  pick[Pick msstyles]
   detect[Detect generation]
   extract[Extract resources]
   convert[BMP to PNG]
-  map[Build theme.json]
+  project[INI to theme.json]
   deco[Generate Aurorae]
-  install[Install themes]
+  install[Install theme]
   apply[Apply shell plus KWin]
-  pick --> detect --> extract --> convert --> map --> deco --> install --> apply
+  pick --> detect --> extract --> convert --> project --> deco --> install --> apply
 ```
 
-- **Pick input** — Folder, `.theme`, `.msstyles`, or `Shellstyle.dll` (file dialog + drag-drop).
-- **Detect generation** — Heuristics: file layout, PE resources, INI section names, presence of Aero/glass assets, `.theme` `VisualStyles` / `Author` / color scheme keys. Output: `xp` | `vista` | `win7` | `unknown` (+ confidence / override in UI).
-- **Extract** — Wrap [scripts/extract_xp_theme.py](scripts/extract_xp_theme.py) as a library (`extract_file` / `find_inputs`); keep CLI as thin entrypoint. Caption/frame bitmaps from `.msstyles` feed both shell chrome and Epic K.
-- **Convert transparency** — Wrap [scripts/convert-theme-bmps.py](scripts/convert-theme-bmps.py) the same way.
-- **Map to QuickXP `theme.json`** — New step (today this is manual for Luna). Map known resource names / INI keys to logical image keys (`taskbarImage`, `startButtonImage`, `taskButtonImage`, tray chevrons, etc.), colors, sizes, fonts, and `generation`. Also record paths/margins for window caption assets used by Epic K. Start with Luna/Blue-class XP; expand color variants (Homestead, Metallic) next.
-- **Generate KWin decoration** — See Epic K (same import pass or on Apply).
-- **Install** — Write under `themes/<slug>/` (images + `theme.json` + optional `aurorae/` package); optional user vs repo location (`~/.config/quickshell/...` vs project tree).
-- **Apply live** — Set `Theme.name` / reload; [QuickXP/Theme.qml](QuickXP/Theme.qml) already watches `theme.json`. Sync KWin decoration theme (Epic K).
+- **Pick input** — Folder, `.theme`, `.msstyles`, or `Shellstyle.dll` (file dialog + drag-drop). Default happy path: single `.msstyles` file.
+- **Detect generation** — Heuristics: file layout, PE resources, INI section names, Aero/glass assets, `.theme` keys. Output: `xp` | `vista` | `win7` | `unknown` (+ confidence / override in UI).
+- **Extract** — Wrap [scripts/extract_xp_theme.py](scripts/extract_xp_theme.py) as a library; keep CLI as thin entrypoint. Bitmaps + TEXTFILE/INI land in a theme working tree.
+- **Convert transparency** — Wrap [scripts/convert-theme-bmps.py](scripts/convert-theme-bmps.py) the same way; PNGs keep the extract layout so INI paths resolve 1:1.
+- **Project INI → `theme.json`** — Parse the active size/color INI (e.g. `NORMALBLUE.ini` / Homestead / Metallic). For each logical key, read `ImageFile` (+ DPI `ImageFileN` pick), `SizingMargins`, `ContentMargins`, `imageCount`, `ImageLayout`, and color hints; write relative PNG paths under the installed theme. Also emit `name`, `generation`, `fonts`, SysMetrics-derived `colors`, and caption/frame metadata for Epic K. **No manual mapping step for the user.**
+- **Generate KWin decoration** — See Epic K (same import pass or on Apply), driven by the same projected caption assets.
+- **Install** — Write under `themes/<slug>/` (extracted tree + generated `theme.json` + optional `aurorae/`); prefer user data location for imports (`Quickshell.dataPath` / config tree) so repo Luna stays the reference fixture.
+- **Apply live** — Set `Config` / `Theme.name` to the new slug; [QuickXP/Theme.qml](QuickXP/Theme.qml) live-reloads `theme.json`. Sync KWin when “Match window borders” is on.
 
 ### GUI features (Theme tab + Import)
 
-- **Theme tab content** — Installed themes list, preview (taskbar strip + Start button + sample titlebar), Apply / Delete. Toggle: “Match window borders” (default on).
-- **Import wizard** — Triggered from Theme tab (Browse… / drop file). Flow: detect (with manual override) → progress (extract / convert / map / deco) → preview → add to installed list → user Applies via Settings.
-- **Color scheme picker** — When one `.msstyles` has NormalColor / Homestead / Metallic (or Vista/7 variants), let the user pick before mapping.
-- **Error reporting** — Missing Start or caption resources, unsupported generation, partial maps (shell falls back for unmapped keys; deco can fall back to last good / Breeze).
+- **Theme tab content** — Installed themes list, preview (taskbar + Start + sample titlebar + button/tab chrome), Apply / Delete. Toggle: “Match window borders” (default on).
+- **Import…** — Browse / drop `.msstyles`. Flow: detect → optional color-scheme pick → progress (extract / convert / project / deco) → preview → installed → user Applies via Settings. **That is the entire user workflow.**
+- **Color scheme picker** — When one package has NormalColor / Homestead / Metallic (or Vista/7 variants), pick which INI/color folder to project; default to the package’s primary scheme.
+- **Error reporting** — Missing Start/caption/button resources, unsupported generation, partial projection (shell uses `Theme` defaults for gaps; deco can fall back to last good / Breeze). Surface which INI keys failed.
 
 ### Generation-specific work
 
-- **XP (first)** — Current extract + convert; focus on automating `theme.json` for taskbar / Start / tray / task buttons from Luna-like styles; caption buttons + frames from `[Window.*]` INI (e.g. [NORMALBLUE.ini](QuickXP/themes/luna/luna/settings/NORMALBLUE.ini)).
-- **Vista / 7 (later in this epic)** — Extend PE/resource understanding for Aero `.msstyles` (PNG/TGA-style resources, different INI), map glass vs solid taskbar assets, set `generation` so Start/Quick Launch layout follows Epic 2–4 policies. Full glass blur may still depend on compositor, not only assets.
+- **XP (first)** — Prove the loop on Luna and at least one third-party XP `.msstyles`: taskbar / Start / tray / task buttons / dialog chrome (`button`, `Tab.*`, checkbox) / `[Window.*]` caption assets from INI (reference: [NORMALBLUE.ini](../QuickXP/themes/luna/luna/settings/NORMALBLUE.ini)). Homestead/Metallic are the same projector with a different INI path.
+- **Vista / 7 (later in this epic)** — Extend PE/resource understanding for Aero `.msstyles` (PNG/TGA-style resources, different INI), project glass vs solid taskbar assets, set `generation` so Start/Quick Launch layout follows Epic 2–4 policies. Full glass blur may still depend on compositor.
+
+### Acceptance (Epic T done when)
+
+- User selects an XP `.msstyles` in Settings → Theme → Import…, picks a color scheme if prompted, Applies, and taskbar + Settings chrome + (when Epic K is ready) window borders reflect that style **without editing any JSON or renaming bitmaps**.
+- Re-import / CI can regenerate Luna’s `theme.json` from the checked-in extract and match (or replace) the hand-authored fixture.
+- pytest covers INI projection for Luna Blue (+ one fixture with alternate `ImageFile` names).
 
 ### Out of scope for v1 of this epic
 
 - Third-party “theme pack” zip formats beyond a clear `.theme` + `.msstyles` tree (can add later).
-- Perfect pixel parity for every third-party XP skin on day one — ship with a known-good Luna path and grow the mapper.
+- Perfect pixel parity for every odd third-party skin on day one — grow the class→key table and fallbacks; do not ask users to hand-map.
 
 ---
 
@@ -187,7 +227,7 @@ Goal: when the shell theme is applied, **window titlebars and caption buttons ma
 
 ### Features
 
-- **Generate from import** — Part of Epic T pipeline after convert/map.
+- **Generate from import** — Part of Epic T pipeline after convert/INI projection.
 - **Regenerate for installed themes** — CLI/GUI action for themes that already have extracted assets but no Aurorae package yet (including the existing Luna tree).
 - **Preview** — Settings → Theme shows a fake titlebar using the same assets before Apply.
 - **pytest** — Golden tests for SVG/`rc` emission from a fixture INI + PNG set (Epic QA).
@@ -200,17 +240,49 @@ Goal: when the shell theme is applied, **window titlebars and caption buttons ma
 
 ---
 
+## Epic H — Shell hotkeys
+
+Central shortcut ownership so Start, Run, session, and taskband do not each invent conflicting grabs. Coordinate with KWin/Plasma global shortcuts; document disable steps where needed.
+
+- **Start** — Windows key or Ctrl+Esc opens Start; Esc / outside click dismisses (Epic 1 host).
+- **Run** — Win+R → Epic R.
+- **Explorer** — Win+E opens Computer / folder window (Epic 9 when ready; stub may launch system file manager).
+- **Search** — Win+F opens XP Search Companion path when that lands; until then stub or system search. Distinct from Vista Start search box (Epic 3).
+- **Desktop** — Win+D toggles Show Desktop; Win+M minimizes eligible windows; Shift+Win+M restores (Epic 4 / Epic 5).
+- **Lock** — Win+L → Epic 7 lock.
+- **Desktop Alt+F4** — Invokes Turn Off Computer (Epic 7), not only closing a window.
+- **Alt+Esc** — Cycle eligible windows without showing the Alt+Tab overlay (WIN-16).
+- **Win+Tab (XP default)** — Cycle **taskbar button focus** / activation sequence; must **not** open Flip 3D or the modern overview under `generation: xp`.
+- **Ctrl+Shift+Esc** — Open Task Manager (launch system TM first; XP-like TM is optional later).
+- **Ctrl+Alt+Delete** — Windows Security surface or Task Manager per session config (Epic 7).
+- **Optional modern** — Super+Tab full overview only when generation/Settings opts in (Epic A); never as silent XP default.
+
+---
+
+## Epic R — Run dialog
+
+First-class Run UI (LNK-17–21), not only a Start menu stub row.
+
+- **Dialog** — Open field, Browse, OK, Cancel; XP-styled chrome from shared controls.
+- **Launch resolution** — Applications, paths, documents, folders, URLs; environment expansion and association dispatch; honest failure UI (no silent terminal handoff).
+- **History / autocomplete** — Per-user remembered entries; clear via Start Customize / settings path when that exists.
+- **Entry points** — Win+R (Epic H); Classic and XP Start → Run.
+
+---
+
 ## Epic 1 — Classic Start menu (single-column)
 
 Ship first for Start UX. Classic Windows menu: one column of cascaded folders and items, plus session commands at the bottom.
 
 - **Open from Start button** — Wire [QuickXP/taskbar/TaskBar.qml](QuickXP/taskbar/TaskBar.qml) Start `MouseArea`: left-click opens the Start menu; right-click opens a small menu (at least Properties / Settings → Epic S).
-- **Programs cascade** — Recursive flyouts from user/system application menus.
-- **Fixed shell items** — Documents / settings / Help / Search / Run as classic menu rows (stubs OK at first).
-- **Favorites / recent docs (optional)** — Classic Documents / Recent Documents submenu if cheap after Programs.
+- **Programs cascade** — Recursive flyouts from user/system application menus; merge per-user and all-users trees.
+- **Fixed shell items** — Documents / settings / Help / Search / Run as classic menu rows (Run → Epic R; Search stub → later Search Companion).
+- **Favorites / recent docs (optional)** — Classic Documents / Recent Documents submenu if cheap after Programs; clear list separately from MFU.
 - **Bottom session rows** — Log Off, Shut Down / Turn Off Computer — open Epic 7 dialogs or call session APIs.
-- **Keyboard nav** — Up/down, Enter, Escape, open submenu on hover/timeout.
+- **Keyboard nav** — Up/down, Enter, Escape, mnemonics, open submenu on hover/timeout; Classic mnemonic model differs from XP dual-column (SMS-24).
 - **Highlight newly installed** — Optional; after Programs works.
+- **Personalized menus (later)** — Hide infrequently used Classic entries until expand (SMS-23).
+- **Customize (Settings → Start Menu)** — Classic Add/Remove/Advanced/Clear and expand-as-menu options as the Customize surface grows (SMS-18–22).
 
 No dual-column chrome, no user tile, no search box in this epic.
 
@@ -220,14 +292,15 @@ No dual-column chrome, no user tile, no search box in this epic.
 
 Builds on the classic app catalog and session hooks. Default Luna Start when `generation` is XP. Benefits from Epic T once imported themes supply Start menu bitmaps.
 
-- **Two-column frame** — Luna left/right skins, user tile on right column.
-- **Left: pinned apps** — Pin/unpin, drag reorder, persisted list.
-- **Left: most-frequent list** — Launch-count or MRU; separator above All Programs.
+- **Two-column frame** — Luna left/right skins, user tile on right column (account picture is interactive / measured, not only decorative — STA-32).
+- **Left: pinned apps** — Pin/unpin, drag reorder, persisted list; default Internet and E-mail entries from configured handlers (STA-05).
+- **Left: most-frequent list** — Usage scoring with decay (not a pure chronological MRU); exclusions; **Remove from This List** ≠ Unpin; Clear List from Customize (STA-10–14).
 - **Left: All Programs** — Reuse classic Programs cascade as flyout (in-place expand later for Vista).
-- **Right: special folders** — Documents, Pictures, Music, Computer, Network (optional), Control Panel, Printers (optional).
-- **Right: Help / Search / Run** — XP “Search” launches a search UI; not the Vista search box.
+- **Right: special folders** — Documents, Pictures, Music, Computer, Network (optional), Control Panel, Printers (optional); Connect To; Administrative Tools visibility configurable (STA-24–29).
+- **Right: Help / Search / Run** — XP “Search” launches a search UI (Search Companion later); Run → Epic R; not the Vista search box.
 - **Bottom bar** — Log Off + Turn Off Computer buttons (Luna art).
 - **Layout switch** — Theme or properties can still select classic single-column.
+- **Start Customize** — Large/small icons, program count, clear list, Internet/E-mail show/hide + handler pick, link/menu/hidden per special folder, hover-open, highlight new, Scroll Programs, Favorites, Recent Documents (SMS-01–17) via Settings → Start Menu.
 
 ---
 
@@ -238,20 +311,23 @@ Only after dual-column exists. Same Start host; add search as a first-class mode
 - **Search box UI** — Focused field at bottom (Vista/7); type-to-filter without closing menu.
 - **App / document / setting results** — Ranked list replacing or overlaying the left column while typing.
 - **Keyboard-first results** — Arrow keys + Enter to launch; Esc clears or closes.
-- **Jump-list stubs (Win7)** — Optional later slice inside pinned/recent rows; not required for first search ship.
+- **Jump-list stubs (Win7)** — Optional later slice inside pinned/recent rows; not required for first search ship. Stock XP parity excludes jump lists.
 
 ---
 
-## Epic 4 — Quick Launch and Show Desktop
+## Epic 4 — Quick Launch, Show Desktop, and taskbar toolbars
 
-XP-style Quick Launch between Start and the task band.
+XP-style Quick Launch between Start and the task band, plus other desk-band toolbars.
 
 - **Quick Launch strip** — Small icons; left-click launches; drag-drop to add shortcuts; reorder; remove via context menu. Persist list in config (paths / `.desktop` ids).
-- **Show Desktop** — First (or pinned) Quick Launch item; minimize all / restore (XP/Vista placement).
+- **Show Desktop** — First (or pinned) Quick Launch item; minimize all / restore (XP/Vista placement); restore prior window states including dialogs where possible (TSK-27).
 - **Settings toggle** — Taskbar tab: show/hide Quick Launch.
 - **Win7 far-right Show Desktop** — Thin tray-edge button when `generation` is win7; desktop peek later (Quick Launch may hide in that mode).
-- **Toolbar enable/disable** — Hook for taskbar Toolbars submenu.
+- **Overflow chevron** — Launchers that do not fit the visible band (BAR-08).
+- **Toolbars beyond Quick Launch** — Desktop, Links, New Toolbar (folder-backed band); Show Text / Show Title; unlocked grippers for resize/relocate within rows (BAR-09–15). Language Bar hook when input subsystem exposes it (BAR-19).
+- **Toolbar enable/disable** — Taskbar Toolbars submenu persists band visibility, order, widths, icon/text/title settings (BAR-20).
 - **Height scaling** — Icons scale with taskbar height unit (Epic 5) while keeping aspect ratio.
+- **SP3 note** — Stock SP3 has no Address toolbar; do not list it as a default band.
 
 ---
 
@@ -263,10 +339,16 @@ Builds on existing buttons, pager, peek, and system menu. **Grouping** and **ico
 
 `groupButtons` and `iconsOnly` stay **separately applicable** and combinable. The two screenshots are the main presets users will toggle between:
 
-1. **XP-style (list groups)** — Text labels on; grouping on. Button shows app icon + **count** (e.g. `10`) + **application name**. Click/open group → **vertical menu of window titles** (icon + caption per window), Luna blue list like classic XP — not thumbnails. Ungrouped windows stay individual titled buttons. Quick Launch stays available.
-2. **Modern-style (thumbnail groups)** — Icons only on; grouping on. Compact icon buttons; hover/click group → **horizontal strip of live peeks**, one thumbnail (+ mini title) per window, selectable to activate (Win7/10-style). Single-window apps can show one peek or activate directly.
+1. **XP-style (list groups)** — Text labels on; grouping per **crowding / similar-window policy** (see below). Button shows app icon + **count** (e.g. `10`) + **application name**. Click/open group → **vertical menu of window titles** (icon + caption per window), Luna blue list like classic XP — not thumbnails. Ungrouped windows stay individual titled buttons. Quick Launch stays available.
+2. **Modern-style (thumbnail groups)** — Icons only on; grouping on. Compact icon buttons; hover/click group → **horizontal strip of live peeks**, one thumbnail (+ mini title) per window, selectable to activate (Win7/10-style). Single-window apps can show one peek or activate directly. Live peeks are **not** stock XP (TSK-22); gate by `iconsOnly` / generation.
 
 Settings → Taskbar exposes the two booleans plus optional **presets**: “Windows XP taskbar” / “Icon taskbar with previews” that set both flags (and default group-popup mode) in one click. Users can still mix (e.g. icons only without grouping).
+
+### Grouping policy
+
+- **Crowding-triggered (XP)** — Group similar windows when space becomes insufficient; reverse when room returns; default order considers which program opened first (TSK-16). XP preset should use this, not permanent always-grouped modern combining.
+- **Always grouped (modern)** — Optional policy for the icon-preview preset.
+- Config should express the policy explicitly (e.g. `groupWhenCrowded` vs always), not only a single “group similar” boolean if both behaviors are offered.
 
 ### Group popup modes
 
@@ -278,19 +360,30 @@ Settings → Taskbar exposes the two booleans plus optional **presets**: “Wind
 - Right-click: system menu; for groups, target the hovered list/thumbnail entry or offer a window submenu.
 - XP **list** popup: no live raise-on-hover required; click selects/activates (classic behavior).
 
-### Taskbar height
+### Taskbar height and rows
 
 - **Configurable height** — Settings → Taskbar sets height in pixels (or discrete steps). That value is the **single height unit** for the bar (`Theme.sizes.taskbarHeight` overridden by config).
 - **Uniform scale** — Current layout rules stay the same; Start button, task buttons, pager, tray icons, Quick Launch icons, and themed sprites scale up/down to fit the unit while **preserving aspect ratio** (letterbox/pillarbox inside the unit as needed; do not distort Luna sprites).
 - **Min/max** — Sensible clamps (e.g. ~24–72px) so paging/caps math remains valid.
+- **Multi-row / vertical width** — Unlocked taskbar can grow to multiple rows (or a wider vertical bar); lock freezes band layout (TSK-03–04). Height slider alone is not full XP resize behavior.
+
+### Button interactions
+
+- **Click inactive/minimized** — Activate or restore (TSK-13).
+- **Click active eligible button** — Minimize that window (TSK-14).
+- **Ctrl+multi-select** — Select multiple taskbar buttons for collective window operations (TSK-20); VERIFY with grouping on/off.
+- **Drag-hover activate** — Hovering a taskbar button during a drag can raise/activate the target for drop completion (TSK-23).
+- **No stock drag-reorder of running buttons** — Do not treat modern reordering as XP parity (TSK-29).
 
 ### Other taskband features
 
 - **Empty-taskbar context menu** — Toolbars, Lock, Cascade, Tile H/V, Show Desktop, Task Manager, Properties → `Settings.open("taskbar")`.
 - **Cascade / tile / show desktop** — Extend [QuickXP/services/kwin/tasks.js](QuickXP/services/kwin/tasks.js) (and Wayland path where possible).
-- **Auto-hide** — Slide bar off-screen; reveal on edge hover.
+- **Auto-hide** — Slide bar off-screen; reveal on edge hover; test with Start open, full-screen apps, and keyboard focus cases (TSK-05).
+- **Keep on top + work area** — Configurable keep-on-top; reserve work area so maximized windows do not cover a non-auto-hidden bar; full-screen apps interact with visibility per policy (TSK-06–08).
 - **Screen edge** — Top/left/right docking later; height unit still applies (horizontal bars use height; vertical bars use width as the unit).
 - **Attention flash** — Use unused Luna task-button frame when window demands attention.
+- **Multi-monitor** — Stock XP default is a primary taskbar, not duplicated per-monitor bars (TSK-30); document any Linux multi-bar opt-in as non-stock.
 
 ---
 
@@ -321,8 +414,16 @@ Build on it:
 - **Network / internet** — Connection status icon; popup for Wi‑Fi/Ethernet list, connect/disconnect (NetworkManager).
 - **Bluetooth** — Adapter on/off, paired devices connect/disconnect (BlueZ / portal).
 - **Brightness** — Backlight slider (e.g. `brightnessctl` or logind); show only when a backlight device exists.
+- **Battery / power** — Icon reflects charge/AC state when hardware exposes it; hide on desktops without a battery (TRY-15).
 - **Removable drives** — UDisks2 volumes; open / safely remove.
 - **Visibility** — Settings → Notification Area toggles which of these icons appear.
+
+### Clock
+
+- **Show Clock** — Independent of other tray icons (TRY-23).
+- **Hover date** — Locale day/date on hover (TRY-20); not a substitute for double-click Properties.
+- **Double-click** — Date and Time Properties (or system equivalent); for `generation: xp` do **not** substitute the Vista/7 calendar flyout (TRY-21).
+- **Tall/wide bar** — Extra date/day in the clock cell when height/width allows (TRY-24).
 
 ### Notes
 
@@ -346,10 +447,11 @@ That project is a **Hyprland workspace overview** (Super+Tab, Hyprland IPC, mult
 ### Behaviors
 
 - **Alt+Tab / Alt+Shift+Tab** — Hold Alt to keep the switcher open; Tab cycles highlight; release Alt activates the selected window (classic Windows). Also support click-to-activate and Esc to cancel.
+- **Alt+Esc** — Cycle eligible windows **without** showing the switcher UI (Epic H / WIN-16); separate from Alt+Tab.
 - **Layout by generation / Settings**
-  - **XP classic** — Horizontal (or grid) of icons + window titles (no live thumbs required).
+  - **XP classic** — Horizontal (or grid) of icons + window titles (no live thumbs required). Stock XP has no PowerToy Alt-Tab Replacement preview (§32 exclusions).
   - **Preview switcher** (Vista/7+/default for “modern” taskbar) — Thumbnail grid/strip inspired by quickshell-overview window cards; share peek tech with grouped taskbar previews.
-- **Optional full overview mode** — Super+Tab (or Settings) opens a larger overview closer to quickshell-overview (all windows / virtual desktops) when a workspace backend exists (Hyprland workspaces; KWin virtual desktops later).
+  - **Optional full overview mode** — Super+Tab (or Settings) opens a larger overview closer to quickshell-overview when generation/Settings opts in. **Not** the XP meaning of Win+Tab (taskbar focus cycle — Epic H).
 - **Keyboard** — Arrows / vim keys as in overview; number shortcuts optional.
 - **Hover** — Optional raise-without-focus while cycling (same rule as taskbar thumbnail hover), if it does not fight Alt+Tab focus semantics; default off for classic XP list.
 - **Grab shortcut** — Disable or override KWin/Plasma Alt+Tab (and Hyprland’s) so only QuickXP handles it; document the config step.
@@ -361,16 +463,21 @@ That project is a **Hyprland workspace overview** (Super+Tab, Hyprland IPC, mult
 3. Thumbnail cards using overview-inspired layout + existing KWin capture.
 4. Hyprland backend adapter (optional) reusing more of quickshell-overview’s services layer under license (GPL — respect when vendoring).
 
-Settings → Taskbar (or a small “Window switching” section): classic vs preview switcher; whether Super+Tab opens full overview.
+Settings → Taskbar (or a small “Window switching” section): classic vs preview switcher; whether Super+Tab opens full overview (off for XP default).
 
 ---
 
 ## Epic 6 — Desktop
 
 - **Wallpaper surface** — Use unused `images.wallpaper`; center / tile / stretch; importer may copy wallpaper from `.theme`.
-- **Icon layer** — Icons from Desktop folder; select, open, drag, rename.
-- **Arrange / align to grid** — Context menu arrange by name/type/size/date.
+- **Icon layer** — Icons from Desktop folder; select, open, drag, rename; marquee / Ctrl / Shift selection; type-to-select (DES-07–08, DES-20).
+- **Special shell icons** — Recycle Bin default visibility; My Computer, My Documents, My Network Places (and IE if desired) visibility configurable (DES-04); distinct from ordinary shortcuts to those places (DES-05).
+- **Recycle Bin** — Empty/full icon state; drag-to-delete; context Empty / Open; restore/empty operations and Properties (capacity, confirm delete, bypass bin) — usable before full Explorer (BIN-01–14). Linux storage may differ; preserve restore semantics.
+- **Arrange / align to grid** — Align to Grid without continuous Auto Arrange; Auto Arrange separately; Arrange Icons By name/type/size/date (DES-11–13).
+- **Show Desktop Icons** — Toggle hides the icon layer while keeping wallpaper (DES-14).
 - **Desktop context menu** — Refresh, Paste, New, Properties → `Settings.open("desktop")`.
+- **Multi-monitor** — Icon placement recovery after resolution/topology changes (DES-24).
+- **Desktop Cleanup Wizard (later)** — Unused shortcuts → Unused Desktop Shortcuts folder (DES-21–23).
 - **Active Desktop** — Out of scope.
 
 ---
@@ -381,20 +488,29 @@ Fed by logind / PAM / display-manager hooks as available. Start menu and shortcu
 
 ### Dialogs
 
-- **Turn Off Computer dialog** — Stand by / Turn off / Restart (suspend / poweroff / reboot).
+- **Turn Off Computer dialog** — Stand by / Turn off / Restart (suspend / poweroff / reboot). Holding Shift can expose Hibernate instead of Stand by when available (SES-11). Disable choices the hardware/backend cannot honor.
+- **Classic Shut Down** — Dropdown action selection vs Welcome-style power button panel, selectable by login/Start mode (SES-13).
 - **Log Off dialog** — Log off / Switch user if available.
+- **Windows Security** — Ctrl+Alt+Delete opens Task Manager or a Security dialog (lock / logoff / shutdown / Task Manager) per session config (SES-18–19).
+- **Desktop Alt+F4** — Opens the appropriate session UI (Epic H).
 
 ### Windows-style lock screen
 
 Full-screen lock UI owned by QuickXP (not only calling `loginctl lock-session` with the Plasma greeter). Generation skins the chrome.
 
-- **Trigger** — Start → Lock; Win+L / configured shortcut; idle timeout later (Settings).
+- **Trigger** — Start → Lock; Win+L / configured shortcut; screen saver “On resume…” / password; idle timeout later (Settings).
 - **XP Welcome-style** — Full-bleed wallpaper (or solid), user tile/name, password field, “Go” / Enter to unlock; optional “Click your user name” multi-user list if multiple seats/users are exposed. Luna-like blue panel / bubbly controls where assets exist.
 - **Vista/7 style (later skin)** — Centered user tile, password box, ease-of-access / power affordances; can share the same unlock backend.
 - **Unlock backend** — Authenticate via PAM / `polkit` / `logind` unlock; on success dismiss the lock surface and restore session. Coordinate so Plasma’s own locker does not fight QuickXP (disable SDDM/Plasma lock or chain: QuickXP UI → session unlock).
 - **Secure surface** — Block input to apps underneath (fullscreen layer above shell); no click-through; Escape does not dismiss without auth.
 - **Session actions on lock** — Optional Switch User / Shut Down from the lock screen (XP welcome had limited options; keep minimal at first).
 - **Media / notifications** — v1: hide or queue notifications while locked; no sensitive content on the lock surface.
+
+### Session lifecycle
+
+- **Startup folder** — Launch user/common Startup entries after shell comes up (LNK-23 / SES-23).
+- **Screen saver** — Settings tab wires wait time and resume-to-lock (Epic S / DSP-06–07).
+- **Task Manager entry** — Context menus and Ctrl+Shift+Esc launch the system Task Manager first; XP-like TM UI is optional later (SES-21–22).
 
 ---
 
@@ -407,10 +523,12 @@ Owns notifications for the session (coordinate with / replace dunst, mako, Plasm
 - **NotificationServer host** — Singleton (e.g. beside [QuickXP/tray/Tray.qml](QuickXP/tray/Tray.qml) or a small `Notifications.qml` singleton): advertise body, actions, images, persistence as needed; keep tracked list.
 - **Tray queue affordance** — Icon or badge in the tray (XP-style info balloon icon / chevron-adjacent control). Badge count for unread or active items. Click opens the queue popup above the tray.
 - **Queue popup** — Scrollable list of active notifications: app icon/name, summary, body, timestamp. Per-item dismiss; “Clear all”. Optional action buttons from the notification. Closing an item calls `Notification.dismiss()`.
-- **Arrival behavior** — New notification joins the queue and optionally shows a short XP balloon tip (or Vista/7 toast later) that auto-hides; the item remains in the queue until dismissed (unless transient).
+- **Arrival behavior** — New notification joins the queue (when retention is on) and optionally shows a short XP balloon tip (or Vista/7 toast later) that auto-hides.
+- **Generation / retention** — Stock XP has **no** balloon history after dismiss (TRY-12). For `generation: xp`, prefer balloon + optional short-lived list; full persistent queue for `vista` / `win7` or an explicit retain setting (see Fidelity policy).
+- **Per-icon Customize** — Always show / Always hide / Hide when inactive for SNI icons; Customize Notifications list of current/past icons; Restore Defaults (TRY-07–09). Elevate from “leave alone.”
 - **Transient / replace / expire** — Honor `transient`, replace-id, and expire timeouts; expired items leave the queue unless persistence is on.
 - **Task-button flash** — Separate signal path: window demands-attention still uses unused Luna task-button frame (Epic 5 overlap).
-- **Generation skins** — XP: balloon + simple list. Vista/7: restyle toward Action Center / notification flyout later; same queue model.
+- **Generation skins** — XP: balloon + simple list. Vista/7: restyle toward Action Center / notification flyout later; same underlying server.
 
 Suggested early slice (can ship before Start menu polish): Server + tray button + dismissible list. Balloons and skins can follow.
 
@@ -424,6 +542,7 @@ Not started until Start, Quick Launch, and desktop exist.
 - **Navigation** — Back, Up, address bar.
 - **Views** — Icons / list / details.
 - **Tasks pane** — XP common tasks sidebar.
+- Deeper inventory (Folder Options, ZIP/CD, Search Companion UI, Open/Save dialogs, Control Panel applets, COM extensions) stays in the long-form spec — do not block shell epics on those.
 
 ---
 
@@ -431,44 +550,62 @@ Not started until Start, Quick Launch, and desktop exist.
 
 No test harness exists today. Prefer cheap, reliable coverage on the theme pipeline and pure logic; keep full-shell checks thin.
 
-- **pytest for theme tooling (first)** — Refactor [scripts/extract_xp_theme.py](scripts/extract_xp_theme.py) and [scripts/convert-theme-bmps.py](scripts/convert-theme-bmps.py) so core functions are importable; add fixtures (tiny PE/BMP/INI or checked-in Luna samples); cover extract, transparency convert, generation detect, `theme.json` mapping, and Aurorae package emission (Epic K). Run with `pytest tests/`.
+- **pytest for theme tooling (first)** — Refactor [scripts/extract_xp_theme.py](scripts/extract_xp_theme.py) and [scripts/convert-theme-bmps.py](scripts/convert-theme-bmps.py) so core functions are importable; add fixtures (tiny PE/BMP/INI or checked-in Luna samples); cover extract, transparency convert, generation detect, INI→`theme.json` projection, and Aurorae package emission (Epic K). Run with `pytest tests/`.
 - **pytest for other Python bridges** — Optional coverage for [QuickXP/services/TasksBridge.py](QuickXP/services/TasksBridge.py) helpers once notification or theme install logic lands in Python.
 - **QML helper tests (`qmltestrunner`)** — `tst_*.qml` + Qt Quick Test for pure logic extracted from shell components (task paging, grouping policy, Start menu model enablement, theme merge). Avoid requiring live KWin/Quickshell services; inject mocks or test isolated `.qml` modules.
-- **Shell smoke checks** — Small scripts or a checklist: post a freedesktop notification and assert queue count; open Start; switch `Theme.name`. Not a hermetic CI suite at first.
+- **Shell smoke checks** — Small scripts or a checklist: post a freedesktop notification and assert queue count; open Start; switch `Theme.name`; Run dialog; a few hotkeys. Not a hermetic CI suite at first.
+- **Reference profile** — Freeze English XP Pro SP3 / Luna blue / Welcome / default DPI as the main behavioral reference when capturing regressions (REF-01).
 - **CI (optional later)** — GitHub Action running `pytest` on push; QML tests only if import paths resolve headlessly.
 
-Ship pytest scaffolding alongside Epic T’s library wrap so every mapper change is covered from day one.
+Ship pytest scaffolding alongside Epic T’s library wrap so every class→key / projection change is covered from day one.
+
+---
+
+## Spec-derived backlog (shell)
+
+Tracked here so the inventory is not forgotten, but not blocking the near-term epic order. Pull into epics when adjacent work lands.
+
+- **Search Companion** — XP Search Results + Companion pane (SEA-*); Win+F / Start → Search for XP generation; distinct from Epic 3 Vista Start search box.
+- **Sound scheme** — Map shell events (login, menu popup, minimize, balloon, …) to assets (ACC-17); provenance of XP WAV/fonts/wallpapers is a separate asset decision.
+- **Task Manager UI** — After system-TM launch works: optional Applications/Processes/Performance tabs with real Linux process integration (SES-21–22).
+- **Toolkit theming** — Luna/Classic for Qt/GTK client apps is a **separate deliverable** from shell chrome (LNX-14); do not promise universal pixel parity from the panel alone.
+- **Desktop Cleanup Wizard** — DES-21–23 (also noted under Epic 6 later slice).
+- **Reference validation scenarios** — Inventory TST-* (taskbar edges, grouping, tray customize, …) as smoke/regression prompts once features exist; do not import all 50 scenarios into this file.
+
+### Explicitly out of near-term scope
+
+Full Explorer §§10–16 / 18–26 depth, Control Panel applet recreation, Magnifier/Narrator/OSK suite, COM shell-extension ABI, Active Desktop, Media Center/Royale, domain logon as stock requirements, and inventory-excluded modernisms (jump lists, Aero Snap, Action Center history as XP default, address breadcrumbs, libraries).
 
 ---
 
 ## Epic ordering
 
-1. Foundation (config store including height/group/iconsOnly + `Settings.open` + theme registry)
+1. Foundation (config store including height/group/iconsOnly + `Settings.open` + theme registry + controls atlas start)
 2. Settings window shell (tabs, OK/Cancel/Apply, Theme + Taskbar stubs with height / group / icons-only)
-3. Theme import pipeline + pytest scaffolding
-4. Wire Import into Settings → Theme; KWin Aurorae generate/sync on Apply
+3. Theme import pipeline (extract → INI project → install) + pytest scaffolding
+4. Wire Import… into Settings → Theme (msstyles in, theme applied); KWin Aurorae generate/sync on Apply
 5. Taskband height scaling (keeps current behavior, larger unit)
-6. Grouping + icon-only (independent) + multi-window peeks for groups
-7. Quick Launch + Show Desktop
-8. Alt+Tab switcher (XP list first; then overview-style thumbnails; grab compositor shortcut)
-9. Classic Start (right-click Start → Settings already usable)
-10. Session dialogs (Turn Off / Log Off)
-11. Windows-style lock screen (XP Welcome skin first; wire Win+L)
-12. XP dual-column Start
-13. Tray system controls — volume mixer first, then network / BT / brightness / drives
-14. Tray notification queue + Notification Area tab polish
-15. Desktop + Desktop tab
-16. Taskband chrome menu + cascade/tile + auto-hide
-17. Optional Super+Tab full overview / Hyprland adapter from quickshell-overview
-18. Vista/7 Start search + Vista/7 lock/theme skins
-19. Explorer
-20. Expand QML tests / smoke / CI as features stabilize
+6. Grouping + icon-only (independent) + crowding vs always policy + multi-window peeks for groups
+7. Quick Launch + Show Desktop (+ toolbar hooks)
+8. Shell hotkeys (Epic H) + Run dialog (Epic R)
+9. Alt+Tab switcher (XP list first; then overview-style thumbnails; grab compositor shortcut)
+10. Classic Start (right-click Start → Settings already usable)
+11. Session dialogs (Turn Off / Log Off / Hibernate-via-Shift)
+12. Windows-style lock screen (XP Welcome skin first; wire Win+L + screen saver resume)
+13. XP dual-column Start (+ Customize depth)
+14. Tray system controls — volume mixer first, then network / BT / brightness / drives / battery + clock Properties
+15. Tray notification queue + per-icon Customize + Notification Area tab polish (XP retention policy)
+16. Desktop + special icons + Recycle Bin + Desktop tab
+17. Taskband chrome menu + cascade/tile + auto-hide + keep-on-top / work area
+18. Optional Super+Tab full overview / Hyprland adapter (not XP Win+Tab default)
+19. Vista/7 Start search + Vista/7 lock/theme skins + Appearance/Classic style polish
+20. Explorer (+ Search Companion / sound scheme / toolkit theming from backlog as capacity allows)
+21. Expand QML tests / smoke / CI as features stabilize
 
 Note: Epic 8’s queue can be pulled earlier (after foundation / tray exists) if you want notifications before Start work finishes — [QuickXP/tray/Tray.qml](QuickXP/tray/Tray.qml) is already in place.
 
 ## Leave alone for now
 
-- Hide-inactive tray (per-icon Always show/hide waits on Properties)
-- Truncated-title tooltips and window peek
-- System menu Move/Size on KDE
-- Clock date tooltip (calendar flyout is Vista/7+)
+- Truncated-title tooltips and window peek polish (beyond Epic 5 attention/peek work)
+- System menu Move/Size on KDE (compositor limits)
+- Vista/7 calendar flyout as the XP clock double-click target (wrong generation)

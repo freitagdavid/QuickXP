@@ -5,8 +5,8 @@
 
 ## Epic checklist
 
-- [ ] Epic 0 — Shell foundation (generation policy, theme seams, config store)
-- [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, …)
+- [ ] Epic 0 — Shell foundation (generation policy, theme seams, config store) — partial: config store, theme registry, `Settings.open` landed; Start popup host / app catalog / generation policy still open
+- [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
 - [ ] Epic T — Theme import (detect XP/Vista/7, extract, map, apply) via Settings → Theme
 - [ ] Epic K — Generate and sync matching KWin Aurorae window decorations
 - [ ] Epic QA — Testing (pytest theme pipeline, QML helpers, shell smoke)
@@ -78,12 +78,12 @@ Key shell files: [QuickXP/taskbar/TaskBar.qml](QuickXP/taskbar/TaskBar.qml), [Qu
 
 Shared seams so later epics do not hardcode XP-only assumptions.
 
-- **Generation / layout policy** — Theme or shell key selects classic vs XP vs Vista/7 presentation for Start, Quick Launch placement, and grouping rules.
-- **Config store** — Persistent JSON (or similar) for shell options: active theme slug, taskbar edge/auto-hide/lock, **taskbar height (px / “row” unit)**, **group buttons** (bool), **icon-only buttons** (bool; independent of grouping), Quick Launch on/off, Start layout (classic vs XP), notification prefs, “match window borders”, tray control visibility, etc. Live-bindable from QML; written on Apply or on change per field.
-- **Start popup host** — Open/close from Start button, dismiss on outside click / Esc, position above Start.
-- **App catalog adapter** — Resolve `.desktop` entries, icons, launch; shared by classic Start, XP pins, and later search.
-- **Installed theme registry** — List of themes under `themes/` (name, generation, path); `Theme.name` switch without restart.
-- **Open Settings API** — `Settings.open(tab)` so the Start-button menu, taskbar context menu, and desktop Properties can jump to a specific tab.
+- [ ] **Generation / layout policy** — Theme or shell key selects classic vs XP vs Vista/7 presentation for Start, Quick Launch placement, and grouping rules. (`generation` is present on Luna/Aero `theme.json`; consumers not wired yet.)
+- [x] **Config store** — [`QuickXP/Config.qml`](../QuickXP/Config.qml) `JsonAdapter` at `Quickshell.dataPath("config.json")`: theme, taskbar height, group/iconsOnly/lock/autoHide/quickLaunch/matchWindowBorders, lastSettingsTab.
+- [ ] **Start popup host** — Open/close from Start button, dismiss on outside click / Esc, position above Start.
+- [ ] **App catalog adapter** — Resolve `.desktop` entries, icons, launch; shared by classic Start, XP pins, and later search.
+- [x] **Installed theme registry** — [`QuickXP/ThemeRegistry.qml`](../QuickXP/ThemeRegistry.qml) lists `themes/*/theme.json` (name, generation, path); Apply switches `Theme.name` without restart.
+- [x] **Open Settings API** — [`QuickXP/settings/Settings.qml`](../QuickXP/settings/Settings.qml) `Settings.open(tab)` for Start/taskbar/desktop Properties deep-links.
 
 ---
 
@@ -93,26 +93,26 @@ One tabbed configuration UI for the shell (XP-styled dialog chrome). This is the
 
 ### Shell
 
-- **Window host** — Panel or floating window with OK / Cancel / Apply (XP Display Properties pattern): Cancel reverts draft; Apply writes config + side effects (theme, KWin sync).
-- **Tab bar** — Extensible list of pages; deep-link via `Settings.open("theme")` etc.
-- **Draft vs applied** — Edits go into a draft model until Apply/OK so Preview can show theme changes safely.
-- **Entry points** — **Primary: right-click the Start button** → context menu with Open Settings / Properties (opens Settings; default tab Theme or last-used). Also: empty-taskbar context menu → Properties; desktop context menu → Properties; optional Start menu Control Panel stub later.
+- [x] **Window host** — [`SettingsWindow.qml`](../QuickXP/settings/SettingsWindow.qml) `FloatingWindow` with OK / Cancel / Apply (XP Display Properties pattern): Cancel discards draft; Apply writes config + theme side effects (KWin sync later).
+- [x] **Tab bar** — Extensible tab list on the host; deep-link via `Settings.open("theme")` etc.
+- [x] **Draft vs applied** — [`SettingsDraft.qml`](../QuickXP/settings/SettingsDraft.qml); Theme tab previews candidate assets without mutating live `Theme.name` until Apply.
+- [x] **Entry points** — **Primary: right-click the Start button** → Properties ([`StartChromeMenu.qml`](../QuickXP/settings/StartChromeMenu.qml)). Still open: empty-taskbar / desktop Properties; Start menu Control Panel stub.
 
 ### Tabs (initial set)
 
-- **Theme** — Installed themes list, preview (taskbar + Start + sample titlebar), color scheme, “Match window borders”, **Import…** (browse `.msstyles` / `.theme` / folder → Epic T wizard inline or as a sub-dialog), Delete theme. Primary place to load an msstyle.
-- **Taskbar** — Lock, auto-hide, edge (bottom first; other edges when Epic 5 supports them), **Group similar taskbar buttons** and **Icons only** (independent; combinable), optional presets **“Windows XP taskbar”** (labels + list groups) vs **“Icon taskbar with previews”** (icons + thumbnail strip), **Taskbar height** (single height unit; scales chrome), Quick Launch show/hide, clock options (seconds later).
-- **Start Menu** — Classic vs XP dual-column (when both exist); later search-related toggles for Vista/7.
-- **Desktop** — Wallpaper path/fit, icon arrange/align defaults (when Epic 6 exists).
-- **Notification Area** — Hide inactive icons; which system control icons to show (volume, network, Bluetooth, brightness, drives); notification queue retention; balloon on/off (Epic 8 / Epic C).
-- **About** (optional) — Version, links, “Open theme folder”.
+- [x] **Theme** — Installed list + taskbar/Start preview + “Match window borders”. Import… / Delete disabled stubs (Epic T).
+- [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets (flags persist; behavior lands with later epics). Height applies on Apply.
+- [ ] **Start Menu** — Classic vs XP dual-column (when both exist); later search-related toggles for Vista/7.
+- [ ] **Desktop** — Wallpaper path/fit, icon arrange/align defaults (when Epic 6 exists).
+- [ ] **Notification Area** — Hide inactive icons; which system control icons to show (volume, network, Bluetooth, brightness, drives); notification queue retention; balloon on/off (Epic 8 / Epic C).
+- [ ] **About** (optional) — Version, links, “Open theme folder”. (Placeholder tab present.)
 
 Tabs can ship empty/disabled until their epic lands; Theme + skeleton Taskbar first.
 
 ### Extensibility
 
-- Register a tab as a QML component + id + title so Explorer or future panels do not fork the host.
-- Generation may hide or rename tabs (e.g. Vista “Personalization” labeling later) without splitting the config store.
+- [x] Register a tab as a QML component + id + title so Explorer or future panels do not fork the host.
+- [ ] Generation may hide or rename tabs (e.g. Vista “Personalization” labeling later) without splitting the config store.
 
 ---
 

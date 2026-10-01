@@ -82,6 +82,9 @@ That writes `QuickXP/services/preview/quickxp-preview`. `TasksBridge.py` install
 | `QuickXP/` | Runtime Quickshell module (deployed) |
 | `QuickXP/Shell.qml` | Shell root, theme name |
 | `QuickXP/Theme.qml` | Theme singleton |
+| `QuickXP/Config.qml` | Persistent shell options (`dataPath/config.json`) |
+| `QuickXP/controls/` | XP-themed buttons, tabs, checkboxes (Luna bitmaps) |
+| `QuickXP/settings/` | Settings window, tabs, Start Properties menu |
 | `QuickXP/taskbar/` | Taskbar, buttons, menus, peeks, pager |
 | `QuickXP/tray/` | Notification area + clock |
 | `QuickXP/services/` | KWin bridge, tasks script, preview helper |

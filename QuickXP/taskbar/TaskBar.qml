@@ -2,8 +2,13 @@ import Quickshell // for PanelWindow
 import QtQuick // for Text
 import qs.QuickXP
 import qs.QuickXP.tray
+import qs.QuickXP.settings
 
 PanelWindow {
+    // Injected by Variants over Quickshell.screens
+    required property var modelData
+    screen: modelData
+
     anchors {
         bottom: true
         left: true
@@ -158,6 +163,16 @@ PanelWindow {
             id: area
             anchors.fill: parent
             hoverEnabled: true
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: function(mouse) {
+                if (mouse.button === Qt.RightButton)
+                    startChromeMenu.open()
+            }
+        }
+
+        StartChromeMenu {
+            id: startChromeMenu
+            anchorItem: startButton
         }
     }
 
@@ -179,7 +194,9 @@ PanelWindow {
         anchors.bottom: parent.bottom
     }
 
-    implicitHeight: Theme.sizes.taskbarHeight
+    implicitHeight: Config.options.taskbarHeight > 0
+        ? Config.options.taskbarHeight
+        : Theme.sizes.taskbarHeight
     // color: Theme.colors.taskbar
 
     // Text {

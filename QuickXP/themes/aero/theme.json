@@ -1,4 +1,6 @@
 {
+  "name": "Windows Aero",
+  "generation": "vista",
   "colors": {
     "desktop": "#6BA3D6",
     "taskbar": "#1B1B1B",

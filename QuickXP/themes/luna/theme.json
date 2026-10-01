@@ -1,4 +1,6 @@
 {
+  "name": "Windows XP Luna",
+  "generation": "xp",
   "colors": {
     "desktop": "#3A6EA5",
     "taskbar": "#245EDC",
@@ -32,7 +34,42 @@
     "taskButtonImage": "luna/images/BLUE_TASKBANDBUTTON_BMP.png",
     "taskScrollArrowImage": "luna/images/BLUE_TASKBANDSCROLLARROWS_BMP.png",
     "taskScrollArrowGlyphImage": "luna/images/BLUE_TASKBANDSCROLLARROWGLYPHS_BMP.png",
-    "previewCloseImage": "luna/images/BLUE_BALLOONCLOSE_BMP.png"
+    "previewCloseImage": "luna/images/BLUE_BALLOONCLOSE_BMP.png",
+    "buttonImage": "luna/images/BLUE_BUTTON_BMP.png",
+    "tabItemTopImage": "luna/images/BLUE_TABITEMTOP_BMP.png",
+    "tabPaneEdgeImage": "luna/images/BLUE_TABPANEEDGE_BMP.png",
+    "tabBackgroundImage": "luna/images/BLUE_TABBACKGROUND_BMP.png",
+    "checkBoxImage": "luna/images/BLUE_CHECKBOX13_BMP.png",
+    "groupBoxImage": "luna/images/BLUE_GROUPBOX_BMP.png"
+  },
+  "button": {
+    "frames": 5,
+    "borderLeft": 8,
+    "borderRight": 8,
+    "borderTop": 9,
+    "borderBottom": 9,
+    "disabledText": "#A1A192"
+  },
+  "tab": {
+    "frames": 5,
+    "borderLeft": 6,
+    "borderRight": 6,
+    "borderTop": 6,
+    "borderBottom": 6,
+    "bodyFill": "#FBFBFD"
+  },
+  "checkBox": {
+    "frames": 12
+  },
+  "groupBox": {
+    "edgeShadow": "#ACA899",
+    "edgeHighlight": "#FFFFFF",
+    "edgeLight": "#F1EFE2",
+    "edgeDkShadow": "#716F64"
+  },
+  "edit": {
+    "border": "#7F9DB9",
+    "fill": "#FFFFFF"
   },
   "startButton": {
     "text": "start",

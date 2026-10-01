@@ -278,7 +278,7 @@ Ship first for Start UX. Classic Windows menu: one column of cascaded folders an
 - [x] **Bottom session rows** — Log Off / Shut Down with confirm → [`SessionBridge.py`](../QuickXP/services/SessionBridge.py) (`loginctl` / `systemctl`); Epic 7 replaces confirms with full dialogs.
 - [x] **Keyboard nav** — Up/down, Enter/Right open, Left/Esc close submenu then menu, letter mnemonics (`StartMenuModel` helpers + host Keys).
 - [x] **Highlight newly installed** — Bold Programs entries not yet launched; seen ids in `Config.startSeenApps` ([`StartHighlightStore`](../QuickXP/StartHighlightStore.qml)).
-- **Personalized menus (later)** — Hide infrequently used Classic entries until expand (SMS-23).
+- [x] **Personalized menus** — Optional hide of low-usage Programs apps behind `>>` ([`StartPersonalizeStore`](../QuickXP/StartPersonalizeStore.qml); off by default).
 - **Customize (Settings → Start Menu)** — Classic Add/Remove/Advanced/Clear and expand-as-menu options as the Customize surface grows (SMS-18–22).
 
 No dual-column chrome, no user tile, no search box in this epic.

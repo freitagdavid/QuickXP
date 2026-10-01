@@ -14,6 +14,8 @@ from gi.repository import GLib
 SERVICE = "org.quickxp.Tasks"
 PATH = "/org/quickxp/Tasks"
 IFACE = "org.quickxp.Tasks"
+# Stable install path so KWin ScreenShot2 auth survives repo moves.
+INSTALLED_HELPER = Path.home() / ".local" / "libexec" / "quickxp-preview"
 
 
 class Tasks(dbus.service.Object):
@@ -28,7 +30,53 @@ class Tasks(dbus.service.Object):
         state_path.parent.mkdir(parents=True, exist_ok=True)
         if not state_path.exists():
             state_path.write_text("[]")
-        self.ensure_preview_desktop()
+        self.ensure_preview_helper()
+
+    def built_helper(self) -> Path:
+        return (Path(__file__).resolve().parent / "preview" / "quickxp-preview").resolve()
+
+    def ensure_preview_helper(self) -> Path | None:
+        # KWin authorizes ScreenShot2 by matching /proc/self/exe to a desktop
+        # file's Exec= plus X-KDE-DBUS-Restricted-Interfaces. Install a copy
+        # under ~/.local/libexec so reorganizing the repo does not break auth.
+        built = self.built_helper()
+        if not built.is_file():
+            if INSTALLED_HELPER.is_file():
+                return INSTALLED_HELPER
+            return None
+
+        INSTALLED_HELPER.parent.mkdir(parents=True, exist_ok=True)
+        need_copy = (
+            not INSTALLED_HELPER.is_file()
+            or INSTALLED_HELPER.stat().st_mtime < built.stat().st_mtime
+            or INSTALLED_HELPER.stat().st_size != built.stat().st_size
+        )
+        if need_copy:
+            INSTALLED_HELPER.write_bytes(built.read_bytes())
+            INSTALLED_HELPER.chmod(0o755)
+
+        desktop = Path.home() / ".local/share/applications/org.quickxp.preview.desktop"
+        text = (
+            "[Desktop Entry]\n"
+            "Type=Application\n"
+            "Name=QuickXP Preview\n"
+            f"Exec={INSTALLED_HELPER}\n"
+            "NoDisplay=true\n"
+            "X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2\n"
+        )
+        desktop.parent.mkdir(parents=True, exist_ok=True)
+        changed = not desktop.is_file() or desktop.read_text() != text
+        if changed:
+            desktop.write_text(text)
+
+        stamp = Path.home() / ".cache" / "quickxp-preview-sycoca"
+        stamp_val = f"{INSTALLED_HELPER}\n{INSTALLED_HELPER.stat().st_mtime_ns}"
+        need_rebuild = changed or not stamp.is_file() or stamp.read_text() != stamp_val
+        if need_rebuild:
+            subprocess.run(["kbuildsycoca6", "--noincremental"], check=False, timeout=60)
+            stamp.parent.mkdir(parents=True, exist_ok=True)
+            stamp.write_text(stamp_val)
+        return INSTALLED_HELPER
 
     @dbus.service.method(IFACE, in_signature="s", out_signature="")
     def SetWindows(self, payload):
@@ -49,9 +97,9 @@ class Tasks(dbus.service.Object):
 
     @dbus.service.method(IFACE, in_signature="s", out_signature="s")
     def Preview(self, window_id):
-        helper = Path(__file__).resolve().parent / "preview" / "quickxp-preview"
+        helper = self.ensure_preview_helper()
         window_id = str(window_id).strip()
-        if not helper.is_file() or not window_id:
+        if helper is None or not helper.is_file() or not window_id:
             return ""
         self.preview_seq += 1
         out = self.state_path.parent / f"quickxp-preview-{self.preview_seq}.png"
@@ -74,26 +122,6 @@ class Tasks(dbus.service.Object):
                 print("quickxp tasks: preview:", result.stderr.strip(), file=sys.stderr)
             return ""
         return str(out)
-
-    def ensure_preview_desktop(self):
-        # KWin only allows ScreenShot2 for executables named by a desktop file.
-        helper = Path(__file__).resolve().parent / "preview" / "quickxp-preview"
-        if not helper.is_file():
-            return
-        desktop = Path.home() / ".local/share/applications/org.quickxp.preview.desktop"
-        text = (
-            "[Desktop Entry]\n"
-            "Type=Application\n"
-            "Name=QuickXP Preview\n"
-            f"Exec={helper}\n"
-            "NoDisplay=true\n"
-            "X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2\n"
-        )
-        desktop.parent.mkdir(parents=True, exist_ok=True)
-        if desktop.is_file() and desktop.read_text() == text:
-            return
-        desktop.write_text(text)
-        subprocess.run(["kbuildsycoca6", "--noincremental"], check=False, timeout=60)
 
     def load_script(self):
         remote = self.bus.get_object("org.kde.KWin", "/Scripting")

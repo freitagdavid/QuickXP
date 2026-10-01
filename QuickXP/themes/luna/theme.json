@@ -17,7 +17,13 @@
     "highlightText": "#FFFFFF",
     "border": "#003C74",
     "menu": "#FFFFFF",
-    "menuText": "#000000"
+    "menuText": "#000000",
+    "buttonFace": "#D4D0C8",
+    "classicMenu": "#D4D0C8",
+    "classicMenuHighlight": "#0A246A",
+    "classicStartBannerTop": "#3A6EA5",
+    "classicStartBannerMid": "#1E4A8C",
+    "classicStartBannerBottom": "#0A246A"
   },
   "sizes": {
     "taskbarHeight": 30,

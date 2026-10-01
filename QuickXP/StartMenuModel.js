@@ -51,23 +51,25 @@ function normalizeSource(value) {
   return "xdgMenu"
 }
 
-function folderNode(id, label, icon, children) {
+function folderNode(id, label, icon, children, mnemonic) {
   return {
     kind: "folder",
     id: String(id || ""),
     label: String(label || ""),
     icon: String(icon || ""),
+    mnemonic: String(mnemonic || ""),
     children: Array.isArray(children) ? children : []
   }
 }
 
-function appNode(entryId, label, icon) {
+function appNode(entryId, label, icon, mnemonic) {
   return {
     kind: "app",
     id: String(entryId || ""),
     entryId: String(entryId || ""),
     label: String(label || ""),
     icon: String(icon || ""),
+    mnemonic: String(mnemonic || ""),
     children: []
   }
 }
@@ -82,33 +84,57 @@ function separatorNode(id) {
   }
 }
 
-function actionNode(action, label, icon) {
+function actionNode(action, label, icon, mnemonic) {
   return {
     kind: "action",
     id: String(action || ""),
     action: String(action || ""),
     label: String(label || ""),
     icon: String(icon || ""),
+    mnemonic: String(mnemonic || ""),
     children: []
   }
 }
 
+function withMnemonic(node, mnemonic) {
+  if (!node)
+    return node
+  return {
+    kind: node.kind,
+    id: node.id,
+    label: node.label,
+    icon: node.icon || "",
+    mnemonic: String(mnemonic || ""),
+    children: Array.isArray(node.children) ? node.children : [],
+    entryId: node.entryId || "",
+    action: node.action || ""
+  }
+}
+
+// Classic Start middle block: Documents/Settings/Search cascade; Help/Run are leaves.
 function classicShellItems() {
   return [
     separatorNode("sep-shell"),
-    actionNode("documents", "Documents", "folder-documents"),
-    actionNode("settings", "Settings", "preferences-system"),
-    actionNode("search", "Search...", "system-search"),
-    actionNode("help", "Help and Support", "help-browser"),
-    actionNode("run", "Run...", "system-run")
+    folderNode("documents", "Documents", "folder-documents", [
+      actionNode("documents", "My Documents", "folder-documents", "d")
+    ], "d"),
+    folderNode("settings", "Settings", "preferences-system", [
+      actionNode("settings", "Control Panel", "preferences-system", "c")
+    ], "s"),
+    folderNode("search", "Search", "system-search", [
+      actionNode("search", "For Files or Folders...", "system-search", "f")
+    ], "c"),
+    actionNode("help", "Help and Support", "help-browser", "h"),
+    actionNode("run", "Run...", "system-run", "r")
   ]
 }
 
-function classicSessionItems() {
+function classicSessionItems(userName) {
+  const user = String(userName === undefined || userName === null ? "" : userName).trim() || "User"
   return [
     separatorNode("sep-session"),
-    actionNode("logoff", "Log Off...", "system-log-out"),
-    actionNode("shutdown", "Shut Down...", "system-shutdown")
+    actionNode("logoff", "Log Off " + user + "...", "system-log-out", "l"),
+    actionNode("shutdown", "Turn Off Computer...", "system-shutdown", "u")
   ]
 }
 

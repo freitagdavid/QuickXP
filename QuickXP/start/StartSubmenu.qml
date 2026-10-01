@@ -7,11 +7,10 @@ PopupWindow {
 
   property var nodes: []
   property Item anchorItem: null
-  // ClassicStartMenu (or compatible) with activateNode(node)
   property var host: null
 
   visible: false
-  color: Theme.color("menu", "white")
+  color: "transparent"
   grabFocus: false
 
   property bool armed: false
@@ -49,7 +48,6 @@ PopupWindow {
   function ensureChildMenu() {
     if (childMenu)
       return childMenu
-    // Runtime create avoids QML static "instantiated recursively" on Component { StartSubmenu {} }.
     const comp = Qt.createComponent(Qt.resolvedUrl("StartSubmenu.qml"))
     if (comp.status === Component.Error) {
       console.warn("QuickXP StartSubmenu: create failed:", comp.errorString())
@@ -107,16 +105,16 @@ PopupWindow {
   anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
 
   implicitWidth: menuWidth
-  implicitHeight: Math.min(420, Math.max(28, column.implicitHeight + 4))
+  implicitHeight: Math.min(420, Math.max(28, frame.implicitHeight))
 
-  Rectangle {
+  ClassicMenuFrame {
+    id: frame
     anchors.fill: parent
-    color: Theme.color("menu", "white")
-    border.width: 1
-    border.color: Theme.color("border", "#003C74")
+    implicitHeight: column.implicitHeight + 8
 
     Column {
       id: column
+      parent: frame.contentItem
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: parent.top
@@ -132,6 +130,7 @@ PopupWindow {
           required property int index
 
           node: modelData
+          rowHeight: 22
           selected: popup.openIndex === index
           onActivated: {
             if (modelData && modelData.kind === "folder") {

@@ -22,20 +22,23 @@ TestCase {
     const rows = StartMenuModel.classicShellItems()
     verify(rows.length >= 5)
     compare(rows[0].kind, "separator")
+    const folders = rows.filter(function(r) { return r.kind === "folder" }).map(function(r) { return r.id })
+    verify(folders.indexOf("documents") >= 0)
+    verify(folders.indexOf("settings") >= 0)
+    verify(folders.indexOf("search") >= 0)
     const actions = rows.filter(function(r) { return r.kind === "action" }).map(function(r) { return r.action })
-    verify(actions.indexOf("documents") >= 0)
-    verify(actions.indexOf("settings") >= 0)
-    verify(actions.indexOf("search") >= 0)
     verify(actions.indexOf("help") >= 0)
     verify(actions.indexOf("run") >= 0)
   }
 
   function test_classicSessionItems() {
-    const rows = StartMenuModel.classicSessionItems()
+    const rows = StartMenuModel.classicSessionItems("Administrator")
     compare(rows[0].kind, "separator")
-    const actions = rows.filter(function(r) { return r.kind === "action" }).map(function(r) { return r.action })
-    verify(actions.indexOf("logoff") >= 0)
-    verify(actions.indexOf("shutdown") >= 0)
+    const logoff = rows.filter(function(r) { return r.action === "logoff" })[0]
+    verify(logoff.label.indexOf("Administrator") >= 0)
+    verify(logoff.label.indexOf("Log Off") >= 0)
+    const shutdown = rows.filter(function(r) { return r.action === "shutdown" })[0]
+    compare(shutdown.label, "Turn Off Computer...")
   }
 
   function test_buildCategoryTree() {

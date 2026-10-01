@@ -1,22 +1,33 @@
 import QtQuick
+import Quickshell
 import qs.QuickXP
 import "../StartMenuModel.js" as StartMenuModel
 
-Column {
+Item {
   id: root
 
   property var host: null
   property var programsNode: null
+  property string bannerText: "Windows XP Professional"
+  property string userName: {
+    const full = String(Quickshell.env("LOGNAME") || Quickshell.env("USER") || "").trim()
+    return full || "User"
+  }
 
-  width: parent ? parent.width : 200
-  spacing: 0
+  readonly property int bannerWidth: 28
+  readonly property int contentWidth: 190
+
+  width: bannerWidth + contentWidth
+  implicitHeight: Math.max(banner.height, rowsCol.implicitHeight + 4)
 
   readonly property var rootRows: {
     const programs = programsNode && programsNode.kind === "folder"
-      ? programsNode
-      : StartMenuModel.folderNode("programs", "Programs", "", [])
+      ? StartMenuModel.withMnemonic(programsNode, "p")
+      : StartMenuModel.folderNode("programs", "Programs", "folder", [], "p")
+    if (!programs.icon)
+      programs.icon = "folder"
     const shell = StartMenuModel.classicShellItems()
-    const session = StartMenuModel.classicSessionItems()
+    const session = StartMenuModel.classicSessionItems(root.userName)
     return [programs].concat(shell).concat(session)
   }
 
@@ -68,33 +79,57 @@ Column {
       submenu.close()
   }
 
-  Repeater {
-    id: rowList
-    model: root.rootRows
+  Row {
+    anchors.left: parent.left
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    spacing: 0
 
-    delegate: StartMenuItem {
-      required property var modelData
-      required property int index
+    ClassicStartBanner {
+      id: banner
+      width: root.bannerWidth
+      height: Math.max(rowsCol.implicitHeight + 4, 120)
+      bannerText: root.bannerText
+    }
 
-      node: modelData
-      selected: root.openIndex === index && modelData && modelData.kind === "folder"
-      onActivated: {
-        if (modelData && modelData.kind === "folder") {
-          hoverOpen.pending = index
-          hoverOpen.interval = 0
-          hoverOpen.restart()
-          hoverOpen.interval = 300
-        } else if (modelData && modelData.kind === "separator") {
-          // no-op
-        } else {
-          root.activateNode(modelData)
+    Column {
+      id: rowsCol
+      width: root.contentWidth
+      anchors.top: parent.top
+      anchors.topMargin: 2
+      spacing: 0
+
+      Repeater {
+        id: rowList
+        model: root.rootRows
+
+        delegate: StartMenuItem {
+          required property var modelData
+          required property int index
+
+          width: rowsCol.width
+          rowHeight: 22
+          node: modelData
+          selected: root.openIndex === index && modelData && modelData.kind === "folder"
+          onActivated: {
+            if (modelData && modelData.kind === "folder") {
+              hoverOpen.pending = index
+              hoverOpen.interval = 0
+              hoverOpen.restart()
+              hoverOpen.interval = 300
+            } else if (modelData && modelData.kind === "separator") {
+              // no-op
+            } else {
+              root.activateNode(modelData)
+            }
+          }
+          onHovered: {
+            if (modelData && modelData.kind === "separator")
+              return
+            hoverOpen.pending = index
+            hoverOpen.restart()
+          }
         }
-      }
-      onHovered: {
-        if (modelData && modelData.kind === "separator")
-          return
-        hoverOpen.pending = index
-        hoverOpen.restart()
       }
     }
   }

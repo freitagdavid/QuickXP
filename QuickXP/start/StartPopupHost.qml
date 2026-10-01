@@ -3,8 +3,9 @@ import Quickshell
 import qs.QuickXP
 import qs.QuickXP.controls
 
-// Foundation Start host — open/close, Esc/outside dismiss, position above Start.
-// Placeholder content (classic list + search); Epic 1/2 replace chrome.
+// Classic Start host — open/close, Esc/outside dismiss, position above Start.
+// Body is classic single-column chrome; Programs cascade lands in Epic 1 #60.
+// Until Epic 2 dual-column exists, this host serves all startMenu generations.
 PopupWindow {
   id: host
 
@@ -15,54 +16,21 @@ PopupWindow {
   grabFocus: true
 
   property bool armed: false
-  property string query: ""
 
-  readonly property int menuWidth: 280
-  readonly property int menuHeight: 360
+  readonly property int menuWidth: 200
+  readonly property int menuMinHeight: 120
 
-  readonly property var apps: AppCatalog.filter(query)
-
-  QtObject {
-    id: sortGroup
-    property var current: null
-    function select(btn) {
-      if (current && current !== btn)
-        current.checked = false
-      current = btn
-      btn.checked = true
-    }
-  }
-
-  readonly property var filteredApps: {
-    const list = apps.slice()
-    const band = letterFilter !== null ? letterFilter.currentIndex : 0
-    let narrowed = list
-    if (band === 1) {
-      narrowed = list.filter(e => {
-        const ch = String(e.name || "").trim().charAt(0).toUpperCase()
-        return ch >= "A" && ch <= "M"
-      })
-    } else if (band === 2) {
-      narrowed = list.filter(e => {
-        const ch = String(e.name || "").trim().charAt(0).toUpperCase()
-        return ch >= "N" && ch <= "Z"
-      })
-    }
-    if (zaRadio !== null && zaRadio.checked)
-      narrowed = narrowed.slice().reverse()
-    return narrowed
-  }
+  // Classic is the only implemented layout; XP/Vista/7 reuse it until their hosts ship.
+  readonly property bool useClassicChrome: true
 
   function open() {
     if (anchorItem === null)
       return
     armed = false
-    query = ""
-    searchField.text = ""
     Qt.callLater(() => {
       visible = true
       armTimer.restart()
-      searchField.forceActiveFocus()
+      contentFocus.forceActiveFocus()
     })
   }
 
@@ -70,7 +38,6 @@ PopupWindow {
     visible = false
     armed = false
     armTimer.stop()
-    tip.hide()
   }
 
   function toggle() {
@@ -78,15 +45,6 @@ PopupWindow {
       close()
     else
       open()
-  }
-
-  function launchEntry(entry) {
-    if (AppCatalog.launch(entry))
-      close()
-  }
-
-  function showAbout() {
-    aboutBox.open("QuickXP — XP-inspired Quickshell desktop.\nStart menu chrome lands in Epic 1/2.", false)
   }
 
   Timer {
@@ -102,9 +60,10 @@ PopupWindow {
   anchor.adjustment: PopupAdjustment.Slide
 
   implicitWidth: menuWidth
-  implicitHeight: menuHeight
+  implicitHeight: Math.max(menuMinHeight, body.implicitHeight + 2)
 
   Rectangle {
+    id: frame
     anchors.fill: parent
     color: Theme.color("menu", "white")
     border.width: 1
@@ -118,178 +77,36 @@ PopupWindow {
       }
     }
 
-    Keys.onEscapePressed: host.close()
-
-    Column {
+    Item {
+      id: contentFocus
       anchors.fill: parent
-      anchors.margins: 6
-      spacing: 6
+      anchors.margins: 1
+      focus: true
+      Keys.onEscapePressed: host.close()
 
-      XpEdit {
-        id: searchField
-        width: parent.width
-        placeholderText: "Search programs..."
-        onTextEdited: host.query = text
-        onAccepted: {
-          if (host.filteredApps.length > 0)
-            host.launchEntry(host.filteredApps[0])
-        }
-      }
+      Column {
+        id: body
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 2
+        spacing: 0
 
-      Row {
-        id: tools
-        width: parent.width
-        spacing: 10
-        height: Math.max(azRadio.height, zaRadio.height, letterFilter.height)
+        // Placeholder until #60 Programs cascade fills the column.
+        Item {
+          width: parent.width
+          height: 28
 
-        XpRadioButton {
-          id: azRadio
-          text: "A–Z"
-          checked: true
-          group: sortGroup
-          Component.onCompleted: sortGroup.current = azRadio
-        }
-
-        XpRadioButton {
-          id: zaRadio
-          text: "Z–A"
-          group: sortGroup
-        }
-
-        XpComboBox {
-          id: letterFilter
-          width: 110
-          model: ["All", "A–M", "N–Z"]
-          currentIndex: 0
-        }
-      }
-
-      XpScrollView {
-        id: scroller
-        width: parent.width
-        height: parent.height - searchField.height - tools.height - footer.height - 24
-
-        Column {
-          width: Math.max(0, scroller.width - scroller.barWidth)
-          spacing: 0
-
-          Repeater {
-            model: host.filteredApps
-
-            delegate: Item {
-              id: row
-              required property var modelData
-              required property int index
-
-              width: parent.width
-              height: 28
-
-              readonly property bool hot: rowArea.containsMouse
-
-              Rectangle {
-                anchors.fill: parent
-                color: row.hot ? Theme.color("highlight", "#316AC5") : "transparent"
-              }
-
-              Image {
-                id: icon
-                anchors.left: parent.left
-                anchors.leftMargin: 4
-                anchors.verticalCenter: parent.verticalCenter
-                width: 16
-                height: 16
-                source: AppCatalog.iconSource(row.modelData)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-                asynchronous: true
-              }
-
-              Text {
-                anchors.left: icon.right
-                anchors.leftMargin: 6
-                anchors.right: parent.right
-                anchors.rightMargin: 4
-                anchors.verticalCenter: parent.verticalCenter
-                elide: Text.ElideRight
-                text: row.modelData.name || ""
-                color: row.hot
-                  ? Theme.color("highlightText", "white")
-                  : Theme.color("menuText", "black")
-                font.family: Theme.value("fonts", "ui", "Tahoma")
-                font.pixelSize: Theme.size("fontSize", 11)
-              }
-
-              MouseArea {
-                id: rowArea
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: host.launchEntry(row.modelData)
-                onContainsMouseChanged: {
-                  if (containsMouse)
-                    tip.showFor(row, row.modelData.name || "")
-                  else
-                    tip.hide()
-                }
-              }
-            }
-          }
-
-          Item {
-            width: parent.width
-            height: 28
-            visible: host.filteredApps.length === 0
-
-            Text {
-              anchors.verticalCenter: parent.verticalCenter
-              anchors.left: parent.left
-              anchors.leftMargin: 8
-              text: "No matching programs"
-              color: Theme.value("button", "disabledText", "#A1A192")
-              font.family: Theme.value("fonts", "ui", "Tahoma")
-              font.pixelSize: Theme.size("fontSize", 11)
-            }
-          }
-        }
-      }
-
-      Item {
-        id: footer
-        width: parent.width
-        height: 28
-
-        Rectangle {
-          anchors.left: parent.left
-          anchors.right: parent.right
-          anchors.top: parent.top
-          height: 1
-          color: Theme.color("border", "#003C74")
-          opacity: 0.35
-        }
-
-        Text {
-          anchors.left: parent.left
-          anchors.leftMargin: 4
-          anchors.verticalCenter: parent.verticalCenter
-          text: "About QuickXP..."
-          color: aboutArea.containsMouse
-            ? Theme.color("highlightText", "white")
-            : Theme.color("menuText", "black")
-          font.family: Theme.value("fonts", "ui", "Tahoma")
-          font.pixelSize: Theme.size("fontSize", 11)
-
-          Rectangle {
-            anchors.fill: parent
-            anchors.margins: -4
-            z: -1
-            color: aboutArea.containsMouse ? Theme.color("highlight", "#316AC5") : "transparent"
-          }
-
-          MouseArea {
-            id: aboutArea
-            anchors.fill: parent
-            anchors.margins: -4
-            hoverEnabled: true
-            onClicked: host.showAbout()
+          Text {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.leftMargin: 8
+            anchors.right: parent.right
+            anchors.rightMargin: 8
+            text: "Programs"
+            color: Theme.value("button", "disabledText", "#A1A192")
+            font.family: Theme.value("fonts", "ui", "Tahoma")
+            font.pixelSize: Theme.size("fontSize", 11)
           }
         }
       }
@@ -297,13 +114,4 @@ PopupWindow {
   }
 
   XpDropdownDismiss {}
-
-  XpToolTip {
-    id: tip
-  }
-
-  XpMessageBox {
-    id: aboutBox
-    title: "About QuickXP"
-  }
 }

@@ -100,7 +100,7 @@ Shared seams so later epics do not hardcode XP-only assumptions.
 
 - [x] **Generation / layout policy** — [`QuickXP/GenerationPolicy.qml`](../QuickXP/GenerationPolicy.qml): shell generation defaults from theme (`Theme.generation`) or `Config.options.generation`; each layout/fidelity item (Start, Quick Launch, grouping, peeks, notifications, Win+Tab, clock, Alt+Tab) has `Config.options.generationOverrides.<id>` (empty = follow shell). Settings → Theme exposes shell + per-item overrides. Feature epics consume via `GenerationPolicy.forItem(...)`.
 - [x] **Config store** — [`QuickXP/Config.qml`](../QuickXP/Config.qml) `JsonAdapter` at `Quickshell.dataPath("config.json")`: theme, generation, generationOverrides, taskbar height, group/iconsOnly/lock/autoHide/quickLaunch/matchWindowBorders, lastSettingsTab.
-- [x] **Start popup host** — [`QuickXP/start/StartPopupHost.qml`](../QuickXP/start/StartPopupHost.qml): open/close/toggle from Start button, dismiss on outside click / Esc, position above Start. Placeholder list UI until Epic 1/2.
+- [x] **Start popup host** — [`QuickXP/start/StartPopupHost.qml`](../QuickXP/start/StartPopupHost.qml): open/close/toggle from Start button, dismiss on outside click / Esc, position above Start. Classic chrome (no search); Programs cascade and shell rows follow in Epic 1.
 - [x] **App catalog adapter** — [`QuickXP/AppCatalog.qml`](../QuickXP/AppCatalog.qml) over Quickshell `DesktopEntries` (filter, icon, launch); helpers in [`AppCatalogFilter.js`](../QuickXP/AppCatalogFilter.js).
 - [x] **Installed theme registry** — [`QuickXP/ThemeRegistry.qml`](../QuickXP/ThemeRegistry.qml) lists `themes/*/theme.json` (name, generation, path); Apply switches `Theme.name` without restart.
 - [x] **Open Settings API** — [`QuickXP/settings/Settings.qml`](../QuickXP/settings/Settings.qml) `Settings.open(tab)` for Start/taskbar/desktop Properties deep-links.
@@ -271,7 +271,7 @@ First-class Run UI (LNK-17–21), not only a Start menu stub row.
 
 Ship first for Start UX. Classic Windows menu: one column of cascaded folders and items, plus session commands at the bottom.
 
-- **Open from Start button** — Wire [QuickXP/taskbar/TaskBar.qml](QuickXP/taskbar/TaskBar.qml) Start `MouseArea`: left-click opens the Start menu; right-click opens a small menu (at least Properties / Settings → Epic S).
+- [x] **Open from Start button** — Wire [QuickXP/taskbar/TaskBar.qml](QuickXP/taskbar/TaskBar.qml) Start `MouseArea`: left-click opens classic Start; right-click Properties / Settings ([`StartChromeMenu.qml`](../QuickXP/settings/StartChromeMenu.qml)). Placeholder Programs row until cascade lands.
 - **Programs cascade** — Recursive flyouts from user/system application menus; merge per-user and all-users trees.
 - **Fixed shell items** — Documents / settings / Help / Search / Run as classic menu rows (Run → Epic R; Search stub → later Search Companion).
 - **Favorites / recent docs (optional)** — Classic Documents / Recent Documents submenu if cheap after Programs; clear list separately from MFU.

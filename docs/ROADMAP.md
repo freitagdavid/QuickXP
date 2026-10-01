@@ -275,7 +275,7 @@ Ship first for Start UX. Classic Windows menu: one column of cascaded folders an
 - [x] **Programs cascade** — Recursive flyouts via [`MenuBridge.py`](../QuickXP/services/MenuBridge.py) (XDG) or category buckets ([`StartMenuModel.js`](../QuickXP/StartMenuModel.js)); toggle `Config.options.startProgramsSource` in Settings → Start Menu.
 - [x] **Fixed shell items** — Documents / Settings / Help / Search / Run as classic menu rows (Run → Epic R stub; Search stub → later Search Companion).
 - **Favorites / recent docs (optional)** — Classic Documents / Recent Documents submenu if cheap after Programs; clear list separately from MFU.
-- **Bottom session rows** — Log Off, Shut Down / Turn Off Computer — open Epic 7 dialogs or call session APIs.
+- [x] **Bottom session rows** — Log Off / Shut Down with confirm → [`SessionBridge.py`](../QuickXP/services/SessionBridge.py) (`loginctl` / `systemctl`); Epic 7 replaces confirms with full dialogs.
 - **Keyboard nav** — Up/down, Enter, Escape, mnemonics, open submenu on hover/timeout; Classic mnemonic model differs from XP dual-column (SMS-24).
 - **Highlight newly installed** — Optional; after Programs works.
 - **Personalized menus (later)** — Hide infrequently used Classic entries until expand (SMS-23).

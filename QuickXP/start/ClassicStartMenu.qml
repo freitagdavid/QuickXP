@@ -16,7 +16,8 @@ Column {
       ? programsNode
       : StartMenuModel.folderNode("programs", "Programs", "", [])
     const shell = StartMenuModel.classicShellItems()
-    return [programs].concat(shell)
+    const session = StartMenuModel.classicSessionItems()
+    return [programs].concat(shell).concat(session)
   }
 
   property int openIndex: -1

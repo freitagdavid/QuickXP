@@ -13,7 +13,8 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Left-click Start opens classic single-column popup above the button; Esc / click-away dismisses; right-click still opens Properties
 - [ ] Classic Start has no search box; Programs cascade opens folder flyouts; Settings → Start Menu toggles XDG menu vs category folders
 - [ ] Classic Start shell rows: Documents opens folder; Settings opens Properties; Help / Search / Run show stubs
-- [ ] Session Start rows (Log Off / Shut Down) when that Epic 1 ticket lands
+- [ ] Classic Start → Log Off / Shut Down show confirm; Cancel does nothing (do not OK on a live session unless intentional)
+- [ ] Settings → Start Menu still toggles Programs source after session rows land
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload
 - [ ] Settings → Theme → Import… an XP `.msstyles` → one theme with schemes → Color scheme dropdown → Apply reloads chrome; Delete removes user-data themes only
 - [ ] Post a freedesktop notification; tray / balloon / queue behaves as expected for the generation

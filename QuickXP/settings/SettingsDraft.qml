@@ -16,6 +16,8 @@ QtObject {
   property bool showQuickLaunch: true
   property bool matchWindowBorders: true
   property string startProgramsSource: "xdgMenu"
+  property bool startHighlightNew: true
+  property bool startPersonalizedMenus: false
   property string activeTab: "theme"
 
   readonly property bool dirty: {
@@ -32,6 +34,8 @@ QtObject {
       || draft.showQuickLaunch !== o.showQuickLaunch
       || draft.matchWindowBorders !== o.matchWindowBorders
       || draft.startProgramsSource !== o.startProgramsSource
+      || draft.startHighlightNew !== o.startHighlightNew
+      || draft.startPersonalizedMenus !== o.startPersonalizedMenus
   }
 
   function loadFromConfig() {
@@ -48,6 +52,8 @@ QtObject {
     draft.showQuickLaunch = o.showQuickLaunch
     draft.matchWindowBorders = o.matchWindowBorders
     draft.startProgramsSource = o.startProgramsSource || "xdgMenu"
+    draft.startHighlightNew = o.startHighlightNew !== false
+    draft.startPersonalizedMenus = !!o.startPersonalizedMenus
     draft.activeTab = o.lastSettingsTab || "theme"
   }
 
@@ -65,6 +71,8 @@ QtObject {
     o.showQuickLaunch = draft.showQuickLaunch
     o.matchWindowBorders = draft.matchWindowBorders
     o.startProgramsSource = draft.startProgramsSource || "xdgMenu"
+    o.startHighlightNew = draft.startHighlightNew
+    o.startPersonalizedMenus = draft.startPersonalizedMenus
     o.lastSettingsTab = draft.activeTab
     Theme.name = draft.theme
     Theme.scheme = draft.themeScheme || ""

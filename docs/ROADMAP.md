@@ -18,7 +18,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 - [ ] Epic 2 — XP dual-column Start menu
 - [ ] Epic 3 — Vista/7 Start search
 - [ ] Epic 4 — Quick Launch, Show Desktop, and taskbar toolbars
-- [ ] Epic 5 — Taskband (grouping policy, icon-only, height/multi-row, chrome menu)
+- [ ] Epic 5 — Taskband (grouping + icon-only landed; height/multi-row/auto-hide/chrome menu remain)
 - [ ] Epic C — Tray system controls (volume mixer, BT, brightness, network, drives, battery)
 - [ ] Epic A — Alt+Tab switcher (adapt quickshell-overview UI; KWin/Hypr backends)
 - [ ] Epic 6 — Desktop wallpaper, icons, special objects, Recycle Bin
@@ -122,7 +122,7 @@ One tabbed configuration UI for the shell (XP-styled dialog chrome). This is the
 ### Tabs (initial set)
 
 - [x] **Theme** — Installed list + color-scheme dropdown + taskbar/Start/titlebar preview + “Match window borders” (Aurorae sync on Apply) + shell generation / per-feature generation overrides. Import… installs one pack (all schemes + aurorae/); Delete removes user-data themes; Regenerate borders for installed themes.
-- [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets (flags persist; behavior lands with later epics). Height applies on Apply. Later: keep-on-top, grouping policy (crowding vs always), multi-row.
+- [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets. **Icons only** and **Group similar** apply on Apply (compact buttons; crowding vs always-combine by `iconsOnly`; XP list / thumbnail group popups). Height applies on Apply. Later: auto-hide behavior, keep-on-top, multi-row, Quick Launch.
 - [ ] **Start Menu** — Classic vs XP dual-column (when both exist); Customize depth (icon size, program count, clear list, Internet/E-mail handlers, link/menu/hidden for special folders, hover-open, highlight new, Scroll Programs, Admin Tools, Favorites, Recent Documents); later search-related toggles for Vista/7 (SMS-01–17).
 - [ ] **Desktop** — Wallpaper path/fit, icon arrange/align defaults, special-icon visibility, Show Desktop Icons (when Epic 6 exists).
 - [ ] **Notification Area** — Hide inactive icons; per-icon Always show / Always hide / Hide when inactive + Customize list + Restore Defaults; which system control icons to show (volume, network, Bluetooth, brightness, drives, battery); Show Clock; notification queue retention (generation-gated); balloon on/off (Epic 8 / Epic C).
@@ -343,19 +343,19 @@ Settings → Taskbar exposes the two booleans plus optional **presets**: “Wind
 
 ### Grouping policy
 
-- **Crowding-triggered (XP)** — Group similar windows when space becomes insufficient; reverse when room returns; default order considers which program opened first (TSK-16). XP preset should use this, not permanent always-grouped modern combining.
-- **Always grouped (modern)** — Optional policy for the icon-preview preset.
-- Config should express the policy explicitly (e.g. `groupWhenCrowded` vs always), not only a single “group similar” boolean if both behaviors are offered.
+- [x] **Crowding-triggered (XP)** — When `groupButtons && !iconsOnly`, combine by `appId` only if the flat band would page ([`TaskbandModel.js`](../QuickXP/TaskbandModel.js)); reverse when room returns. Order follows first-seen app.
+- [x] **Always grouped (modern)** — When `groupButtons && iconsOnly`, always combine by `appId`.
+- Policy is implied by the two booleans (no separate `groupWhenCrowded` key yet); Theme → generationOverrides.taskbarGrouping still unused by the taskband.
 
 ### Group popup modes
 
-- **List popup** (XP) — When `!iconsOnly` (or explicit `groupPopup: "list"`): stacked menu of titles; click activates that window. Reference: XP Explorer group menu.
-- **Thumbnail strip** (modern) — When `iconsOnly` (or `groupPopup: "thumbnails"`): reuse/extend [QuickXP/taskbar/TaskPreview.qml](QuickXP/taskbar/TaskPreview.qml) to show **N** peeks side by side for the group. Reference: Win10 Firefox hover strip.
-- **Hover raises, does not focus** — While the pointer is over a thumbnail, **bring that window to the front** (raise / temporary peek) **without giving it keyboard focus** and without stealing activation from the previous app. Leaving the thumbnail (or the strip) restores the prior z-order. **Click** on a thumbnail fully activates and focuses that window. Implement via KWin script/DBus (raise-without-activate if available; otherwise approximate and document limits on non-KDE).
+- [x] **List popup** (XP) — When `!iconsOnly`: [`TaskGroupMenu.qml`](../QuickXP/taskbar/TaskGroupMenu.qml) stacked titles; click activates.
+- [x] **Thumbnail strip** (modern) — When `iconsOnly`: [`TaskGroupStrip.qml`](../QuickXP/taskbar/TaskGroupStrip.qml) side-by-side peeks via KWin Preview DBus.
+- [ ] **Hover raises, does not focus** — While the pointer is over a thumbnail, **bring that window to the front** without keyboard focus; leave restores z-order. **Click** activates. Deferred (DBus raise-without-activate).
 - Config can override popup style independently later if needed; default ties list↔labeled and thumbnails↔icons-only.
-- Single-window groups: activate on click; optional single peek on hover (already implemented for KDE); same raise-without-focus rule when hovering a single modern peek.
-- Right-click: system menu; for groups, target the hovered list/thumbnail entry or offer a window submenu.
-- XP **list** popup: no live raise-on-hover required; click selects/activates (classic behavior).
+- Single-window groups: activate on click; optional single peek on hover (already implemented for KDE).
+- Right-click: system menu on the representative window (group submenu later).
+- XP **list** popup: click selects/activates (classic behavior).
 
 ### Taskbar height and rows
 

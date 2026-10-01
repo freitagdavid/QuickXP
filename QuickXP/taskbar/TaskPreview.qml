@@ -8,16 +8,22 @@ PopupWindow {
     property Item anchorItem: null
     property string title: ""
     property string imagePath: ""
+    property real imageNonce: 0
     property bool hovered: false
     property bool closeEnabled: true
 
     signal hoverLeft()
     signal activated()
     signal closeClicked()
+    signal contextMenuRequested()
+    signal closedOut()
 
     visible: false
     color: Theme.color("menu", "white")
-    grabFocus: false
+    // Outside click / loss of grab dismisses (same pattern as Start / dropdowns).
+    grabFocus: true
+
+    onClosed: preview.closedOut()
 
     readonly property int pad: 4
     readonly property int maxImageWidth: 240
@@ -118,7 +124,9 @@ PopupWindow {
                 height: preview.imageHeight
                 cache: false
                 fillMode: Image.PreserveAspectFit
-                source: preview.imagePath === "" ? "" : "file://" + preview.imagePath
+                source: preview.imagePath === ""
+                    ? ""
+                    : ("file://" + preview.imagePath + (preview.imageNonce ? ("?" + preview.imageNonce) : ""))
             }
 
             Text {
@@ -135,8 +143,16 @@ PopupWindow {
 
         MouseArea {
             anchors.fill: parent
-            acceptedButtons: Qt.LeftButton
-            onClicked: preview.activated()
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: (mouse) => {
+                if (mouse.button === Qt.LeftButton)
+                    preview.activated()
+            }
+            // Right-click release often never arrives; open on press like TaskButton.
+            onPressed: (mouse) => {
+                if (mouse.button === Qt.RightButton)
+                    preview.contextMenuRequested()
+            }
         }
 
         Item {

@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 """Session bus bridge between the KWin task script and QuickXP."""
 
+from __future__ import annotations
+
 import json
+import re
 import subprocess
 import sys
+import threading
+import time
 from pathlib import Path
 
 import dbus
@@ -17,19 +22,30 @@ IFACE = "org.quickxp.Tasks"
 # Stable install path so KWin ScreenShot2 auth survives repo moves.
 INSTALLED_HELPER = Path.home() / ".local" / "libexec" / "quickxp-preview"
 
+# Re-capture in the background when a cached peek is older than this.
+CACHE_REFRESH_SECS = 2.0
+# Skip warm refresh when the peek is newer than this.
+WARM_MAX_AGE_SECS = 30.0
+
+
+def safe_window_token(window_id: str) -> str:
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", str(window_id).strip()) or "unknown"
+
 
 class Tasks(dbus.service.Object):
     def __init__(self, bus, state_path, script_path):
         self.state_path = state_path
         self.script_path = script_path
         self.commands = []
-        self.preview_seq = 0
+        self._refreshing: set[str] = set()
+        self._refresh_lock = threading.Lock()
         bus_name = dbus.service.BusName(SERVICE, bus)
         super().__init__(bus, PATH, bus_name)
         self.bus = bus
         state_path.parent.mkdir(parents=True, exist_ok=True)
         if not state_path.exists():
             self._atomic_write(state_path, "[]")
+        self._purge_legacy_previews()
         self.ensure_preview_helper()
 
     def built_helper(self) -> Path:
@@ -96,12 +112,101 @@ class Tasks(dbus.service.Object):
         tmp.write_text(text)
         tmp.replace(path)
 
+    def preview_dir(self) -> Path:
+        return self.state_path.parent
+
+    def preview_path(self, window_id: str) -> Path:
+        return self.preview_dir() / f"quickxp-preview-w-{safe_window_token(window_id)}.png"
+
+    def _purge_legacy_previews(self) -> None:
+        # Older builds used incrementing quickxp-preview-N.png and deleted peers.
+        for path in self.preview_dir().glob("quickxp-preview-*.png"):
+            if path.name.startswith("quickxp-preview-w-"):
+                continue
+            path.unlink(missing_ok=True)
+
+    def _cache_fresh(self, path: Path, max_age: float) -> bool:
+        try:
+            if not path.is_file() or path.stat().st_size <= 0:
+                return False
+            return (time.time() - path.stat().st_mtime) <= max_age
+        except OSError:
+            return False
+
+    def _capture(self, window_id: str, out: Path) -> bool:
+        helper = self.ensure_preview_helper()
+        if helper is None or not helper.is_file():
+            return False
+        tmp = out.with_suffix(out.suffix + ".tmp")
+        try:
+            result = subprocess.run(
+                [str(helper), window_id, str(tmp)],
+                check=False,
+                timeout=8,
+                capture_output=True,
+                text=True,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            print("quickxp tasks: preview failed:", error, file=sys.stderr)
+            tmp.unlink(missing_ok=True)
+            return False
+        if result.returncode != 0 or not tmp.is_file() or tmp.stat().st_size == 0:
+            if result.stderr:
+                print("quickxp tasks: preview:", result.stderr.strip(), file=sys.stderr)
+            tmp.unlink(missing_ok=True)
+            return False
+        tmp.replace(out)
+        return True
+
+    def _schedule_refresh(self, window_id: str, *, force: bool = False) -> None:
+        out = self.preview_path(window_id)
+        if not force and self._cache_fresh(out, WARM_MAX_AGE_SECS):
+            return
+        with self._refresh_lock:
+            if window_id in self._refreshing:
+                return
+            self._refreshing.add(window_id)
+
+        def work() -> None:
+            try:
+                self._capture(window_id, out)
+            finally:
+                with self._refresh_lock:
+                    self._refreshing.discard(window_id)
+
+        threading.Thread(target=work, daemon=True, name=f"quickxp-preview-{window_id}").start()
+
+    def _prune_and_warm(self, rows: list) -> None:
+        ids: set[str] = set()
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            wid = str(row.get("id") or "").strip()
+            if wid:
+                ids.add(wid)
+
+        for path in self.preview_dir().glob("quickxp-preview-w-*.png"):
+            token = path.name[len("quickxp-preview-w-") : -len(".png")]
+            # Keep files whose token still matches a live id's safe form.
+            if not any(safe_window_token(wid) == token for wid in ids):
+                path.unlink(missing_ok=True)
+
+        for wid in ids:
+            self._schedule_refresh(wid, force=False)
+
     @dbus.service.method(IFACE, in_signature="s", out_signature="")
     def SetWindows(self, payload):
         text = str(payload)
         if not text:
             text = "[]"
         self._atomic_write(self.state_path, text)
+        try:
+            rows = json.loads(text)
+        except json.JSONDecodeError:
+            rows = []
+        if isinstance(rows, list):
+            # Defer warm so the KWin script is not blocked on screenshot work.
+            GLib.idle_add(lambda: self._prune_and_warm(rows) or False)
 
     @dbus.service.method(IFACE, in_signature="", out_signature="s")
     def TakeCommands(self):
@@ -115,31 +220,18 @@ class Tasks(dbus.service.Object):
 
     @dbus.service.method(IFACE, in_signature="s", out_signature="s")
     def Preview(self, window_id):
-        helper = self.ensure_preview_helper()
         window_id = str(window_id).strip()
-        if helper is None or not helper.is_file() or not window_id:
+        if not window_id:
             return ""
-        self.preview_seq += 1
-        out = self.state_path.parent / f"quickxp-preview-{self.preview_seq}.png"
-        for old in self.state_path.parent.glob("quickxp-preview-*.png"):
-            if old != out:
-                old.unlink(missing_ok=True)
-        try:
-            result = subprocess.run(
-                [str(helper), window_id, str(out)],
-                check=False,
-                timeout=8,
-                capture_output=True,
-                text=True,
-            )
-        except (OSError, subprocess.TimeoutExpired) as error:
-            print("quickxp tasks: preview failed:", error, file=sys.stderr)
-            return ""
-        if result.returncode != 0 or not out.is_file() or out.stat().st_size == 0:
-            if result.stderr:
-                print("quickxp tasks: preview:", result.stderr.strip(), file=sys.stderr)
-            return ""
-        return str(out)
+        out = self.preview_path(window_id)
+        # Serve cache immediately; refresh in the background so hover is snappy.
+        if out.is_file() and out.stat().st_size > 0:
+            if not self._cache_fresh(out, CACHE_REFRESH_SECS):
+                self._schedule_refresh(window_id, force=True)
+            return str(out)
+        if self._capture(window_id, out):
+            return str(out)
+        return ""
 
     def load_script(self):
         remote = self.bus.get_object("org.kde.KWin", "/Scripting")

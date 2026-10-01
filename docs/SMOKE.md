@@ -19,5 +19,8 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Run dialog (Epic R) — Win+R / Start → Run when implemented
 - [ ] Shell hotkeys (Epic H) — Win, Win+R/E/D/L, etc. when implemented
 - [ ] Match window borders / Aurorae: Apply with toggle on → KWin titlebar updates to `quickxp-<slug>`; toggle off → KWin unchanged; Theme Sample shows titlebar preview; Regenerate borders works for Luna
+- [ ] Settings → Taskbar → Icons only: Apply → task buttons shrink to icons (no titles)
+- [ ] Settings → Taskbar → Group similar (labels): many windows of one app combine only when the band is full; click group → title list
+- [ ] Settings → Taskbar → Icon taskbar preset: always-combined icons; click group → thumbnail strip
 
 Mark items N/A until the matching epic lands. Prefer a short note of failures over silent skips.

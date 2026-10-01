@@ -1,0 +1,796 @@
+{
+  "project": "https://github.com/users/freitagdavid/projects/4",
+  "project_number": 4,
+  "issues": {
+    "[Backlog] Reference validation scenarios": {
+      "number": 158,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/158",
+      "state": "OPEN"
+    },
+    "[Backlog] Toolkit theming (Qt/GTK)": {
+      "number": 157,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/157",
+      "state": "OPEN"
+    },
+    "[Backlog] Task Manager UI": {
+      "number": 156,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/156",
+      "state": "OPEN"
+    },
+    "[Backlog] Sound scheme": {
+      "number": 155,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/155",
+      "state": "OPEN"
+    },
+    "[Backlog] Search Companion": {
+      "number": 154,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/154",
+      "state": "OPEN"
+    },
+    "[Epic 9] Tasks pane": {
+      "number": 153,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/153",
+      "state": "OPEN"
+    },
+    "[Epic 9] Explorer views": {
+      "number": 152,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/152",
+      "state": "OPEN"
+    },
+    "[Epic 9] Explorer navigation": {
+      "number": 151,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/151",
+      "state": "OPEN"
+    },
+    "[Epic 9] Folder windows": {
+      "number": 150,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/150",
+      "state": "OPEN"
+    },
+    "Epic 9 \u2014 Explorer (later track)": {
+      "number": 149,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/149",
+      "state": "OPEN"
+    },
+    "[Epic 8] Transient/replace/expire handling": {
+      "number": 148,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/148",
+      "state": "OPEN"
+    },
+    "[Epic 8] Per-icon Customize Notifications": {
+      "number": 147,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/147",
+      "state": "OPEN"
+    },
+    "[Epic 8] Arrival balloons / toasts": {
+      "number": 146,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/146",
+      "state": "OPEN"
+    },
+    "[Epic 8] Tray notification queue UI": {
+      "number": 145,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/145",
+      "state": "OPEN"
+    },
+    "[Epic 8] NotificationServer host": {
+      "number": 144,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/144",
+      "state": "OPEN"
+    },
+    "Epic 8 \u2014 Attention and notifications": {
+      "number": 143,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/143",
+      "state": "OPEN"
+    },
+    "[Epic 7] Screen saver \u2192 lock integration": {
+      "number": 142,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/142",
+      "state": "OPEN"
+    },
+    "[Epic 7] Startup folder launch": {
+      "number": 141,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/141",
+      "state": "OPEN"
+    },
+    "[Epic 7] Vista/7 lock skin (later)": {
+      "number": 140,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/140",
+      "state": "OPEN"
+    },
+    "[Epic 7] Lock unlock backend": {
+      "number": 139,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/139",
+      "state": "OPEN"
+    },
+    "[Epic 7] XP Welcome-style lock screen": {
+      "number": 138,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/138",
+      "state": "OPEN"
+    },
+    "[Epic 7] Windows Security dialog": {
+      "number": 137,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/137",
+      "state": "OPEN"
+    },
+    "[Epic 7] Log Off dialog": {
+      "number": 136,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/136",
+      "state": "OPEN"
+    },
+    "[Epic 7] Classic Shut Down vs Welcome power panel": {
+      "number": 135,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/135",
+      "state": "OPEN"
+    },
+    "[Epic 7] Turn Off Computer dialog": {
+      "number": 134,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/134",
+      "state": "OPEN"
+    },
+    "Epic 7 \u2014 Session dialogs and lock screen": {
+      "number": 133,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/133",
+      "state": "OPEN"
+    },
+    "[Epic 6] Desktop Cleanup Wizard (later)": {
+      "number": 132,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/132",
+      "state": "OPEN"
+    },
+    "[Epic 6] Multi-monitor icon placement recovery": {
+      "number": 131,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/131",
+      "state": "OPEN"
+    },
+    "[Epic 6] Desktop context menu": {
+      "number": 130,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/130",
+      "state": "OPEN"
+    },
+    "[Epic 6] Show Desktop Icons toggle": {
+      "number": 129,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/129",
+      "state": "OPEN"
+    },
+    "[Epic 6] Arrange / align to grid": {
+      "number": 128,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/128",
+      "state": "OPEN"
+    },
+    "[Epic 6] Recycle Bin operations": {
+      "number": 127,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/127",
+      "state": "OPEN"
+    },
+    "[Epic 6] Special shell icons": {
+      "number": 126,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/126",
+      "state": "OPEN"
+    },
+    "[Epic 6] Desktop icon layer": {
+      "number": 125,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/125",
+      "state": "OPEN"
+    },
+    "[Epic 6] Wallpaper surface": {
+      "number": 124,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/124",
+      "state": "OPEN"
+    },
+    "Epic 6 \u2014 Desktop": {
+      "number": 123,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/123",
+      "state": "OPEN"
+    },
+    "[Epic A] Hyprland backend adapter (optional)": {
+      "number": 122,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/122",
+      "state": "OPEN"
+    },
+    "[Epic A] Optional Super+Tab full overview": {
+      "number": 121,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/121",
+      "state": "OPEN"
+    },
+    "[Epic A] Grab compositor Alt+Tab shortcut": {
+      "number": 120,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/120",
+      "state": "OPEN"
+    },
+    "[Epic A] Thumbnail preview switcher": {
+      "number": 119,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/119",
+      "state": "OPEN"
+    },
+    "[Epic A] XP icon+title switcher skin": {
+      "number": 118,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/118",
+      "state": "OPEN"
+    },
+    "[Epic A] Alt+Tab overlay + state machine": {
+      "number": 117,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/117",
+      "state": "OPEN"
+    },
+    "Epic A \u2014 Alt+Tab / task switcher": {
+      "number": 116,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/116",
+      "state": "OPEN"
+    },
+    "[Epic C] Clock Show/hover/double-click": {
+      "number": 115,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/115",
+      "state": "OPEN"
+    },
+    "[Epic C] Removable drives": {
+      "number": 114,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/114",
+      "state": "OPEN"
+    },
+    "[Epic C] Battery / power tray icon": {
+      "number": 113,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/113",
+      "state": "OPEN"
+    },
+    "[Epic C] Brightness tray control": {
+      "number": 112,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/112",
+      "state": "OPEN"
+    },
+    "[Epic C] Bluetooth tray control": {
+      "number": 111,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/111",
+      "state": "OPEN"
+    },
+    "[Epic C] Network tray control": {
+      "number": 110,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/110",
+      "state": "OPEN"
+    },
+    "[Epic C] Mic volume/mute (optional)": {
+      "number": 109,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/109",
+      "state": "OPEN"
+    },
+    "[Epic C] Per-app output routing": {
+      "number": 108,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/108",
+      "state": "OPEN"
+    },
+    "[Epic C] Default output device switch": {
+      "number": 107,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/107",
+      "state": "OPEN"
+    },
+    "[Epic C] Tray volume mixer (first priority)": {
+      "number": 106,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/106",
+      "state": "OPEN"
+    },
+    "Epic C \u2014 Tray system controls": {
+      "number": 105,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/105",
+      "state": "OPEN"
+    },
+    "[Epic 5] Attention flash on task button": {
+      "number": 104,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/104",
+      "state": "OPEN"
+    },
+    "[Epic 5] Keep on top + work area": {
+      "number": 103,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/103",
+      "state": "OPEN"
+    },
+    "[Epic 5] Auto-hide taskbar": {
+      "number": 102,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/102",
+      "state": "OPEN"
+    },
+    "[Epic 5] Cascade / tile / show desktop actions": {
+      "number": 101,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/101",
+      "state": "OPEN"
+    },
+    "[Epic 5] Empty-taskbar context menu": {
+      "number": 100,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/100",
+      "state": "OPEN"
+    },
+    "[Epic 5] Click activate/minimize behaviors": {
+      "number": 99,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/99",
+      "state": "OPEN"
+    },
+    "[Epic 5] Multi-row / vertical taskbar": {
+      "number": 98,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/98",
+      "state": "OPEN"
+    },
+    "[Epic 5] Taskbar height scaling": {
+      "number": 97,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/97",
+      "state": "OPEN"
+    },
+    "[Epic 5] Thumbnail strip group popup": {
+      "number": 96,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/96",
+      "state": "OPEN"
+    },
+    "[Epic 5] XP list group popup": {
+      "number": 95,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/95",
+      "state": "OPEN"
+    },
+    "[Epic 5] Always-grouped policy (modern)": {
+      "number": 94,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/94",
+      "state": "OPEN"
+    },
+    "[Epic 5] Crowding-triggered grouping (XP)": {
+      "number": 93,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/93",
+      "state": "OPEN"
+    },
+    "Epic 5 \u2014 Taskband behavior": {
+      "number": 92,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/92",
+      "state": "OPEN"
+    },
+    "[Epic 4] Toolbar height scaling": {
+      "number": 91,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/91",
+      "state": "OPEN"
+    },
+    "[Epic 4] Toolbar enable/disable persistence": {
+      "number": 90,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/90",
+      "state": "OPEN"
+    },
+    "[Epic 4] Toolbars beyond Quick Launch": {
+      "number": 89,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/89",
+      "state": "OPEN"
+    },
+    "[Epic 4] Quick Launch overflow chevron": {
+      "number": 88,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/88",
+      "state": "OPEN"
+    },
+    "[Epic 4] Win7 far-right Show Desktop": {
+      "number": 87,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/87",
+      "state": "OPEN"
+    },
+    "[Epic 4] Quick Launch Settings toggle": {
+      "number": 86,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/86",
+      "state": "OPEN"
+    },
+    "[Epic 4] Show Desktop": {
+      "number": 85,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/85",
+      "state": "OPEN"
+    },
+    "[Epic 4] Quick Launch strip": {
+      "number": 84,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/84",
+      "state": "OPEN"
+    },
+    "Epic 4 \u2014 Quick Launch, Show Desktop, toolbars": {
+      "number": 83,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/83",
+      "state": "OPEN"
+    },
+    "[Epic 3] Jump-list stubs (Win7, optional later)": {
+      "number": 82,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/82",
+      "state": "OPEN"
+    },
+    "[Epic 3] Keyboard-first search results": {
+      "number": 81,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/81",
+      "state": "OPEN"
+    },
+    "[Epic 3] App / document / setting results": {
+      "number": 80,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/80",
+      "state": "OPEN"
+    },
+    "[Epic 3] Start search box UI": {
+      "number": 79,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/79",
+      "state": "OPEN"
+    },
+    "Epic 3 \u2014 Vista/7 Start search": {
+      "number": 78,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/78",
+      "state": "OPEN"
+    },
+    "[Epic 2] Start Customize depth": {
+      "number": 77,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/77",
+      "state": "OPEN"
+    },
+    "[Epic 2] Layout switch classic vs XP": {
+      "number": 76,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/76",
+      "state": "OPEN"
+    },
+    "[Epic 2] Bottom Log Off / Turn Off buttons": {
+      "number": 75,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/75",
+      "state": "OPEN"
+    },
+    "[Epic 2] Help / Search / Run rows": {
+      "number": 74,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/74",
+      "state": "OPEN"
+    },
+    "[Epic 2] Right-column special folders": {
+      "number": 73,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/73",
+      "state": "OPEN"
+    },
+    "[Epic 2] All Programs flyout": {
+      "number": 72,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/72",
+      "state": "OPEN"
+    },
+    "[Epic 2] Most-frequent list": {
+      "number": 71,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/71",
+      "state": "OPEN"
+    },
+    "[Epic 2] Pinned apps": {
+      "number": 70,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/70",
+      "state": "OPEN"
+    },
+    "[Epic 2] Two-column Start frame + user tile": {
+      "number": 69,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/69",
+      "state": "OPEN"
+    },
+    "Epic 2 \u2014 XP dual-column Start menu": {
+      "number": 68,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/68",
+      "state": "OPEN"
+    },
+    "[Epic 1] Classic Start Customize": {
+      "number": 67,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/67",
+      "state": "OPEN"
+    },
+    "[Epic 1] Personalized menus (later)": {
+      "number": 66,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/66",
+      "state": "OPEN"
+    },
+    "[Epic 1] Highlight newly installed (optional)": {
+      "number": 65,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/65",
+      "state": "OPEN"
+    },
+    "[Epic 1] Classic Start keyboard nav": {
+      "number": 64,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/64",
+      "state": "OPEN"
+    },
+    "[Epic 1] Bottom session rows": {
+      "number": 63,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/63",
+      "state": "OPEN"
+    },
+    "[Epic 1] Favorites / recent docs (optional)": {
+      "number": 62,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/62",
+      "state": "OPEN"
+    },
+    "[Epic 1] Fixed shell items": {
+      "number": 61,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/61",
+      "state": "OPEN"
+    },
+    "[Epic 1] Programs cascade": {
+      "number": 60,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/60",
+      "state": "OPEN"
+    },
+    "[Epic 1] Open Classic Start from Start button": {
+      "number": 59,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/59",
+      "state": "OPEN"
+    },
+    "Epic 1 \u2014 Classic Start menu (single-column)": {
+      "number": 58,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/58",
+      "state": "OPEN"
+    },
+    "[Epic R] Run entry points": {
+      "number": 57,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/57",
+      "state": "OPEN"
+    },
+    "[Epic R] Run history / autocomplete": {
+      "number": 56,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/56",
+      "state": "OPEN"
+    },
+    "[Epic R] Launch resolution": {
+      "number": 55,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/55",
+      "state": "OPEN"
+    },
+    "[Epic R] Run dialog chrome": {
+      "number": 54,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/54",
+      "state": "OPEN"
+    },
+    "Epic R \u2014 Run dialog": {
+      "number": 53,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/53",
+      "state": "OPEN"
+    },
+    "[Epic H] Desktop Alt+F4 \u2192 Turn Off Computer": {
+      "number": 52,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/52",
+      "state": "OPEN"
+    },
+    "[Epic H] Ctrl+Shift+Esc / Ctrl+Alt+Delete": {
+      "number": 51,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/51",
+      "state": "OPEN"
+    },
+    "[Epic H] Win+Tab taskbar focus cycle (XP default)": {
+      "number": 50,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/50",
+      "state": "OPEN"
+    },
+    "[Epic H] Alt+Esc window cycle": {
+      "number": 49,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/49",
+      "state": "OPEN"
+    },
+    "[Epic H] Desktop hotkeys (Win+D / Win+M)": {
+      "number": 48,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/48",
+      "state": "OPEN"
+    },
+    "[Epic H] Win+R / Win+E / Win+F / Win+L": {
+      "number": 47,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/47",
+      "state": "OPEN"
+    },
+    "[Epic H] Start hotkeys (Win / Ctrl+Esc)": {
+      "number": 46,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/46",
+      "state": "OPEN"
+    },
+    "Epic H \u2014 Shell hotkeys": {
+      "number": 45,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/45",
+      "state": "OPEN"
+    },
+    "[Epic QA] CI pytest on push (optional later)": {
+      "number": 44,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/44",
+      "state": "OPEN"
+    },
+    "[Epic QA] Shell smoke checklist/scripts": {
+      "number": 43,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/43",
+      "state": "OPEN"
+    },
+    "[Epic QA] QML helper tests (qmltestrunner)": {
+      "number": 42,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/42",
+      "state": "OPEN"
+    },
+    "[Epic QA] pytest for Python bridges": {
+      "number": 41,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/41",
+      "state": "OPEN"
+    },
+    "[Epic QA] pytest for theme tooling": {
+      "number": 40,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/40",
+      "state": "OPEN"
+    },
+    "Epic QA \u2014 Testing": {
+      "number": 39,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/39",
+      "state": "OPEN"
+    },
+    "[Epic K] Titlebar preview in Theme tab": {
+      "number": 38,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/38",
+      "state": "OPEN"
+    },
+    "[Epic K] Regenerate for installed themes": {
+      "number": 37,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/37",
+      "state": "OPEN"
+    },
+    "[Epic K] Sync decoration on Apply": {
+      "number": 36,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/36",
+      "state": "OPEN"
+    },
+    "[Epic K] Emit Aurorae package": {
+      "number": 35,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/35",
+      "state": "OPEN"
+    },
+    "[Epic K] Map caption assets from INI/PNGs": {
+      "number": 34,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/34",
+      "state": "OPEN"
+    },
+    "Epic K \u2014 KWin Aurorae window decorations": {
+      "number": 33,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/33",
+      "state": "OPEN"
+    },
+    "[Epic T] Vista/7 msstyles projection (later)": {
+      "number": 32,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/32",
+      "state": "OPEN"
+    },
+    "[Epic T] Prove XP loop on Luna + third-party msstyles": {
+      "number": 31,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/31",
+      "state": "OPEN"
+    },
+    "[Epic T] Import error reporting": {
+      "number": 30,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/30",
+      "state": "OPEN"
+    },
+    "[Epic T] Color scheme picker": {
+      "number": 29,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/29",
+      "state": "OPEN"
+    },
+    "[Epic T] Settings Theme Import wizard": {
+      "number": 28,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/28",
+      "state": "OPEN"
+    },
+    "[Epic T] Theme install under user data": {
+      "number": 27,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/27",
+      "state": "OPEN"
+    },
+    "[Epic T] INI \u2192 theme.json projector": {
+      "number": 26,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/26",
+      "state": "OPEN"
+    },
+    "[Epic T] Generation detection": {
+      "number": 25,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/25",
+      "state": "OPEN"
+    },
+    "[Epic T] Library-wrap extract + convert CLI": {
+      "number": 24,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/24",
+      "state": "OPEN"
+    },
+    "Epic T \u2014 Theme import (msstyles \u2192 theme.json)": {
+      "number": 23,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/23",
+      "state": "OPEN"
+    },
+    "[Epic S] Generation-aware tab labels": {
+      "number": 22,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/22",
+      "state": "OPEN"
+    },
+    "[Epic S] About tab": {
+      "number": 21,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/21",
+      "state": "OPEN"
+    },
+    "[Epic S] Screen Saver tab": {
+      "number": 20,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/20",
+      "state": "OPEN"
+    },
+    "[Epic S] Appearance / Effects tab": {
+      "number": 19,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/19",
+      "state": "OPEN"
+    },
+    "[Epic S] Notification Area tab": {
+      "number": 18,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/18",
+      "state": "OPEN"
+    },
+    "[Epic S] Desktop tab": {
+      "number": 17,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/17",
+      "state": "OPEN"
+    },
+    "[Epic S] Start Menu tab": {
+      "number": 16,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/16",
+      "state": "OPEN"
+    },
+    "[Epic S] Taskbar tab": {
+      "number": 15,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/15",
+      "state": "OPEN"
+    },
+    "[Epic S] Theme tab": {
+      "number": 14,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/14",
+      "state": "CLOSED"
+    },
+    "[Epic S] Settings entry points": {
+      "number": 13,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/13",
+      "state": "OPEN"
+    },
+    "[Epic S] Draft vs applied settings": {
+      "number": 12,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/12",
+      "state": "CLOSED"
+    },
+    "[Epic S] Settings tab bar": {
+      "number": 11,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/11",
+      "state": "CLOSED"
+    },
+    "[Epic S] Settings window host": {
+      "number": 10,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/10",
+      "state": "CLOSED"
+    },
+    "Epic S \u2014 Central tabbed Settings window": {
+      "number": 9,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/9",
+      "state": "OPEN"
+    },
+    "[Epic 0] Shared controls atlas": {
+      "number": 8,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/8",
+      "state": "OPEN"
+    },
+    "[Epic 0] Open Settings API": {
+      "number": 7,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/7",
+      "state": "CLOSED"
+    },
+    "[Epic 0] Installed theme registry": {
+      "number": 6,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/6",
+      "state": "CLOSED"
+    },
+    "[Epic 0] App catalog adapter": {
+      "number": 5,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/5",
+      "state": "OPEN"
+    },
+    "[Epic 0] Start popup host": {
+      "number": 4,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/4",
+      "state": "OPEN"
+    },
+    "[Epic 0] Config store": {
+      "number": 3,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/3",
+      "state": "CLOSED"
+    },
+    "[Epic 0] Generation / layout policy": {
+      "number": 2,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/2",
+      "state": "CLOSED"
+    },
+    "Epic 0 \u2014 Shell foundation": {
+      "number": 1,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/1",
+      "state": "OPEN"
+    }
+  }
+}

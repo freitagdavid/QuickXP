@@ -46,6 +46,8 @@ Singleton {
       id: adapter
 
       property string theme: "luna"
+      // Empty = follow Theme.generation. Else classic | xp | vista | win7.
+      property string generation: ""
       property int taskbarHeight: 0
       property bool groupButtons: false
       property bool iconsOnly: false
@@ -54,6 +56,19 @@ Singleton {
       property bool showQuickLaunch: true
       property bool matchWindowBorders: true
       property string lastSettingsTab: "theme"
+
+      // Per-feature generation overrides. Empty string = use shell generation.
+      property JsonObject generationOverrides: JsonObject {
+        property string startMenu: ""
+        property string quickLaunch: ""
+        property string taskbarGrouping: ""
+        property string showDesktop: ""
+        property string livePeeks: ""
+        property string notificationRetention: ""
+        property string winTab: ""
+        property string clockFlyout: ""
+        property string altTabOverview: ""
+      }
     }
   }
 

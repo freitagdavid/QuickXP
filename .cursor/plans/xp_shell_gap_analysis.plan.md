@@ -67,7 +67,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 
 ## Epic checklist
 
-- [ ] Epic 0 — Shell foundation (generation policy, theme seams, config store, shared controls atlas) — partial: config store, theme registry, `Settings.open` landed; Start popup host / app catalog / generation policy / controls atlas still open
+- [ ] Epic 0 — Shell foundation (generation policy, theme seams, config store, shared controls atlas) — partial: config store, theme registry, generation policy, `Settings.open` landed; Start popup host / app catalog / controls atlas still open
 - [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, Appearance, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
 - [ ] Epic T — Theme import: load `.msstyles` → auto-map extracted INI/assets → Apply (no hand-authored theme.json)
 - [ ] Epic K — Generate and sync matching KWin Aurorae window decorations
@@ -90,7 +90,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 
 Scope is the desktop shell (taskbar, Start, tray, desktop, session, theme import). Explorer folder windows are a later epic.
 
-Vista and 7 are presentation policy on shared backends, not a fork. Theme/shell key: `generation: "xp" | "vista" | "win7"` in [QuickXP/themes/luna/theme.json](QuickXP/themes/luna/theme.json) / [QuickXP/themes/aero/theme.json](QuickXP/themes/aero/theme.json). [QuickXP/Theme.qml](QuickXP/Theme.qml) already merges arbitrary JSON groups and live-reloads `theme.json`.
+Vista and 7 are presentation policy on shared backends, not a fork. Theme/shell key: `generation: "xp" | "vista" | "win7"` in [QuickXP/themes/luna/theme.json](QuickXP/themes/luna/theme.json) / [QuickXP/themes/aero/theme.json](QuickXP/themes/aero/theme.json). [QuickXP/Theme.qml](QuickXP/Theme.qml) already merges arbitrary JSON groups and live-reloads `theme.json`. Runtime policy: [QuickXP/GenerationPolicy.qml](../QuickXP/GenerationPolicy.qml) resolves shell generation (follow theme or `Config.options.generation`) and per-feature overrides in `Config.options.generationOverrides` (empty = follow shell). Consumers call `GenerationPolicy.forItem("startMenu")` etc.
 
 ```mermaid
 flowchart TB
@@ -158,8 +158,8 @@ Key shell files: [QuickXP/taskbar/TaskBar.qml](QuickXP/taskbar/TaskBar.qml), [Qu
 
 Shared seams so later epics do not hardcode XP-only assumptions.
 
-- [ ] **Generation / layout policy** — Theme or shell key selects classic vs XP vs Vista/7 presentation for Start, Quick Launch placement, and grouping rules. (`generation` is present on Luna/Aero `theme.json`; consumers not wired yet.)
-- [x] **Config store** — [`QuickXP/Config.qml`](../QuickXP/Config.qml) `JsonAdapter` at `Quickshell.dataPath("config.json")`: theme, taskbar height, group/iconsOnly/lock/autoHide/quickLaunch/matchWindowBorders, lastSettingsTab.
+- [x] **Generation / layout policy** — [`QuickXP/GenerationPolicy.qml`](../QuickXP/GenerationPolicy.qml): shell generation defaults from theme (`Theme.generation`) or `Config.options.generation`; each layout/fidelity item (Start, Quick Launch, grouping, peeks, notifications, Win+Tab, clock, Alt+Tab) has `Config.options.generationOverrides.<id>` (empty = follow shell). Settings → Theme exposes shell + per-item overrides. Feature epics consume via `GenerationPolicy.forItem(...)`.
+- [x] **Config store** — [`QuickXP/Config.qml`](../QuickXP/Config.qml) `JsonAdapter` at `Quickshell.dataPath("config.json")`: theme, generation, generationOverrides, taskbar height, group/iconsOnly/lock/autoHide/quickLaunch/matchWindowBorders, lastSettingsTab.
 - [ ] **Start popup host** — Open/close from Start button, dismiss on outside click / Esc, position above Start.
 - [ ] **App catalog adapter** — Resolve `.desktop` entries, icons, launch; shared by classic Start, XP pins, and later search.
 - [x] **Installed theme registry** — [`QuickXP/ThemeRegistry.qml`](../QuickXP/ThemeRegistry.qml) lists `themes/*/theme.json` (name, generation, path); Apply switches `Theme.name` without restart.
@@ -181,7 +181,7 @@ One tabbed configuration UI for the shell (XP-styled dialog chrome). This is the
 
 ### Tabs (initial set)
 
-- [x] **Theme** — Installed list + taskbar/Start preview + “Match window borders”. Import… / Delete disabled stubs (Epic T).
+- [x] **Theme** — Installed list + taskbar/Start preview + “Match window borders” + shell generation / per-feature generation overrides. Import… / Delete disabled stubs (Epic T).
 - [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets (flags persist; behavior lands with later epics). Height applies on Apply. Later: keep-on-top, grouping policy (crowding vs always), multi-row.
 - [ ] **Start Menu** — Classic vs XP dual-column (when both exist); Customize depth (icon size, program count, clear list, Internet/E-mail handlers, link/menu/hidden for special folders, hover-open, highlight new, Scroll Programs, Admin Tools, Favorites, Recent Documents); later search-related toggles for Vista/7 (SMS-01–17).
 - [ ] **Desktop** — Wallpaper path/fit, icon arrange/align defaults, special-icon visibility, Show Desktop Icons (when Epic 6 exists).

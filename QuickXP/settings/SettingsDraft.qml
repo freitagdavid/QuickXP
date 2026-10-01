@@ -5,6 +5,8 @@ QtObject {
   id: draft
 
   property string theme: "luna"
+  property string generation: ""
+  property var generationOverrides: GenerationPolicy.emptyOverrides()
   property int taskbarHeight: 0
   property bool groupButtons: false
   property bool iconsOnly: false
@@ -17,6 +19,8 @@ QtObject {
   readonly property bool dirty: {
     const o = Config.options
     return draft.theme !== o.theme
+      || draft.generation !== o.generation
+      || !GenerationPolicy.overridesEqual(draft.generationOverrides, o.generationOverrides)
       || draft.taskbarHeight !== o.taskbarHeight
       || draft.groupButtons !== o.groupButtons
       || draft.iconsOnly !== o.iconsOnly
@@ -29,6 +33,8 @@ QtObject {
   function loadFromConfig() {
     const o = Config.options
     draft.theme = o.theme
+    draft.generation = o.generation
+    draft.generationOverrides = GenerationPolicy.copyOverrides(o.generationOverrides)
     draft.taskbarHeight = o.taskbarHeight
     draft.groupButtons = o.groupButtons
     draft.iconsOnly = o.iconsOnly
@@ -42,6 +48,8 @@ QtObject {
   function applyToConfig() {
     const o = Config.options
     o.theme = draft.theme
+    o.generation = draft.generation
+    GenerationPolicy.applyOverridesToConfig(draft.generationOverrides)
     o.taskbarHeight = draft.taskbarHeight
     o.groupButtons = draft.groupButtons
     o.iconsOnly = draft.iconsOnly
@@ -51,5 +59,11 @@ QtObject {
     o.matchWindowBorders = draft.matchWindowBorders
     o.lastSettingsTab = draft.activeTab
     Theme.name = draft.theme
+  }
+
+  function setOverride(itemId: string, generation: string) {
+    const next = GenerationPolicy.copyOverrides(draft.generationOverrides)
+    next[itemId] = generation === undefined || generation === null ? "" : String(generation)
+    draft.generationOverrides = next
   }
 }

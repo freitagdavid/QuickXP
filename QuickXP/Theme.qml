@@ -49,6 +49,14 @@ Singleton {
   readonly property var colors: data.colors || ({})
   readonly property var sizes: data.sizes || ({})
   readonly property var images: data.images || ({})
+  // Theme-declared shell generation (xp | vista | win7 | classic). Consumers should
+  // prefer GenerationPolicy.shell / GenerationPolicy.forItem over reading this alone.
+  readonly property string generation: {
+    const value = data.generation
+    if (value === undefined || value === null || value === "")
+      return "xp"
+    return String(value).toLowerCase()
+  }
 
   function cloneDefaults() {
     const source = root.defaults

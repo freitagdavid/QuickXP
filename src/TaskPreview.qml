@@ -8,8 +8,11 @@ PopupWindow {
     property string title: ""
     property string imagePath: ""
     property bool hovered: false
+    property bool closeEnabled: true
 
     signal hoverLeft()
+    signal activated()
+    signal closeClicked()
 
     visible: false
     color: Theme.color("menu", "white")
@@ -19,6 +22,7 @@ PopupWindow {
     readonly property int maxImageWidth: 240
     readonly property int maxImageHeight: 180
     readonly property int titleHeight: 22
+    readonly property int closeSize: 18
     readonly property real imageScale: {
         const sw = shot.sourceSize.width
         const sh = shot.sourceSize.height
@@ -41,6 +45,13 @@ PopupWindow {
 
     implicitWidth: imageWidth + pad * 2
     implicitHeight: imageHeight + titleHeight + pad * 3
+
+    function themeImage(key: string): string {
+        const path = Theme.image(key)
+        if (path === "" || path.startsWith("file:"))
+            return path
+        return "file://" + path
+    }
 
     function open() {
         if (anchorItem === null || imagePath === "")
@@ -118,6 +129,50 @@ PopupWindow {
                 color: Theme.color("menuText", "black")
                 font.family: Theme.value("fonts", "ui", "Tahoma")
                 font.pixelSize: Theme.size("fontSize", 11)
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton
+            onClicked: preview.activated()
+        }
+
+        Item {
+            id: closeButton
+
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.rightMargin: preview.pad
+            anchors.topMargin: preview.pad
+            width: preview.closeSize
+            height: preview.closeSize
+            visible: preview.closeEnabled
+            clip: true
+            z: 1
+
+            readonly property int frame: closeArea.containsPress ? 2 : closeArea.containsMouse ? 1 : 0
+
+            Image {
+                width: closeButton.width
+                height: closeButton.height * 3
+                y: -closeButton.height * closeButton.frame
+                source: preview.themeImage("previewCloseImage")
+                fillMode: Image.Stretch
+                smooth: false
+            }
+
+            MouseArea {
+                id: closeArea
+
+                anchors.fill: parent
+                hoverEnabled: true
+                acceptedButtons: Qt.LeftButton
+                cursorShape: Qt.PointingHandCursor
+                onClicked: (mouse) => {
+                    mouse.accepted = true
+                    preview.closeClicked()
+                }
             }
         }
     }

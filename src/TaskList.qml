@@ -306,9 +306,43 @@ Item {
         if (previewButton !== null)
             previewButton.hideTip()
         previewPopup.title = previewToplevel !== null ? (previewToplevel.title || "") : ""
+        previewPopup.closeEnabled = previewToplevel === null || previewToplevel.closeable !== false
         previewPopup.imagePath = path
         previewPopup.anchorItem = previewButton
         previewPopup.open()
+    }
+
+    function activatePreviewWindow() {
+        const target = previewToplevel
+        dismissPreview()
+        if (target === null)
+            return
+        if (target.kwin) {
+            Quickshell.execDetached([
+                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
+                "org.quickxp.Tasks.Command", target.windowId, "activate"
+            ])
+            return
+        }
+        target.minimized = false
+        if (typeof target.activate === "function")
+            target.activate()
+    }
+
+    function closePreviewWindow() {
+        const target = previewToplevel
+        dismissPreview()
+        if (target === null)
+            return
+        if (target.kwin) {
+            Quickshell.execDetached([
+                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
+                "org.quickxp.Tasks.Command", target.windowId, "close"
+            ])
+            return
+        }
+        if (typeof target.close === "function")
+            target.close()
     }
 
     function openTaskMenu(button, toplevel) {
@@ -377,5 +411,7 @@ Item {
     TaskPreview {
         id: previewPopup
         onHoverLeft: previewCloseTimer.restart()
+        onActivated: root.activatePreviewWindow()
+        onCloseClicked: root.closePreviewWindow()
     }
 }

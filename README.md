@@ -62,7 +62,17 @@ Convert extracted BMPs to PNGs that keep transparency (alpha or color key from t
 python3 scripts/convert-theme-bmps.py /path/to/extracted
 ```
 
-Mapping into QuickXP’s `theme.json` is still manual for Luna; automating import and Settings UI is planned in the roadmap.
+Core logic is importable as `quickxp_theme` under [`scripts/quickxp_theme/`](scripts/quickxp_theme/). Mapping into QuickXP’s `theme.json` is still manual for Luna; automating import and Settings UI is planned in the roadmap.
+
+## Testing
+
+```sh
+python3 -m pip install 'pytest>=8'   # once
+./scripts/install-git-hooks.sh       # once per clone — pre-push runs the suite
+./scripts/run-tests.sh               # pytest + qmltestrunner (required before push)
+```
+
+Pytest covers theme extract/convert helpers and `list_themes`; QML tests live under [`tests/qml/`](tests/qml/). Manual shell smoke: [`docs/SMOKE.md`](docs/SMOKE.md).
 
 ## Building `quickxp-preview`
 

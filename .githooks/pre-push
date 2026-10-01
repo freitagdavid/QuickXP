@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Block git push unless the full test suite passes.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+exec "$ROOT/scripts/run-tests.sh"

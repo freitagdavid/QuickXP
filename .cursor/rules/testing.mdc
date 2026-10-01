@@ -1,0 +1,36 @@
+---
+description: Always add and run tests with feature work; block push on failing suite
+alwaysApply: true
+---
+
+# Testing (QuickXP)
+
+## With every feature
+
+When implementing a roadmap feature (especially Python theme pipeline or pure QML/JS logic), **add or extend tests in `tests/` in the same change**. Do not land pipeline or helper logic without coverage.
+
+- Python theme tooling → `tests/theme/` (pytest via `scripts/quickxp_theme/`)
+- Python bridges → `tests/bridges/` once logic exists (#41)
+- Pure QML/JS helpers → `tests/qml/` (`qmltestrunner`)
+- Prefer cheap unit/golden tests over hermetic full-shell automation
+- Replace `pytest.skip` stubs (`test_detect.py`, `test_project_ini.py`, `test_aurorae.py`) with real tests when Epic T/K modules land
+
+## Before every push
+
+**All tests must run and pass before `git push`.**
+
+1. Run `./scripts/run-tests.sh` (pytest + qmltestrunner).
+2. This clone should use versioned hooks: `./scripts/install-git-hooks.sh` sets `core.hooksPath` to `.githooks/`, whose `pre-push` runs `run-tests.sh`.
+3. Do not `--no-verify` past a failing suite unless the user explicitly asks.
+4. Agents: run the suite after substantive changes and before pushing; fix failures in the same session.
+
+## Commands
+
+```sh
+./scripts/run-tests.sh          # full suite (required before push)
+python3 -m pytest tests/        # pytest only
+./scripts/run-qml-tests.sh      # qmltestrunner only
+./scripts/smoke-notes.sh        # print manual smoke checklist (docs/SMOKE.md)
+```
+
+Optional: `QUICKXP_SKIP_QML=1` skips QML only when qmltestrunner is unavailable in a constrained environment — do not use that to dodge real failures on a normal workstation.

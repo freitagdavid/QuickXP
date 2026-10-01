@@ -11,7 +11,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 - [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, Appearance, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
 - [ ] Epic T — Theme import: load `.msstyles` → auto-map extracted INI/assets → Apply (no hand-authored theme.json)
 - [ ] Epic K — Generate and sync matching KWin Aurorae window decorations
-- [ ] Epic QA — Testing (pytest theme pipeline, QML helpers, shell smoke)
+- [ ] Epic QA — Testing (partial: harness + extract/convert/list_themes + QML normalize + smoke checklist; full pipeline coverage with Epic T/K)
 - [ ] Epic H — Shell hotkeys (Win/Ctrl+Esc, Win+R/E/F/D/M/L, Alt+Esc, Win+Tab taskbar cycle, …)
 - [ ] Epic R — Run dialog (Win+R + Start → Run)
 - [ ] Epic 1 — Classic Start menu (single-column)
@@ -173,8 +173,8 @@ flowchart LR
 
 - **Pick input** — Folder, `.theme`, `.msstyles`, or `Shellstyle.dll` (file dialog + drag-drop). Default happy path: single `.msstyles` file.
 - **Detect generation** — Heuristics: file layout, PE resources, INI section names, Aero/glass assets, `.theme` keys. Output: `xp` | `vista` | `win7` | `unknown` (+ confidence / override in UI).
-- **Extract** — Wrap [scripts/extract_xp_theme.py](scripts/extract_xp_theme.py) as a library; keep CLI as thin entrypoint. Bitmaps + TEXTFILE/INI land in a theme working tree.
-- **Convert transparency** — Wrap [scripts/convert-theme-bmps.py](scripts/convert-theme-bmps.py) the same way; PNGs keep the extract layout so INI paths resolve 1:1.
+- [x] **Extract** — Library at [`scripts/quickxp_theme/extract.py`](../scripts/quickxp_theme/extract.py); thin CLI [`scripts/extract_xp_theme.py`](../scripts/extract_xp_theme.py). Bitmaps + TEXTFILE/INI land in a theme working tree.
+- [x] **Convert transparency** — Library at [`scripts/quickxp_theme/convert.py`](../scripts/quickxp_theme/convert.py); thin CLI [`scripts/convert-theme-bmps.py`](../scripts/convert-theme-bmps.py). PNGs keep the extract layout so INI paths resolve 1:1.
 - **Project INI → `theme.json`** — Parse the active size/color INI (e.g. `NORMALBLUE.ini` / Homestead / Metallic). For each logical key, read `ImageFile` (+ DPI `ImageFileN` pick), `SizingMargins`, `ContentMargins`, `imageCount`, `ImageLayout`, and color hints; write relative PNG paths under the installed theme. Also emit `name`, `generation`, `fonts`, SysMetrics-derived `colors`, and caption/frame metadata for Epic K. **No manual mapping step for the user.**
 - **Generate KWin decoration** — See Epic K (same import pass or on Apply), driven by the same projected caption assets.
 - **Install** — Write under `themes/<slug>/` (extracted tree + generated `theme.json` + optional `aurorae/`); prefer user data location for imports (`Quickshell.dataPath` / config tree) so repo Luna stays the reference fixture.
@@ -548,16 +548,14 @@ Not started until Start, Quick Launch, and desktop exist.
 
 ## Epic QA — Testing
 
-No test harness exists today. Prefer cheap, reliable coverage on the theme pipeline and pure logic; keep full-shell checks thin.
+**Partial.** Harness lives under [`tests/`](../tests/); library wrap in [`scripts/quickxp_theme/`](../scripts/quickxp_theme/). Prefer cheap, reliable coverage on the theme pipeline and pure logic; keep full-shell checks thin. **New pipeline / helper features must land with tests** (see [`.cursor/rules/testing.mdc`](../.cursor/rules/testing.mdc)). Run `./scripts/run-tests.sh` before every push (`.githooks/pre-push`).
 
-- **pytest for theme tooling (first)** — Refactor [scripts/extract_xp_theme.py](scripts/extract_xp_theme.py) and [scripts/convert-theme-bmps.py](scripts/convert-theme-bmps.py) so core functions are importable; add fixtures (tiny PE/BMP/INI or checked-in Luna samples); cover extract, transparency convert, generation detect, INI→`theme.json` projection, and Aurorae package emission (Epic K). Run with `pytest tests/`.
-- **pytest for other Python bridges** — Optional coverage for [QuickXP/services/TasksBridge.py](QuickXP/services/TasksBridge.py) helpers once notification or theme install logic lands in Python.
-- **QML helper tests (`qmltestrunner`)** — `tst_*.qml` + Qt Quick Test for pure logic extracted from shell components (task paging, grouping policy, Start menu model enablement, theme merge). Avoid requiring live KWin/Quickshell services; inject mocks or test isolated `.qml` modules.
-- **Shell smoke checks** — Small scripts or a checklist: post a freedesktop notification and assert queue count; open Start; switch `Theme.name`; Run dialog; a few hotkeys. Not a hermetic CI suite at first.
+- [x] **pytest scaffolding + theme tooling (partial)** — Importable [`quickxp_theme.extract`](../scripts/quickxp_theme/extract.py) / [`convert`](../scripts/quickxp_theme/convert.py); thin CLIs unchanged. Real tests for parsers, BMP→PNG, extract helpers, `list_themes.scan`. Skip stubs for detect / INI projection / Aurorae until Epic T/K. Run `python3 -m pytest tests/` or `./scripts/run-tests.sh`.
+- [ ] **pytest for other Python bridges** — Optional coverage for [QuickXP/services/TasksBridge.py](QuickXP/services/TasksBridge.py) helpers once notification or theme install logic lands in Python (`tests/bridges/`).
+- [x] **QML helper tests (`qmltestrunner`) (scaffold)** — [`GenerationNormalize.js`](../QuickXP/GenerationNormalize.js) + [`tests/qml/tst_GenerationNormalize.qml`](../tests/qml/tst_GenerationNormalize.qml). Expand for paging / grouping / Start model as those land. `./scripts/run-qml-tests.sh`.
+- [x] **Shell smoke checks** — Manual checklist [docs/SMOKE.md](SMOKE.md) (REF-01); `./scripts/smoke-notes.sh` prints it. Not hermetic CI.
 - **Reference profile** — Freeze English XP Pro SP3 / Luna blue / Welcome / default DPI as the main behavioral reference when capturing regressions (REF-01).
-- **CI (optional later)** — GitHub Action running `pytest` on push; QML tests only if import paths resolve headlessly.
-
-Ship pytest scaffolding alongside Epic T’s library wrap so every class→key / projection change is covered from day one.
+- [ ] **CI (optional later)** — GitHub Action running `pytest` on push; QML tests only if import paths resolve headlessly. Local gate: pre-push hook via `./scripts/install-git-hooks.sh`.
 
 ---
 

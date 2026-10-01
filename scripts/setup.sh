@@ -5,6 +5,12 @@ set -eu
 root="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 cd "$root"
 
+# Versioned git hooks (pre-push runs ./scripts/run-tests.sh).
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  git config core.hooksPath .githooks
+  chmod +x .githooks/pre-push scripts/run-tests.sh scripts/run-qml-tests.sh scripts/smoke-notes.sh scripts/install-git-hooks.sh 2>/dev/null || true
+fi
+
 ok=1
 
 have() {

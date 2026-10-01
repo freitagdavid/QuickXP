@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import "GenerationNormalize.js" as GenerationNormalize
 
 // Resolves shell generation (classic / xp / vista / win7) for layout and fidelity.
 // Shell default follows Theme.generation unless Config.options.generation is set.
@@ -79,20 +80,7 @@ Singleton {
   }
 
   function normalize(value, fallback): string {
-    const raw = String(value === undefined || value === null ? "" : value).trim().toLowerCase()
-    if (raw === "windows xp" || raw === "winxp")
-      return "xp"
-    if (raw === "windows vista" || raw === "winvista")
-      return "vista"
-    if (raw === "windows 7" || raw === "windows7" || raw === "win 7")
-      return "win7"
-    if (raw === "windows classic" || raw === "winclassic")
-      return "classic"
-    for (let i = 0; i < generations.length; ++i) {
-      if (generations[i] === raw)
-        return raw
-    }
-    return fallback === undefined ? "xp" : fallback
+    return GenerationNormalize.normalize(value, fallback)
   }
 
   function labelFor(generation: string, followLabel: string): string {

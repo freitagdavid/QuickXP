@@ -574,7 +574,7 @@ def add_to_project(project_number: int, issue_url: str) -> None:
 
 
 def set_parent(child_number: int, parent_number: int) -> None:
-    # GraphQL addSubIssue
+    # GraphQL addSubIssue — treat already-linked as success
     query = """
     mutation($parent:ID!, $child:ID!) {
       addSubIssue(input: {issueId: $parent, subIssueId: $child}) {
@@ -585,7 +585,7 @@ def set_parent(child_number: int, parent_number: int) -> None:
     parent = gh_json("api", f"repos/{OWNER}/{REPO}/issues/{parent_number}")
     child = gh_json("api", f"repos/{OWNER}/{REPO}/issues/{child_number}")
     try:
-        gh(
+        out = gh(
             "api",
             "graphql",
             "-f",
@@ -595,7 +595,15 @@ def set_parent(child_number: int, parent_number: int) -> None:
             "-f",
             f"child={child['node_id']}",
         )
+        if out and '"errors"' in out:
+            lower = out.lower()
+            if "duplicate" in lower or "only have one parent" in lower:
+                return
+            print(f"warn: sub-issue link {child_number}->{parent_number}: {out}", file=sys.stderr)
     except RuntimeError as e:
+        msg = str(e).lower()
+        if "duplicate" in msg or "only have one parent" in msg:
+            return
         # sub-issues may not be enabled; non-fatal
         print(f"warn: sub-issue link {child_number}->{parent_number}: {e}", file=sys.stderr)
 

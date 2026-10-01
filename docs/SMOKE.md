@@ -13,7 +13,7 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Left-click Start opens classic single-column popup above the button; Esc / click-away dismisses; right-click still opens Properties
 - [ ] Classic Start: blue left banner + beveled gray face; no search box; Programs flyouts cascade
 - [ ] Classic Start: Documents/Settings/Search open submenus; Help/Run stubs; Log Off / Turn Off Computer confirm (Cancel safe)
-- [ ] Settings → Start Menu toggles XDG menu vs category folders
+- [ ] Settings → Start Menu: Programs source, highlight-new, personalized menus; Clear highlight / Clear recent
 - [ ] Settings → Start Menu still toggles Programs source after session rows land
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload
 - [ ] Settings → Theme → Import… an XP `.msstyles` → one theme with schemes → Color scheme dropdown → Apply reloads chrome; Delete removes user-data themes only

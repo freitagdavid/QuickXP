@@ -55,6 +55,53 @@ Item {
           }
         }
       }
+
+      XpGroupBox {
+        width: parent.width
+        height: advancedCol.height + 28
+        title: "Advanced"
+
+        Column {
+          id: advancedCol
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.top: parent.top
+          spacing: 6
+
+          XpCheckBox {
+            text: "Highlight newly installed programs"
+            checked: root.draft.startHighlightNew
+            onToggled: root.draft.startHighlightNew = !root.draft.startHighlightNew
+          }
+
+          XpCheckBox {
+            text: "Use personalized menus (hide rarely used)"
+            checked: root.draft.startPersonalizedMenus
+            onToggled: root.draft.startPersonalizedMenus = !root.draft.startPersonalizedMenus
+          }
+
+          Row {
+            spacing: 8
+            XpPushButton {
+              text: "Clear highlight list"
+              onClicked: StartHighlightStore.clearHighlights()
+            }
+            XpPushButton {
+              text: "Clear recent documents"
+              onClicked: RecentCatalog.clearRecent()
+            }
+          }
+
+          Text {
+            width: parent.width
+            wrapMode: Text.WordWrap
+            text: "Clear buttons apply immediately. Other options use OK / Apply."
+            color: Theme.value("button", "disabledText", "#A1A192")
+            font.family: Theme.value("fonts", "ui", "Tahoma")
+            font.pixelSize: Theme.size("fontSize", 11)
+          }
+        }
+      }
     }
   }
 }

@@ -2,67 +2,56 @@ import QtQuick
 import Quickshell
 import qs.QuickXP
 
-// XP-style dropdown: closed field stays one row; list floats via PopupWindow.
+// [Combobox] BorderFill field + [Combobox.DropDownButton] ComboButton.bmp (4 frames).
 Item {
   id: root
 
-  property string value: ""
-  property string followLabel: "Use shell default"
-  property var choices: [
-    { id: "", label: followLabel },
-    { id: "classic", label: "Windows Classic" },
-    { id: "xp", label: "Windows XP" },
-    { id: "vista", label: "Windows Vista" },
-    { id: "win7", label: "Windows 7" }
-  ]
+  property var model: []
+  property int currentIndex: -1
   property bool enabled: true
-  signal activated(string id)
+  property string textRole: ""
+  signal activated(int index)
 
-  readonly property var choiceList: root.choices !== undefined && root.choices !== null
-    ? root.choices
-    : []
-  readonly property int choiceCount: choiceList.length
-  readonly property bool popupOpen: popup.visible
-
-  readonly property string displayLabel: {
-    const list = root.choiceList
-    for (let i = 0; i < list.length; ++i) {
-      const item = list[i]
-      if (item !== undefined && item !== null && item.id === root.value)
-        return item.label
-    }
-    return GenerationPolicy.labelFor(root.value, root.followLabel)
-  }
-
-  readonly property int buttonWidth: {
-    const v = Theme.value("combo", "buttonWidth", 17)
-    return (v === undefined || v === null) ? 17 : Number(v)
-  }
-
-  readonly property int buttonFrame: {
-    if (!root.enabled)
-      return 3
-    if (fieldArea.containsPress || dropArea.containsPress)
-      return 2
-    if (fieldArea.containsMouse || dropArea.containsMouse || popup.visible)
-      return 1
-    return 0
-  }
-
-  implicitWidth: 220
+  implicitWidth: 140
   implicitHeight: 21
+
+  readonly property int buttonWidth: Theme.value("combo", "buttonWidth", 17)
+  readonly property string currentText: {
+    if (currentIndex < 0 || currentIndex >= count)
+      return ""
+    return textAt(currentIndex)
+  }
+  readonly property int count: model !== undefined && model !== null
+    ? (model.count !== undefined ? model.count : model.length)
+    : 0
+
+  function textAt(index) {
+    if (index < 0 || index >= count)
+      return ""
+    const item = model.get !== undefined ? model.get(index) : model[index]
+    if (item === undefined || item === null)
+      return ""
+    if (typeof item === "string" || typeof item === "number")
+      return String(item)
+    if (textRole !== "" && item[textRole] !== undefined)
+      return String(item[textRole])
+    if (item.text !== undefined)
+      return String(item.text)
+    if (item.label !== undefined)
+      return String(item.label)
+    return String(item)
+  }
 
   function closePopup() {
     popup.visible = false
   }
 
-  function togglePopup() {
-    if (!root.enabled)
+  function select(index) {
+    if (!enabled || index < 0 || index >= count)
       return
-    if (popup.visible)
-      closePopup()
-    else
-      openPopup()
+    currentIndex = index
+    closePopup()
+    activated(index)
   }
 
   function openPopup() {
@@ -70,12 +59,26 @@ Item {
     popup.visible = true
   }
 
-  function selectId(id) {
-    closePopup()
-    activated(id)
+  function togglePopup() {
+    if (!enabled)
+      return
+    if (popup.visible)
+      closePopup()
+    else
+      openPopup()
   }
 
   Component.onDestruction: DropdownGate.release(root)
+
+  readonly property int buttonFrame: {
+    if (!enabled)
+      return 3
+    if (dropArea.containsPress)
+      return 2
+    if (dropArea.containsMouse || popup.visible)
+      return 1
+    return 0
+  }
 
   Rectangle {
     anchors.fill: parent
@@ -95,7 +98,7 @@ Item {
     anchors.rightMargin: 2
     verticalAlignment: Text.AlignVCenter
     elide: Text.ElideRight
-    text: root.displayLabel
+    text: root.currentText
     color: root.enabled
       ? Theme.color("windowText", "black")
       : Theme.value("button", "disabledText", "#A1A192")
@@ -114,25 +117,19 @@ Item {
     ThemeStrip {
       anchors.fill: parent
       imageKey: "comboButtonImage"
-      frames: {
-        const v = Theme.value("combo", "frames", 4)
-        return (v === undefined || v === null) ? 4 : Number(v)
-      }
+      frames: Theme.value("combo", "frames", 4)
       frame: root.buttonFrame
-      borderLeft: Number(Theme.value("combo", "borderLeft", 3) || 3)
-      borderRight: Number(Theme.value("combo", "borderRight", 3) || 3)
-      borderTop: Number(Theme.value("combo", "borderTop", 3) || 3)
-      borderBottom: Number(Theme.value("combo", "borderBottom", 3) || 3)
+      borderLeft: Theme.value("combo", "borderLeft", 3)
+      borderRight: Theme.value("combo", "borderRight", 3)
+      borderTop: Theme.value("combo", "borderTop", 3)
+      borderBottom: Theme.value("combo", "borderBottom", 3)
     }
 
     Item {
       id: glyphClip
       anchors.centerIn: parent
-      readonly property int frames: {
-        const v = Theme.value("combo", "frames", 4)
-        return (v === undefined || v === null) ? 4 : Number(v)
-      }
-      readonly property real fh: glyphSheet.status === Image.Ready && frames > 0
+      readonly property int frames: Theme.value("combo", "frames", 4)
+      readonly property real fh: glyphSheet.status === Image.Ready
         ? glyphSheet.sourceSize.height / frames
         : 0
       width: glyphSheet.status === Image.Ready ? glyphSheet.sourceSize.width : 0
@@ -144,7 +141,7 @@ Item {
         id: glyphSheet
         width: sourceSize.width
         height: sourceSize.height
-        y: -glyphClip.fh * Math.min(Math.max(0, glyphClip.frames - 1), root.buttonFrame)
+        y: -glyphClip.fh * Math.min(glyphClip.frames - 1, root.buttonFrame)
         smooth: false
         source: {
           const path = Theme.image("comboButtonGlyphImage")
@@ -154,22 +151,20 @@ Item {
         }
       }
     }
+
+    MouseArea {
+      id: dropArea
+      anchors.fill: parent
+      enabled: root.enabled
+      hoverEnabled: true
+      onClicked: root.togglePopup()
+    }
   }
 
   MouseArea {
-    id: fieldArea
     anchors.fill: parent
     anchors.rightMargin: root.buttonWidth
     enabled: root.enabled
-    hoverEnabled: true
-    onClicked: root.togglePopup()
-  }
-
-  MouseArea {
-    id: dropArea
-    anchors.fill: dropButton
-    enabled: root.enabled
-    hoverEnabled: true
     onClicked: root.togglePopup()
   }
 
@@ -181,16 +176,13 @@ Item {
     id: popup
     visible: false
     color: Theme.color("menu", "white")
-    // Focus grab: outside click dismisses; DropdownGate keeps a single open menu.
     grabFocus: true
-    implicitWidth: Math.max(root.width, 160)
-    implicitHeight: Math.min(220, Math.max(24, root.choiceCount * 20 + 2))
+    implicitWidth: Math.max(root.width, 120)
+    implicitHeight: Math.min(160, Math.max(24, root.count * 20 + 2))
 
-    // Attach under the field (same pattern as taskbar tooltips, flipped down).
     anchor.item: root
     anchor.edges: Edges.Bottom | Edges.Left
     anchor.gravity: Edges.Bottom | Edges.Right
-    anchor.margins.top: 0
 
     onVisibleChanged: {
       if (visible)
@@ -199,7 +191,6 @@ Item {
         DropdownGate.release(root)
     }
 
-    // Click outside / loss of grab closes the list.
     onClosed: root.closePopup()
 
     Rectangle {
@@ -215,17 +206,16 @@ Item {
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         boundsMovement: Flickable.StopAtBounds
-        model: root.choiceCount
+        model: root.count
         delegate: Item {
           width: list.width
           height: 20
-          readonly property var choice: root.choiceList[index]
+          readonly property int row: index
           readonly property bool hot: rowArea.containsMouse
-          readonly property bool selected: choice && choice.id === root.value
 
           Rectangle {
             anchors.fill: parent
-            color: hot || selected ? Theme.color("highlight", "#316AC5") : "transparent"
+            color: hot ? Theme.color("highlight", "#316AC5") : "transparent"
           }
 
           Text {
@@ -233,8 +223,8 @@ Item {
             anchors.leftMargin: 4
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
-            text: choice && choice.label !== undefined ? choice.label : ""
-            color: hot || selected
+            text: root.textAt(row)
+            color: hot
               ? Theme.color("highlightText", "white")
               : Theme.color("menuText", "black")
             font.family: Theme.value("fonts", "ui", "Tahoma")
@@ -245,17 +235,13 @@ Item {
             id: rowArea
             anchors.fill: parent
             hoverEnabled: true
-            onClicked: {
-              if (choice)
-                root.selectId(choice.id)
-            }
+            onClicked: root.select(row)
           }
         }
       }
     }
   }
 
-  Keys.onEscapePressed: closePopup()
   Keys.onDownPressed: togglePopup()
   Keys.onSpacePressed: togglePopup()
   activeFocusOnTab: enabled

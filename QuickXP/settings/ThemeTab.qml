@@ -32,20 +32,39 @@ Item {
     { id: "win7", label: "Windows 7" }
   ]
 
-  readonly property var overrideChoices: [
-    { id: "", label: "Use shell default" },
-    { id: "classic", label: "Windows Classic" },
-    { id: "xp", label: "Windows XP" },
-    { id: "vista", label: "Windows Vista" },
-    { id: "win7", label: "Windows 7" }
-  ]
+  Component {
+    id: toggleRadiosComponent
+    XpToggleRadios {
+      followLabel: "Use shell default"
+    }
+  }
+
+  Component {
+    id: choiceComboComponent
+    XpGenerationSelect {
+      followLabel: "Use shell default"
+    }
+  }
 
   Flickable {
+    id: themeFlick
     anchors.fill: parent
     anchors.margins: 12
     contentWidth: width
     contentHeight: column.height
     clip: true
+    boundsBehavior: Flickable.StopAtBounds
+    boundsMovement: Flickable.StopAtBounds
+    flickableDirection: Flickable.VerticalFlick
+
+    readonly property real maxContentY: Math.max(0, contentHeight - height)
+    onContentYChanged: {
+      if (contentY < 0)
+        contentY = 0
+      else if (contentY > maxContentY)
+        contentY = maxContentY
+      DropdownGate.dismiss()
+    }
 
     Column {
       id: column
@@ -61,6 +80,8 @@ Item {
           id: list
           anchors.fill: parent
           clip: true
+          boundsBehavior: Flickable.StopAtBounds
+          boundsMovement: Flickable.StopAtBounds
           model: ThemeRegistry.themes
           currentIndex: {
             const slug = root.draft.theme
@@ -268,7 +289,7 @@ Item {
           Text {
             width: parent.width
             wrapMode: Text.WordWrap
-            text: "Each item follows the shell generation unless you pick an override."
+            text: "Each item follows the shell generation unless you pick what that feature should do."
             color: Theme.color("windowText", "black")
             font.family: Theme.value("fonts", "ui", "Tahoma")
             font.pixelSize: Theme.size("fontSize", 11)
@@ -278,37 +299,64 @@ Item {
           Repeater {
             model: GenerationPolicy.items
 
-            delegate: Row {
+            delegate: Column {
               id: overrideRow
               required property var modelData
 
               width: overrideColumn.width
-              spacing: 8
+              spacing: 4
+
+              readonly property string overrideValue: {
+                const bag = root.draft.generationOverrides
+                const key = modelData.id
+                if (bag === undefined || bag === null || bag[key] === undefined || bag[key] === null)
+                  return ""
+                return GenerationPolicy.normalizeOverride(key, bag[key])
+              }
 
               Text {
-                width: Math.min(160, overrideRow.width * 0.42)
-                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width
                 text: modelData.label
-                elide: Text.ElideRight
                 color: Theme.color("windowText", "black")
                 font.family: Theme.value("fonts", "ui", "Tahoma")
                 font.pixelSize: Theme.size("fontSize", 11)
               }
 
-              XpGenerationSelect {
-                width: Math.min(180, overrideRow.width - 168)
-                value: {
-                  const bag = root.draft.generationOverrides
-                  const key = modelData.id
-                  if (bag === undefined || bag === null || bag[key] === undefined || bag[key] === null)
-                    return ""
-                  return bag[key]
+              Loader {
+                id: controlLoader
+                width: parent.width
+                // Only create the matching control (avoids unused floating popups).
+                sourceComponent: modelData.kind === "toggle"
+                  ? toggleRadiosComponent
+                  : choiceComboComponent
+
+                onLoaded: {
+                  item.width = width
+                  item.value = overrideRow.overrideValue
+                  if (overrideRow.modelData.kind !== "toggle")
+                    item.choices = GenerationPolicy.choicesFor(overrideRow.modelData.id, "Use shell default")
+                  item.activated.connect(function(id) {
+                    root.draft.setOverride(overrideRow.modelData.id, id)
+                  })
                 }
-                followLabel: "Use shell default"
-                choices: root.overrideChoices
-                onActivated: function(id) {
-                  root.draft.setOverride(modelData.id, id)
+
+                Binding {
+                  target: controlLoader.item
+                  when: controlLoader.status === Loader.Ready
+                  property: "value"
+                  value: overrideRow.overrideValue
                 }
+              }
+
+              Text {
+                width: parent.width
+                visible: modelData.hint !== undefined && modelData.hint !== ""
+                wrapMode: Text.WordWrap
+                text: modelData.hint
+                color: Theme.color("windowText", "black")
+                font.family: Theme.value("fonts", "ui", "Tahoma")
+                font.pixelSize: Theme.size("fontSize", 11)
+                opacity: 0.55
               }
             }
           }

@@ -3,6 +3,7 @@ import QtQuick // for Text
 import qs.QuickXP
 import qs.QuickXP.tray
 import qs.QuickXP.settings
+import qs.QuickXP.start
 
 PanelWindow {
     // Injected by Variants over Quickshell.screens
@@ -167,11 +168,18 @@ PanelWindow {
             onClicked: function(mouse) {
                 if (mouse.button === Qt.RightButton)
                     startChromeMenu.open()
+                else if (mouse.button === Qt.LeftButton)
+                    startPopup.toggle()
             }
         }
 
         StartChromeMenu {
             id: startChromeMenu
+            anchorItem: startButton
+        }
+
+        StartPopupHost {
+            id: startPopup
             anchorItem: startButton
         }
     }

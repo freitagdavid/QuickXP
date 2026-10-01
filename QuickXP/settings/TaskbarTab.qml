@@ -8,11 +8,24 @@ Item {
   required property var draft
 
   Flickable {
+    id: taskbarFlick
     anchors.fill: parent
     anchors.margins: 12
     contentWidth: width
     contentHeight: column.height
     clip: true
+    boundsBehavior: Flickable.StopAtBounds
+    boundsMovement: Flickable.StopAtBounds
+    flickableDirection: Flickable.VerticalFlick
+
+    readonly property real maxContentY: Math.max(0, contentHeight - height)
+    onContentYChanged: {
+      if (contentY < 0)
+        contentY = 0
+      else if (contentY > maxContentY)
+        contentY = maxContentY
+      DropdownGate.dismiss()
+    }
 
     Column {
       id: column

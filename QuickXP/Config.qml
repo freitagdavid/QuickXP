@@ -60,6 +60,7 @@ Singleton {
       // Per-feature generation overrides. Empty string = use shell generation.
       property JsonObject generationOverrides: JsonObject {
         property string startMenu: ""
+        property string startSearch: ""
         property string quickLaunch: ""
         property string taskbarGrouping: ""
         property string showDesktop: ""

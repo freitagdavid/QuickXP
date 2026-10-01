@@ -7,7 +7,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 
 ## Epic checklist
 
-- [ ] Epic 0 — Shell foundation (generation policy, theme seams, config store, shared controls atlas) — partial: config store, theme registry, generation policy, `Settings.open` landed; Start popup host / app catalog / controls atlas still open
+- [x] Epic 0 — Shell foundation (generation policy, theme seams, config store, Start popup host, app catalog, shared controls atlas)
 - [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, Appearance, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
 - [ ] Epic T — Theme import: load `.msstyles` → auto-map extracted INI/assets → Apply (no hand-authored theme.json)
 - [ ] Epic K — Generate and sync matching KWin Aurorae window decorations
@@ -100,11 +100,11 @@ Shared seams so later epics do not hardcode XP-only assumptions.
 
 - [x] **Generation / layout policy** — [`QuickXP/GenerationPolicy.qml`](../QuickXP/GenerationPolicy.qml): shell generation defaults from theme (`Theme.generation`) or `Config.options.generation`; each layout/fidelity item (Start, Quick Launch, grouping, peeks, notifications, Win+Tab, clock, Alt+Tab) has `Config.options.generationOverrides.<id>` (empty = follow shell). Settings → Theme exposes shell + per-item overrides. Feature epics consume via `GenerationPolicy.forItem(...)`.
 - [x] **Config store** — [`QuickXP/Config.qml`](../QuickXP/Config.qml) `JsonAdapter` at `Quickshell.dataPath("config.json")`: theme, generation, generationOverrides, taskbar height, group/iconsOnly/lock/autoHide/quickLaunch/matchWindowBorders, lastSettingsTab.
-- [ ] **Start popup host** — Open/close from Start button, dismiss on outside click / Esc, position above Start.
-- [ ] **App catalog adapter** — Resolve `.desktop` entries, icons, launch; shared by classic Start, XP pins, and later search.
+- [x] **Start popup host** — [`QuickXP/start/StartPopupHost.qml`](../QuickXP/start/StartPopupHost.qml): open/close/toggle from Start button, dismiss on outside click / Esc, position above Start. Placeholder list UI until Epic 1/2.
+- [x] **App catalog adapter** — [`QuickXP/AppCatalog.qml`](../QuickXP/AppCatalog.qml) over Quickshell `DesktopEntries` (filter, icon, launch); helpers in [`AppCatalogFilter.js`](../QuickXP/AppCatalogFilter.js).
 - [x] **Installed theme registry** — [`QuickXP/ThemeRegistry.qml`](../QuickXP/ThemeRegistry.qml) lists `themes/*/theme.json` (name, generation, path); Apply switches `Theme.name` without restart.
 - [x] **Open Settings API** — [`QuickXP/settings/Settings.qml`](../QuickXP/settings/Settings.qml) `Settings.open(tab)` for Start/taskbar/desktop Properties deep-links.
-- [ ] **Shared controls atlas** — Reusable themed pushbutton, checkbox, radio, edit, combo, tab, scrollbar, tooltip, message-box, and focus-rect states (VIS-11–23) for Settings, Start chrome, Run, and session dialogs. Grow logical keys via Epic T as each control lands; a screenshot of the normal state is not enough — cover hover/pressed/disabled/focus.
+- [x] **Shared controls atlas** — Under [`QuickXP/controls/`](../QuickXP/controls/): pushbutton, checkbox, radio, edit, combo, tab, spin, groupbox, scroll view, tooltip, message-box, focus-rect with hover/pressed/disabled/focus. Luna keys in `themes/luna/theme.json`; grow further via Epic T as needed.
 
 ---
 

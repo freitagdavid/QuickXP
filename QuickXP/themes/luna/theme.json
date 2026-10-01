@@ -45,7 +45,16 @@
     "spinDownBackgroundImage": "luna/images/BLUE_SPINBUTTONBACKGROUNDDOWN_BMP.png",
     "spinUpGlyphImage": "luna/images/BLUE_SPINUPGLYPH_BMP.png",
     "spinDownGlyphImage": "luna/images/BLUE_SPINDOWNGLYPH_BMP.png",
-    "spinOutlineImage": "luna/images/BLUE_FIELDOUTLINEBLUE_BMP.png"
+    "spinOutlineImage": "luna/images/BLUE_FIELDOUTLINEBLUE_BMP.png",
+    "radioButtonImage": "luna/images/BLUE_RADIOBUTTON13_BMP.png",
+    "comboButtonImage": "luna/images/BLUE_COMBOBUTTON_BMP.png",
+    "comboButtonGlyphImage": "luna/images/BLUE_COMBOBUTTONGLYPH_BMP.png",
+    "scrollArrowImage": "luna/images/BLUE_SCROLLARROWS_BMP.png",
+    "scrollArrowGlyphImage": "luna/images/BLUE_SCROLLARROWGLYPHS_BMP.png",
+    "scrollThumbVerticalImage": "luna/images/BLUE_SCROLLTHUMBVERTICAL_BMP.png",
+    "scrollGripperVerticalImage": "luna/images/BLUE_SCROLLTHUMBGRIPPERVERTICAL_BMP.png",
+    "scrollShaftVerticalImage": "luna/images/BLUE_SCROLLSHAFTVERTICAL_BMP.png",
+    "tooltipCloseImage": "luna/images/BLUE_BALLOONCLOSE_BMP.png"
   },
   "button": {
     "frames": 5,
@@ -66,6 +75,9 @@
   "checkBox": {
     "frames": 12
   },
+  "radioButton": {
+    "frames": 8
+  },
   "groupBox": {
     "edgeShadow": "#ACA899",
     "edgeHighlight": "#FFFFFF",
@@ -74,7 +86,41 @@
   },
   "edit": {
     "border": "#7F9DB9",
-    "fill": "#FFFFFF"
+    "fill": "#FFFFFF",
+    "disabledFill": "#EBEBE4",
+    "disabledText": "#A1A192",
+    "readOnlyFill": "#EBEBE4"
+  },
+  "combo": {
+    "frames": 4,
+    "buttonWidth": 17,
+    "borderLeft": 3,
+    "borderRight": 3,
+    "borderTop": 3,
+    "borderBottom": 3
+  },
+  "scrollBar": {
+    "width": 17,
+    "arrowFrames": 16,
+    "thumbFrames": 4,
+    "shaftFrames": 4,
+    "gripperFrames": 4,
+    "thumbBorderLeft": 5,
+    "thumbBorderRight": 5,
+    "thumbBorderTop": 5,
+    "thumbBorderBottom": 5
+  },
+  "toolTip": {
+    "fill": "#FFFFE1",
+    "border": "#000000",
+    "text": "#000000"
+  },
+  "messageBox": {
+    "minWidth": 280,
+    "minHeight": 120
+  },
+  "focusRect": {
+    "color": "#000000"
   },
   "spin": {
     "frames": 4,

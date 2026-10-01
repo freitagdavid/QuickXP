@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import "GenerationNormalize.js" as GenerationNormalize
+import "GenerationOverride.js" as GenerationOverride
 
 // Resolves shell generation (classic / xp / vista / win7) for layout and fidelity.
 // Shell default follows Theme.generation unless Config.options.generation is set.
@@ -13,51 +14,118 @@ Singleton {
   readonly property var generations: ["classic", "xp", "vista", "win7"]
 
   // Stable keys for features that diverge by generation. Empty override = use shell.
+  // kind "choice": mutually exclusive layouts (descriptive labels, generation ids).
+  // kind "toggle": enable/disable features (values "", "enabled", "disabled").
   readonly property var items: [
     {
       id: "startMenu",
       label: "Start menu layout",
-      hint: "Classic single-column, XP dual-column, or Vista/7 search Start"
+      kind: "choice",
+      hint: "Column layout of the Start menu",
+      choices: [
+        { id: "classic", label: "Single column (Classic)" },
+        { id: "xp", label: "Dual column (XP)" },
+        { id: "vista", label: "Search Start (Vista)" },
+        { id: "win7", label: "Search Start (Windows 7)" }
+      ]
+    },
+    {
+      id: "startSearch",
+      label: "Start menu search",
+      kind: "toggle",
+      hint: "Search box in the Start menu",
+      defaultOnGenerations: ["vista", "win7"]
     },
     {
       id: "quickLaunch",
       label: "Quick Launch",
-      hint: "Placement and visibility (Win7 may favor the tray-edge Show Desktop)"
+      kind: "choice",
+      hint: "Quick Launch toolbar placement",
+      choices: [
+        { id: "classic", label: "Classic Quick Launch bar" },
+        { id: "xp", label: "XP Quick Launch (left of tasks)" },
+        { id: "vista", label: "Vista Quick Launch" },
+        { id: "win7", label: "Pinned apps (Windows 7 style)" }
+      ]
     },
     {
       id: "taskbarGrouping",
       label: "Taskbar grouping",
-      hint: "Crowding-triggered (XP) vs always-combined buttons"
+      kind: "choice",
+      hint: "When task buttons combine",
+      choices: [
+        { id: "classic", label: "Never combine" },
+        { id: "xp", label: "Combine when taskbar is full (XP)" },
+        { id: "vista", label: "Combine when full (Vista)" },
+        { id: "win7", label: "Always combine (Windows 7)" }
+      ]
     },
     {
       id: "showDesktop",
       label: "Show Desktop",
-      hint: "Quick Launch icon vs Win7 far-right tray-edge button"
+      kind: "choice",
+      hint: "Where Show Desktop lives",
+      choices: [
+        { id: "classic", label: "Quick Launch icon" },
+        { id: "xp", label: "Quick Launch icon (XP)" },
+        { id: "vista", label: "Quick Launch icon (Vista)" },
+        { id: "win7", label: "Tray-edge peek button (Windows 7)" }
+      ]
     },
     {
       id: "livePeeks",
       label: "Taskbar live peeks",
-      hint: "XP title menus vs Vista/7 thumbnail strips"
+      kind: "toggle",
+      hint: "Thumbnail peeks on taskbar hover",
+      defaultOnGenerations: ["vista", "win7"]
     },
     {
       id: "notificationRetention",
       label: "Notification retention",
-      hint: "XP balloons only vs persistent tray queue"
+      kind: "choice",
+      hint: "How tray notifications stick around",
+      choices: [
+        { id: "classic", label: "Balloons only" },
+        { id: "xp", label: "Balloons only (XP)" },
+        { id: "vista", label: "Tray notification queue (Vista)" },
+        { id: "win7", label: "Tray notification queue (Windows 7)" }
+      ]
     },
     {
       id: "winTab",
       label: "Win+Tab",
-      hint: "XP taskbar focus cycle vs modern overview"
+      kind: "choice",
+      hint: "What Win+Tab does",
+      choices: [
+        { id: "classic", label: "Cycle taskbar buttons" },
+        { id: "xp", label: "Cycle taskbar buttons (XP)" },
+        { id: "vista", label: "Flip 3D / overview (Vista)" },
+        { id: "win7", label: "Aero Peek overview (Windows 7)" }
+      ]
     },
     {
       id: "clockFlyout",
       label: "Clock double-click",
-      hint: "Date and Time Properties vs Vista/7 calendar flyout"
+      kind: "choice",
+      hint: "Clock / date UI",
+      choices: [
+        { id: "classic", label: "Date and Time Properties" },
+        { id: "xp", label: "Date and Time Properties (XP)" },
+        { id: "vista", label: "Calendar flyout (Vista)" },
+        { id: "win7", label: "Calendar flyout (Windows 7)" }
+      ]
     },
     {
       id: "altTabOverview",
       label: "Alt+Tab / overview",
-      hint: "Compact switcher vs optional full overview chrome"
+      kind: "choice",
+      hint: "Task switcher chrome",
+      choices: [
+        { id: "classic", label: "Compact list switcher" },
+        { id: "xp", label: "Compact list switcher (XP)" },
+        { id: "vista", label: "Thumbnail switcher (Vista)" },
+        { id: "win7", label: "Thumbnail switcher (Windows 7)" }
+      ]
     }
   ]
 
@@ -68,6 +136,11 @@ Singleton {
     "vista": "Windows Vista",
     "win7": "Windows 7"
   })
+
+  readonly property var toggleChoices: [
+    { id: "enabled", label: "Enabled" },
+    { id: "disabled", label: "Disabled" }
+  ]
 
   readonly property string themeGeneration: normalize(Theme.generation, "xp")
 
@@ -91,6 +164,35 @@ Singleton {
     return named !== undefined ? named : key
   }
 
+  function itemMeta(itemId: string): var {
+    const list = items
+    for (let i = 0; i < list.length; ++i) {
+      if (list[i].id === itemId)
+        return list[i]
+    }
+    return undefined
+  }
+
+  function isToggle(itemId: string): bool {
+    const meta = itemMeta(itemId)
+    return meta !== undefined && meta.kind === "toggle"
+  }
+
+  function choicesFor(itemId: string, followLabel: string): var {
+    const meta = itemMeta(itemId)
+    if (meta === undefined) {
+      return GenerationOverride.withFollowChoice([
+        { id: "classic", label: "Windows Classic" },
+        { id: "xp", label: "Windows XP" },
+        { id: "vista", label: "Windows Vista" },
+        { id: "win7", label: "Windows 7" }
+      ], followLabel)
+    }
+    if (meta.kind === "toggle")
+      return GenerationOverride.withFollowChoice(toggleChoices, followLabel)
+    return GenerationOverride.withFollowChoice(meta.choices, followLabel)
+  }
+
   function overrideFor(itemId: string): string {
     const bag = Config.options.generationOverrides
     if (bag === undefined || bag === null)
@@ -101,11 +203,63 @@ Singleton {
     return String(value).trim()
   }
 
+  function normalizeOverride(itemId: string, value): string {
+    if (value === undefined || value === null)
+      return ""
+    const raw = String(value).trim()
+    if (raw === "")
+      return ""
+    if (isToggle(itemId)) {
+      const meta = itemMeta(itemId)
+      const onGens = meta && meta.defaultOnGenerations ? meta.defaultOnGenerations : ["vista", "win7"]
+      const toggled = GenerationOverride.normalizeToggle(raw, onGens)
+      if (toggled !== "")
+        return toggled
+      // Unknown token — try generation alias then toggle mapping.
+      return GenerationOverride.normalizeToggle(normalize(raw, ""), onGens)
+    }
+    return normalize(raw, "")
+  }
+
+  function defaultFeatureOn(itemId: string): bool {
+    const meta = itemMeta(itemId)
+    const onGens = meta && meta.defaultOnGenerations ? meta.defaultOnGenerations : ["vista", "win7"]
+    const g = shell
+    for (let i = 0; i < onGens.length; ++i) {
+      if (onGens[i] === g)
+        return true
+    }
+    return false
+  }
+
+  // Effective on/off for toggle policy items.
+  function featureEnabled(itemId: string): bool {
+    const override = normalizeOverride(itemId, overrideFor(itemId))
+    if (override === "enabled")
+      return true
+    if (override === "disabled")
+      return false
+    return defaultFeatureOn(itemId)
+  }
+
   // Effective generation for a policy item. Prefer this over Theme.generation.
+  // Toggle items map enabled→vista-class, disabled→xp-class for existing consumers.
   function forItem(itemId: string): string {
-    const override = overrideFor(itemId)
+    if (isToggle(itemId)) {
+      if (featureEnabled(itemId)) {
+        const g = shell
+        if (g === "vista" || g === "win7")
+          return g
+        return "vista"
+      }
+      const g = shell
+      if (g === "classic" || g === "xp")
+        return g
+      return "xp"
+    }
+    const override = normalizeOverride(itemId, overrideFor(itemId))
     if (override !== "")
-      return normalize(override, shell)
+      return override
     return shell
   }
 
@@ -126,15 +280,6 @@ Singleton {
     return g === "vista" || g === "win7"
   }
 
-  function itemMeta(itemId: string): var {
-    const list = items
-    for (let i = 0; i < list.length; ++i) {
-      if (list[i].id === itemId)
-        return list[i]
-    }
-    return undefined
-  }
-
   function emptyOverrides(): var {
     const out = {}
     const list = items
@@ -150,7 +295,7 @@ Singleton {
     for (const key in out) {
       const value = source[key]
       if (value !== undefined && value !== null && String(value).trim() !== "")
-        out[key] = normalize(value, "")
+        out[key] = normalizeOverride(key, value)
     }
     return out
   }

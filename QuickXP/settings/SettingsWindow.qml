@@ -60,8 +60,10 @@ FloatingWindow {
   }
 
   onVisibleChanged: {
-    if (!visible)
+    if (!visible) {
       Config.options.lastSettingsTab = draft.activeTab
+      DropdownGate.dismiss()
+    }
   }
 
   Item {
@@ -98,7 +100,10 @@ FloatingWindow {
               text: modelData.title
               enabled: modelData.enabled
               selected: draft.activeTab === modelData.id
-              onClicked: draft.activeTab = modelData.id
+              onClicked: {
+                DropdownGate.dismiss()
+                draft.activeTab = modelData.id
+              }
             }
           }
         }
@@ -204,5 +209,8 @@ FloatingWindow {
         }
       }
     }
+
+    // PopupWindow grab does not see clicks on this FloatingWindow; catch them here.
+    XpDropdownDismiss {}
   }
 }

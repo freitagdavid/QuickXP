@@ -10,7 +10,9 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 
 - [ ] Shell starts (`quickshell`) without QML errors for the active theme
 - [ ] Taskbar paints (Start button, plate, task buttons, tray, clock)
-- [ ] Open Start (when Start menu is available for the generation under test)
+- [ ] Left-click Start opens popup above the button; Esc / click-away dismisses; right-click still opens Properties
+- [ ] Start search filters apps; A–Z / Z–A and letter combo change the list; launching an app closes Start
+- [ ] Start → “About QuickXP…” opens the themed message box
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload
 - [ ] Post a freedesktop notification; tray / balloon / queue behaves as expected for the generation
 - [ ] Run dialog (Epic R) — Win+R / Start → Run when implemented

@@ -9,6 +9,10 @@ ShellRoot {
   readonly property var settings: Settings
   // Keep generation policy bound so Config/Theme changes resolve live.
   readonly property var generationPolicy: GenerationPolicy
+  // Keep app catalog bound for Start / pins / search.
+  readonly property var appCatalog: AppCatalog
+  // Keep dropdown exclusivity gate alive.
+  readonly property var dropdownGate: DropdownGate
 
   Component.onCompleted: {
     if (Config.ready)

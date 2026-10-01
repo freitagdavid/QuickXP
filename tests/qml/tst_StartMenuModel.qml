@@ -31,6 +31,24 @@ TestCase {
     verify(actions.indexOf("run") >= 0)
   }
 
+  function test_keyboardHelpers() {
+    const rows = [
+      { kind: "separator" },
+      { kind: "folder", label: "Programs", mnemonic: "p" },
+      { kind: "action", label: "Run...", mnemonic: "r" },
+      { kind: "separator" },
+      { kind: "action", label: "Turn Off Computer...", mnemonic: "u" }
+    ]
+    compare(StartMenuModel.nextSelectableIndex(rows, -1, 1), 1)
+    compare(StartMenuModel.nextSelectableIndex(rows, 1, 1), 2)
+    compare(StartMenuModel.nextSelectableIndex(rows, 2, 1), 4)
+    compare(StartMenuModel.nextSelectableIndex(rows, 4, 1), 1)
+    compare(StartMenuModel.nextSelectableIndex(rows, 1, -1), 4)
+    compare(StartMenuModel.mnemonicIndex(rows, "r"), 2)
+    compare(StartMenuModel.mnemonicIndex(rows, "u"), 4)
+    compare(StartMenuModel.mnemonicIndex(rows, "z"), -1)
+  }
+
   function test_classicSessionItems() {
     const rows = StartMenuModel.classicSessionItems("Administrator")
     compare(rows[0].kind, "separator")

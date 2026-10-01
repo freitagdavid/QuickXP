@@ -27,6 +27,7 @@ PopupWindow {
     classicMenu.closeSubmenus()
     Qt.callLater(() => {
       visible = true
+      classicMenu.resetFocus()
       armTimer.restart()
       contentFocus.forceActiveFocus()
     })
@@ -174,7 +175,7 @@ PopupWindow {
       parent: frame.contentItem
       anchors.fill: parent
       focus: true
-      Keys.onEscapePressed: host.close()
+      Keys.onPressed: (event) => classicMenu.handleKey(event)
 
       ClassicStartMenu {
         id: classicMenu

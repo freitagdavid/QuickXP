@@ -26,7 +26,11 @@ Item {
       : StartMenuModel.folderNode("programs", "Programs", "folder", [], "p")
     if (!programs.icon)
       programs.icon = "folder"
-    const shell = StartMenuModel.classicShellItems()
+    const _ = RecentCatalog._revision
+    const shell = StartMenuModel.classicShellItems(
+      RecentCatalog.recentItems,
+      RecentCatalog.favoriteItems
+    )
     const session = StartMenuModel.classicSessionItems(root.userName)
     return [programs].concat(shell).concat(session)
   }
@@ -46,8 +50,12 @@ Item {
     }
     if (node.kind === "folder")
       return
-    if (node.kind === "action" && typeof host.runAction === "function")
-      host.runAction(node.action)
+    if (node.kind === "action" && typeof host.runAction === "function") {
+      if (node.action === "open-uri" && node.uri)
+        host.openUri(node.uri)
+      else
+        host.runAction(node.action)
+    }
   }
 
   function openFolderAt(index) {

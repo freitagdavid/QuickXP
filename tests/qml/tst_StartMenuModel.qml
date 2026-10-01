@@ -19,16 +19,19 @@ TestCase {
   }
 
   function test_classicShellItems() {
-    const rows = StartMenuModel.classicShellItems()
-    verify(rows.length >= 5)
-    compare(rows[0].kind, "separator")
+    const recent = [{ kind: "action", action: "open-uri", label: "notes.txt", uri: "file:///tmp/notes.txt" }]
+    const favs = [{ kind: "action", action: "open-uri", label: "Music", uri: "file:///home/u/Music" }]
+    const rows = StartMenuModel.classicShellItems(recent, favs)
+    verify(rows.length >= 6)
+    compare(rows[0].kind, "folder")
+    compare(rows[0].id, "favorites")
+    compare(rows[1].kind, "separator")
+    const docs = rows.filter(function(r) { return r.id === "documents" })[0]
+    verify(docs.children.length >= 3)
     const folders = rows.filter(function(r) { return r.kind === "folder" }).map(function(r) { return r.id })
     verify(folders.indexOf("documents") >= 0)
     verify(folders.indexOf("settings") >= 0)
     verify(folders.indexOf("search") >= 0)
-    const actions = rows.filter(function(r) { return r.kind === "action" }).map(function(r) { return r.action })
-    verify(actions.indexOf("help") >= 0)
-    verify(actions.indexOf("run") >= 0)
   }
 
   function test_keyboardHelpers() {

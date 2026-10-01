@@ -49,6 +49,10 @@ PopupWindow {
 
   function runAction(action) {
     const id = String(action || "")
+    if (id === "open-uri") {
+      // uri carried on the node; callers pass via pendingUri
+      return
+    }
     if (id === "documents") {
       close()
       docsProc.running = true
@@ -94,6 +98,15 @@ PopupWindow {
     console.warn("QuickXP Start: action not implemented:", id)
   }
 
+  function openUri(uri) {
+    const target = String(uri || "").trim()
+    if (!target)
+      return
+    close()
+    uriProc.command = ["xdg-open", target]
+    uriProc.running = true
+  }
+
   function runSessionAction(action) {
     const act = String(action || "")
     if (!act)
@@ -122,6 +135,15 @@ PopupWindow {
     ]
     stderr: SplitParser {
       onRead: data => console.warn("QuickXP Start Documents:", data.trim())
+    }
+  }
+
+  Process {
+    id: uriProc
+    running: false
+    command: ["true"]
+    stderr: SplitParser {
+      onRead: data => console.warn("QuickXP Start open-uri:", data.trim())
     }
   }
 

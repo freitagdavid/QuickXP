@@ -21,6 +21,9 @@ Item {
     property var kwinTasks: []
 
     function applyTasks(text) {
+        // Ignore empty reads from a non-atomic truncate/write race.
+        if (!text || !String(text).trim())
+            return
         try {
             const parsed = JSON.parse(text)
             root.kwinTasks = Array.isArray(parsed) ? parsed : []

@@ -29,7 +29,7 @@ class Tasks(dbus.service.Object):
         self.bus = bus
         state_path.parent.mkdir(parents=True, exist_ok=True)
         if not state_path.exists():
-            state_path.write_text("[]")
+            self._atomic_write(state_path, "[]")
         self.ensure_preview_helper()
 
     def built_helper(self) -> Path:
@@ -52,8 +52,13 @@ class Tasks(dbus.service.Object):
             or INSTALLED_HELPER.stat().st_size != built.stat().st_size
         )
         if need_copy:
-            INSTALLED_HELPER.write_bytes(built.read_bytes())
-            INSTALLED_HELPER.chmod(0o755)
+            try:
+                INSTALLED_HELPER.write_bytes(built.read_bytes())
+                INSTALLED_HELPER.chmod(0o755)
+            except OSError as error:
+                print("quickxp tasks: install preview helper failed:", error, file=sys.stderr)
+                if not INSTALLED_HELPER.is_file():
+                    return None
 
         desktop = Path.home() / ".local/share/applications/org.quickxp.preview.desktop"
         text = (
@@ -73,17 +78,30 @@ class Tasks(dbus.service.Object):
         stamp_val = f"{INSTALLED_HELPER}\n{INSTALLED_HELPER.stat().st_mtime_ns}"
         need_rebuild = changed or not stamp.is_file() or stamp.read_text() != stamp_val
         if need_rebuild:
-            subprocess.run(["kbuildsycoca6", "--noincremental"], check=False, timeout=60)
+            # Keep kbuildsycoca chatter off the Quickshell stderr WARN stream.
+            subprocess.run(
+                ["kbuildsycoca6", "--noincremental"],
+                check=False,
+                timeout=60,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
             stamp.parent.mkdir(parents=True, exist_ok=True)
             stamp.write_text(stamp_val)
         return INSTALLED_HELPER
+
+    def _atomic_write(self, path: Path, text: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(text)
+        tmp.replace(path)
 
     @dbus.service.method(IFACE, in_signature="s", out_signature="")
     def SetWindows(self, payload):
         text = str(payload)
         if not text:
             text = "[]"
-        self.state_path.write_text(text)
+        self._atomic_write(self.state_path, text)
 
     @dbus.service.method(IFACE, in_signature="", out_signature="s")
     def TakeCommands(self):

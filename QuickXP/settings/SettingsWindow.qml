@@ -116,7 +116,7 @@ FloatingWindow {
   readonly property var tabs: [
     { id: "theme", title: "Theme", enabled: true },
     { id: "taskbar", title: "Taskbar", enabled: true },
-    { id: "start", title: "Start Menu", enabled: false },
+    { id: "start", title: "Start Menu", enabled: true },
     { id: "desktop", title: "Desktop", enabled: false },
     { id: "notify", title: "Notification Area", enabled: false },
     { id: "about", title: "About", enabled: false }
@@ -255,8 +255,8 @@ FloatingWindow {
               draft: window.draft
             }
 
-            PlaceholderTab {
-              message: "Start Menu options will appear here once classic and XP Start menus are available."
+            StartMenuTab {
+              draft: window.draft
             }
 
             PlaceholderTab {

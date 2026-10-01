@@ -272,7 +272,7 @@ First-class Run UI (LNK-17–21), not only a Start menu stub row.
 Ship first for Start UX. Classic Windows menu: one column of cascaded folders and items, plus session commands at the bottom.
 
 - [x] **Open from Start button** — Wire [QuickXP/taskbar/TaskBar.qml](QuickXP/taskbar/TaskBar.qml) Start `MouseArea`: left-click opens classic Start; right-click Properties / Settings ([`StartChromeMenu.qml`](../QuickXP/settings/StartChromeMenu.qml)). Placeholder Programs row until cascade lands.
-- **Programs cascade** — Recursive flyouts from user/system application menus; merge per-user and all-users trees.
+- [x] **Programs cascade** — Recursive flyouts via [`MenuBridge.py`](../QuickXP/services/MenuBridge.py) (XDG) or category buckets ([`StartMenuModel.js`](../QuickXP/StartMenuModel.js)); toggle `Config.options.startProgramsSource` in Settings → Start Menu.
 - **Fixed shell items** — Documents / settings / Help / Search / Run as classic menu rows (Run → Epic R; Search stub → later Search Companion).
 - **Favorites / recent docs (optional)** — Classic Documents / Recent Documents submenu if cheap after Programs; clear list separately from MFU.
 - **Bottom session rows** — Log Off, Shut Down / Turn Off Computer — open Epic 7 dialogs or call session APIs.

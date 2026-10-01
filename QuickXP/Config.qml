@@ -59,6 +59,8 @@ Singleton {
       property bool showQuickLaunch: true
       property bool matchWindowBorders: true
       property string lastSettingsTab: "theme"
+      // Classic Start Programs tree: xdgMenu | categories
+      property string startProgramsSource: "xdgMenu"
 
       // Per-feature generation overrides. Empty string = use shell generation.
       property JsonObject generationOverrides: JsonObject {

@@ -11,7 +11,8 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Shell starts (`quickshell`) without QML errors for the active theme
 - [ ] Taskbar paints (Start button, plate, task buttons, tray, clock)
 - [ ] Left-click Start opens classic single-column popup above the button; Esc / click-away dismisses; right-click still opens Properties
-- [ ] Classic Start has no search box (Vista/7 search is Epic 3); Programs cascade / shell rows when those Epic 1 tickets land
+- [ ] Classic Start has no search box; Programs cascade opens folder flyouts; Settings → Start Menu toggles XDG menu vs category folders
+- [ ] Shell / session Start rows when those Epic 1 tickets land
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload
 - [ ] Settings → Theme → Import… an XP `.msstyles` → one theme with schemes → Color scheme dropdown → Apply reloads chrome; Delete removes user-data themes only
 - [ ] Post a freedesktop notification; tray / balloon / queue behaves as expected for the generation

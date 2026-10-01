@@ -1,3 +1,4 @@
 # Python bridge tests
 
-Reserved for [`TasksBridge.py`](../../QuickXP/services/TasksBridge.py) and related helpers once notification or theme-install logic lands in Python (GitHub #41).
+- [`test_tasks_bridge_preview_cache.py`](test_tasks_bridge_preview_cache.py) — TasksBridge preview path tokens
+- [`test_menu_bridge.py`](test_menu_bridge.py) — MenuBridge Programs trees (category + XDG XML fixtures)

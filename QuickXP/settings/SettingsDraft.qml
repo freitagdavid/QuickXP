@@ -15,6 +15,7 @@ QtObject {
   property bool autoHide: false
   property bool showQuickLaunch: true
   property bool matchWindowBorders: true
+  property string startProgramsSource: "xdgMenu"
   property string activeTab: "theme"
 
   readonly property bool dirty: {
@@ -30,6 +31,7 @@ QtObject {
       || draft.autoHide !== o.autoHide
       || draft.showQuickLaunch !== o.showQuickLaunch
       || draft.matchWindowBorders !== o.matchWindowBorders
+      || draft.startProgramsSource !== o.startProgramsSource
   }
 
   function loadFromConfig() {
@@ -45,6 +47,7 @@ QtObject {
     draft.autoHide = o.autoHide
     draft.showQuickLaunch = o.showQuickLaunch
     draft.matchWindowBorders = o.matchWindowBorders
+    draft.startProgramsSource = o.startProgramsSource || "xdgMenu"
     draft.activeTab = o.lastSettingsTab || "theme"
   }
 
@@ -61,6 +64,7 @@ QtObject {
     o.autoHide = draft.autoHide
     o.showQuickLaunch = draft.showQuickLaunch
     o.matchWindowBorders = draft.matchWindowBorders
+    o.startProgramsSource = draft.startProgramsSource || "xdgMenu"
     o.lastSettingsTab = draft.activeTab
     Theme.name = draft.theme
     Theme.scheme = draft.themeScheme || ""

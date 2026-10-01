@@ -9,9 +9,37 @@ Item {
     clip: true
 
     property var toplevel: null
+    property var entry: null
     property Item taskList: null
+    property bool iconsOnly: false
 
-    readonly property bool focused: toplevel !== null && toplevel.activated && !toplevel.minimized
+    readonly property int count: {
+        if (entry !== null && entry !== undefined && entry.count !== undefined)
+            return Math.max(1, Number(entry.count) || 1)
+        return 1
+    }
+    readonly property var memberWindows: {
+        if (entry !== null && entry !== undefined && entry.windows)
+            return entry.windows
+        if (toplevel !== null)
+            return [toplevel]
+        return []
+    }
+    readonly property string displayTitle: {
+        if (entry !== null && entry !== undefined && entry.title)
+            return String(entry.title)
+        return toplevel !== null ? (toplevel.title || "") : ""
+    }
+
+    readonly property bool focused: {
+        const list = root.memberWindows
+        for (let i = 0; i < list.length; ++i) {
+            const win = list[i]
+            if (win && win.activated && !win.minimized)
+                return true
+        }
+        return false
+    }
     readonly property int frames: 6
     // 0 normal, 1 hot, 2 pressed, 4 checked (focused), 5 hot-checked.
     readonly property int frame: {
@@ -51,10 +79,11 @@ Item {
 
     readonly property string iconSource: {
         let name = ""
-        if (toplevel !== null && toplevel.appId !== "") {
-            const entry = DesktopEntries.heuristicLookup(toplevel.appId)
-            if (entry !== null && entry.icon)
-                name = entry.icon
+        const target = toplevel
+        if (target !== null && target.appId !== "") {
+            const desk = DesktopEntries.heuristicLookup(target.appId)
+            if (desk !== null && desk.icon)
+                name = desk.icon
         }
         const path = name !== ""
             ? Quickshell.iconPath(name, "application-x-executable")
@@ -62,7 +91,7 @@ Item {
         return fileUrl(path)
     }
 
-    readonly property string title: toplevel !== null ? toplevel.title : ""
+    readonly property string title: root.displayTitle
 
     function updateRect() {
         const target = toplevel
@@ -96,6 +125,23 @@ Item {
         if (root.title !== "" && elided && area.containsMouse) {
             tooltip.title = root.title
             tooltip.visible = true
+        }
+    }
+
+    function activateOrMinimize(target) {
+        if (target === null || target === undefined)
+            return
+        if (target.kwin) {
+            const action = target.activated && !target.minimized ? "minimize" : "activate"
+            root.sendCommand(target.windowId, action)
+            return
+        }
+        if (target.activated && !target.minimized)
+            target.minimized = true
+        else {
+            target.minimized = false
+            if (typeof target.activate === "function")
+                target.activate()
         }
     }
 
@@ -231,12 +277,12 @@ Item {
 
         Item {
             id: icon
-            anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
+            anchors.left: root.iconsOnly ? undefined : parent.left
+            anchors.horizontalCenter: root.iconsOnly ? parent.horizontalCenter : undefined
             width: iconImage.status === Image.Ready ? 17 : 0
             height: 17
 
-            // Keep Image sync: ColorOverlay + async pixmap load trips cross-thread QObject warnings.
             ColorOverlay {
                 x: 1
                 y: 1
@@ -266,12 +312,39 @@ Item {
             anchors.leftMargin: icon.width > 0 ? 4 : 0
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            visible: width > 8
-            text: root.title
+            visible: !root.iconsOnly && width > 8
+            text: root.displayTitle
             elide: Text.ElideRight
             color: Theme.color("taskbarText", "white")
             font.family: Theme.value("fonts", "ui", "Tahoma")
             font.pixelSize: Theme.size("fontSize", 11)
+        }
+
+        // Window-count badge overlays top-right of the icon (or square in icons-only).
+        Rectangle {
+            id: countBadge
+            z: 2
+            visible: root.count > 1
+            anchors.top: root.iconsOnly ? parent.top : icon.top
+            anchors.right: root.iconsOnly ? parent.right : icon.right
+            anchors.topMargin: root.iconsOnly ? -2 : -4
+            anchors.rightMargin: root.iconsOnly ? -2 : -6
+            width: Math.max(12, countLabel.implicitWidth + 4)
+            height: 12
+            radius: 6
+            color: Theme.color("highlight", "#316AC5")
+            border.width: 1
+            border.color: Theme.color("highlightText", "white")
+
+            Text {
+                id: countLabel
+                anchors.centerIn: parent
+                text: String(root.count)
+                color: Theme.color("highlightText", "white")
+                font.family: Theme.value("fonts", "ui", "Tahoma")
+                font.pixelSize: 9
+                font.bold: true
+            }
         }
     }
 
@@ -283,19 +356,23 @@ Item {
 
         onContainsMouseChanged: {
             if (containsMouse && (taskList === null || !taskList.taskMenuOpen)) {
+                if (taskList !== null && root.count > 1 && root.entry !== null) {
+                    taskList.requestGroupPreview(root, root.entry)
+                    return
+                }
                 if (taskList !== null && toplevel !== null && toplevel.kwin)
                     taskList.requestPreview(root, toplevel)
                 else
                     root.showTip()
             } else {
                 root.hideTip()
-                if (taskList !== null)
+                if (taskList !== null) {
                     taskList.cancelPreviewButton()
+                    taskList.cancelGroupPreview()
+                }
             }
         }
 
-        // clicked() is the release. A right-click release often never
-        // arrives, so the menu opens on the press.
         onPressed: (mouse) => {
             if (mouse.button !== Qt.RightButton || taskList === null)
                 return
@@ -309,21 +386,12 @@ Item {
         onClicked: (mouse) => {
             if (mouse.button === Qt.RightButton)
                 return
-            const target = root.toplevel
-            if (target === null)
-                return
             root.hideTip()
-            if (target.kwin) {
-                const action = target.activated && !target.minimized ? "minimize" : "activate"
-                root.sendCommand(target.windowId, action)
+            if (root.count > 1 && taskList !== null && root.entry !== null) {
+                taskList.openGroupPopup(root, root.entry)
                 return
             }
-            if (target.activated && !target.minimized)
-                target.minimized = true
-            else {
-                target.minimized = false
-                target.activate()
-            }
+            root.activateOrMinimize(root.toplevel)
         }
     }
 

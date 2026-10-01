@@ -147,7 +147,7 @@ Item {
       Text {
         width: parent.width
         wrapMode: Text.WordWrap
-        text: "Grouping, icon-only mode, auto-hide, and Quick Launch behavior will take effect as those features land. Height applies immediately on Apply."
+        text: "Icons only and Group similar apply on Apply. With labels, similar buttons combine when the band is full; with icons only, they always combine. Auto-hide and Quick Launch behavior land with later work. Height applies on Apply."
         color: Theme.color("windowText", "black")
         font.family: Theme.value("fonts", "ui", "Tahoma")
         font.pixelSize: Theme.size("fontSize", 11)

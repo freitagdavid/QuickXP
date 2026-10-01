@@ -2,6 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import qs.QuickXP
+import "../TaskbandModel.js" as TaskbandModel
 
 Item {
     id: root
@@ -32,12 +34,30 @@ Item {
         }
     }
 
+    readonly property bool groupButtons: !!Config.options.groupButtons
+    readonly property bool iconsOnly: !!Config.options.iconsOnly
+
     readonly property int spacing: 3
     readonly property int maxButtonWidth: 160
     // Floor before the Luna caps collide. Past this the band pages.
-    readonly property int minButtonWidth: 48 
+    readonly property int minButtonWidth: 48
+    // Icons-only buttons are square: width matches the taskband height.
+    readonly property int iconButtonWidth: Math.max(24, Math.round(height))
+    readonly property int slotWidth: root.iconsOnly ? root.iconButtonWidth : root.minButtonWidth
     property int page: 0
     property string trackedFocusKey: ""
+
+    function enrichWindow(row) {
+        let appName = ""
+        const appId = row.appId || ""
+        if (appId !== "") {
+            const entry = DesktopEntries.heuristicLookup(appId)
+            if (entry !== null && entry.name)
+                appName = entry.name
+        }
+        row.appName = appName
+        return row
+    }
 
     readonly property var windows: {
         if (root.useKwin) {
@@ -45,7 +65,7 @@ Item {
             const rows = root.kwinTasks
             for (let i = 0; i < rows.length; ++i) {
                 const row = rows[i]
-                shown.push({
+                shown.push(root.enrichWindow({
                     kwin: true,
                     windowId: row.id,
                     title: row.title || "",
@@ -59,7 +79,7 @@ Item {
                     moveable: row.moveable !== false,
                     resizeable: row.resizeable !== false,
                     parent: null
-                })
+                }))
             }
             return shown
         }
@@ -68,10 +88,22 @@ Item {
         const shown = []
         for (let i = 0; i < all.length; ++i) {
             const toplevel = all[i]
-            if (toplevel.parent == null)
-                shown.push(toplevel)
+            if (toplevel.parent != null)
+                continue
+            shown.push(toplevel)
         }
         return shown
+    }
+
+    readonly property var entries: {
+        const built = TaskbandModel.buildEntries(root.windows || [], {
+            groupButtons: root.groupButtons,
+            iconsOnly: root.iconsOnly,
+            bandWidth: root.width,
+            minButtonWidth: root.slotWidth,
+            spacing: root.spacing
+        })
+        return Array.isArray(built) ? built : []
     }
 
     Process {
@@ -100,36 +132,47 @@ Item {
     }
     readonly property real pagerWidth: height / 2
     readonly property bool paging: {
-        const count = windows.length
+        const list = entries
+        const count = list && list.length ? list.length : 0
         if (count === 0 || width <= 0)
             return false
-        const needed = count * minButtonWidth + spacing * Math.max(0, count - 1)
+        const needed = count * slotWidth + spacing * Math.max(0, count - 1)
         return needed > width
     }
     readonly property int perPage: {
+        const list = entries
+        const total = list && list.length ? list.length : 0
         if (!paging)
-            return Math.max(1, windows.length)
+            return Math.max(1, total)
         const available = Math.max(0, width - pagerWidth - spacing)
-        const slot = minButtonWidth + spacing
+        const slot = slotWidth + spacing
         return Math.max(1, Math.floor((available + spacing) / slot))
     }
     readonly property int pageCount: {
+        const list = entries
+        const total = list && list.length ? list.length : 0
         if (!paging)
             return 1
-        return Math.max(1, Math.ceil(windows.length / perPage))
+        return Math.max(1, Math.ceil(total / perPage))
     }
     readonly property int buttonWidth: {
-        const count = windows.length
+        const list = entries
+        const count = list && list.length ? list.length : 0
         if (count === 0 || width <= 0)
             return 0
+        // Icons-only: square tiles matching band height.
+        if (root.iconsOnly)
+            return root.iconButtonWidth
         if (paging)
             return minButtonWidth
         const gaps = spacing * Math.max(0, count - 1)
         const share = (width - gaps) / count
         return Math.max(minButtonWidth, Math.min(maxButtonWidth, Math.floor(share)))
     }
-    readonly property var pageWindows: {
-        const all = windows
+    readonly property var pageEntries: {
+        const all = entries
+        if (!all || !all.length)
+            return []
         if (!paging)
             return all
         const start = page * perPage
@@ -148,17 +191,35 @@ Item {
         return "w:" + String(win)
     }
 
+    function entryContainsFocus(entry) {
+        if (!entry || !entry.windows || !entry.windows.length)
+            return false
+        for (let i = 0; i < entry.windows.length; ++i) {
+            const win = entry.windows[i]
+            if (win && win.activated && !win.minimized)
+                return true
+        }
+        return false
+    }
+
     // Follow a newly focused window onto its page. A manual page change
     // stays put until focus moves again.
     function syncPage() {
-        const all = windows
+        const all = entries
+        if (!all || !all.length) {
+            trackedFocusKey = ""
+            if (page !== 0)
+                page = 0
+            return
+        }
         let focusKey = ""
         let focusIndex = -1
         for (let i = 0; i < all.length; ++i) {
-            const win = all[i]
-            if (win.activated && !win.minimized) {
+            const entry = all[i]
+            if (root.entryContainsFocus(entry)) {
                 focusIndex = i
-                focusKey = windowKey(win)
+                const rep = entry.representative
+                focusKey = root.windowKey(rep)
                 break
             }
         }
@@ -182,11 +243,16 @@ Item {
     }
 
     onWindowsChanged: syncPage()
+    onEntriesChanged: syncPage()
     onPagingChanged: syncPage()
     onPerPageChanged: syncPage()
     onPageCountChanged: syncPage()
+    onGroupButtonsChanged: syncPage()
+    onIconsOnlyChanged: syncPage()
     onPageChanged: {
         taskMenu.dismiss()
+        groupMenu.dismiss()
+        root.cancelGroupPreviewImmediate()
         dismissPreview()
     }
     Component.onCompleted: syncPage()
@@ -216,27 +282,35 @@ Item {
         spacing: root.spacing
 
         Repeater {
-            model: root.pageWindows
+            model: root.pageEntries
 
             delegate: TaskButton {
                 required property var modelData
 
                 taskList: root
-                toplevel: modelData
+                entry: modelData
+                toplevel: modelData && modelData.representative ? modelData.representative : null
+                iconsOnly: root.iconsOnly
                 width: root.buttonWidth
                 height: row.height
             }
         }
     }
 
-    readonly property bool taskMenuOpen: taskMenu.visible
+    // Group strip is a hover preview, not a "menu" — exclude it so hover can keep it open.
+    readonly property bool taskMenuOpen: taskMenu.visible || groupMenu.visible
 
     property int previewSerial: 0
     property var previewButton: null
     property var previewToplevel: null
     property bool previewOnButton: false
 
+    property var groupPreviewButton: null
+    property var groupPreviewEntry: null
+    property bool groupPreviewOnButton: false
+
     function requestPreview(button, toplevel) {
+        root.cancelGroupPreviewImmediate()
         previewOnButton = true
         previewCloseTimer.stop()
         if (previewButton !== button) {
@@ -273,6 +347,62 @@ Item {
         dismissPreview()
     }
 
+    function requestGroupPreview(button, entry) {
+        if (!entry || !entry.windows || entry.windows.length <= 1)
+            return
+        root.dismissPreview()
+        groupMenu.dismiss()
+        groupPreviewOnButton = true
+        groupStripCloseTimer.stop()
+        if (groupPreviewButton === button && groupStrip.visible
+            && groupPreviewEntry === entry) {
+            return
+        }
+        groupPreviewButton = button
+        groupPreviewEntry = entry
+        groupStripTimer.restart()
+    }
+
+    function cancelGroupPreview() {
+        groupPreviewOnButton = false
+        groupStripCloseTimer.restart()
+    }
+
+    function cancelGroupPreviewImmediate() {
+        groupPreviewOnButton = false
+        groupStripTimer.stop()
+        groupStripCloseTimer.stop()
+        groupPreviewButton = null
+        groupPreviewEntry = null
+        groupStrip.dismiss()
+    }
+
+    function closeGroupStripIfIdle() {
+        if (groupPreviewOnButton || groupStrip.hovered)
+            return
+        root.cancelGroupPreviewImmediate()
+    }
+
+    function showGroupStrip() {
+        if (!groupPreviewOnButton || groupPreviewEntry === null || groupPreviewButton === null)
+            return
+        if (taskMenu.visible)
+            return
+        groupMenu.dismiss()
+        groupStrip.windows = groupPreviewEntry.windows
+        groupStrip.anchorItem = groupPreviewButton
+        groupStrip.open()
+    }
+
+    function previewCachePath(windowId: string): string {
+        const safe = String(windowId).replace(/[^A-Za-z0-9._-]+/g, "_") || "unknown"
+        const state = String(root.stateFile)
+        const slash = state.lastIndexOf("/")
+        if (slash < 0)
+            return ""
+        return state.substring(0, slash) + "/quickxp-preview-w-" + safe + ".png"
+    }
+
     function startCapture() {
         if (!previewOnButton || previewToplevel === null || taskMenu.visible)
             return
@@ -283,6 +413,10 @@ Item {
         }
         const serial = ++previewSerial
         const windowId = previewToplevel.windowId
+        // Show disk cache immediately while DBus refreshes the peek.
+        const cached = root.previewCachePath(windowId)
+        if (cached !== "")
+            root.previewReady(serial, cached)
         capture.pendingSerial = serial
         capture.running = false
         Qt.callLater(() => {
@@ -310,7 +444,9 @@ Item {
             previewButton.hideTip()
         previewPopup.title = previewToplevel !== null ? (previewToplevel.title || "") : ""
         previewPopup.closeEnabled = previewToplevel === null || previewToplevel.closeable !== false
+        // Nonce busts Image cache when the stable path is overwritten in place.
         previewPopup.imagePath = path
+        previewPopup.imageNonce = Date.now()
         previewPopup.anchorItem = previewButton
         previewPopup.open()
     }
@@ -319,6 +455,44 @@ Item {
         const target = previewToplevel
         dismissPreview()
         if (target === null)
+            return
+        root.activateWindow(target)
+    }
+
+    function closePreviewWindow() {
+        const target = previewToplevel
+        dismissPreview()
+        if (target === null)
+            return
+        root.closeWindow(target)
+    }
+
+    function closeWindow(target) {
+        if (target === null || target === undefined)
+            return
+        if (target.kwin) {
+            Quickshell.execDetached([
+                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
+                "org.quickxp.Tasks.Command", target.windowId, "close"
+            ])
+            return
+        }
+        if (typeof target.close === "function")
+            target.close()
+    }
+
+    function closeGroupStripWindow(target) {
+        if (target === null || target === undefined)
+            return
+        root.closeWindow(target)
+        groupStrip.removeWindow(target)
+        // Keep hover sticky while the strip remains open.
+        groupPreviewOnButton = true
+        groupStripCloseTimer.stop()
+    }
+
+    function activateWindow(target) {
+        if (target === null || target === undefined)
             return
         if (target.kwin) {
             Quickshell.execDetached([
@@ -332,28 +506,56 @@ Item {
             target.activate()
     }
 
-    function closePreviewWindow() {
-        const target = previewToplevel
-        dismissPreview()
-        if (target === null)
-            return
-        if (target.kwin) {
-            Quickshell.execDetached([
-                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
-                "org.quickxp.Tasks.Command", target.windowId, "close"
-            ])
-            return
+    function openTaskMenu(anchor, toplevel, keepHoverPopups) {
+        if (!keepHoverPopups) {
+            dismissPreview()
+            root.cancelGroupPreviewImmediate()
+        } else {
+            // Keep peek/strip open under the system menu; pause grab so opening
+            // the menu does not auto-close the preview via focus loss.
+            previewOnButton = true
+            groupPreviewOnButton = true
+            previewCloseTimer.stop()
+            groupStripCloseTimer.stop()
+            previewPopup.grabFocus = false
+            groupStrip.grabFocus = false
         }
-        if (typeof target.close === "function")
-            target.close()
-    }
-
-    function openTaskMenu(button, toplevel) {
-        dismissPreview()
+        groupMenu.dismiss()
         taskMenu.dismiss()
         taskMenu.toplevel = toplevel
-        taskMenu.anchorItem = button
+        taskMenu.anchorItem = anchor
         taskMenu.open()
+    }
+
+    function restorePreviewGrab() {
+        if (previewPopup.visible)
+            previewPopup.grabFocus = true
+        if (groupStrip.visible)
+            groupStrip.grabFocus = true
+    }
+
+    function openGroupPopup(button, entry) {
+        if (!entry || !entry.windows || entry.windows.length <= 1)
+            return
+        dismissPreview()
+        taskMenu.dismiss()
+        // Icons-only / modern: strip is already the hover UI — keep or open it.
+        // Labeled XP: click opens the title list instead.
+        if (root.iconsOnly) {
+            groupMenu.dismiss()
+            groupPreviewOnButton = true
+            groupPreviewButton = button
+            groupPreviewEntry = entry
+            groupStrip.windows = entry.windows
+            groupStrip.anchorItem = button
+            if (!groupStrip.visible)
+                groupStrip.open()
+            return
+        }
+        root.cancelGroupPreviewImmediate()
+        groupMenu.windows = entry.windows
+        groupMenu.anchorItem = button
+        groupMenu.open()
     }
 
     function runMenuAction(action) {
@@ -383,6 +585,37 @@ Item {
     TaskMenu {
         id: taskMenu
         onChosen: action => root.runMenuAction(action)
+        onVisibleChanged: {
+            if (!visible)
+                root.restorePreviewGrab()
+        }
+    }
+
+    TaskGroupMenu {
+        id: groupMenu
+        onActivated: toplevel => root.activateWindow(toplevel)
+    }
+
+    TaskGroupStrip {
+        id: groupStrip
+        onActivated: toplevel => {
+            root.cancelGroupPreviewImmediate()
+            root.activateWindow(toplevel)
+        }
+        onCloseClicked: toplevel => root.closeGroupStripWindow(toplevel)
+        onContextMenuRequested: (toplevel, anchorItem) => {
+            root.openTaskMenu(anchorItem, toplevel, true)
+        }
+        onHoverLeft: {
+            if (!taskMenu.visible)
+                groupStripCloseTimer.restart()
+        }
+        onClosedOut: {
+            // Outside click / grab loss — sync TaskList state.
+            if (groupStrip.visible)
+                return
+            root.cancelGroupPreviewImmediate()
+        }
     }
 
     Timer {
@@ -395,6 +628,18 @@ Item {
         id: previewCloseTimer
         interval: 250
         onTriggered: root.closePreviewIfIdle()
+    }
+
+    Timer {
+        id: groupStripTimer
+        interval: 400
+        onTriggered: root.showGroupStrip()
+    }
+
+    Timer {
+        id: groupStripCloseTimer
+        interval: 250
+        onTriggered: root.closeGroupStripIfIdle()
     }
 
     Process {
@@ -413,8 +658,21 @@ Item {
 
     TaskPreview {
         id: previewPopup
-        onHoverLeft: previewCloseTimer.restart()
+        onHoverLeft: {
+            if (!taskMenu.visible)
+                previewCloseTimer.restart()
+        }
         onActivated: root.activatePreviewWindow()
         onCloseClicked: root.closePreviewWindow()
+        onContextMenuRequested: {
+            if (previewToplevel === null)
+                return
+            root.openTaskMenu(previewPopup, previewToplevel, true)
+        }
+        onClosedOut: {
+            if (previewPopup.visible)
+                return
+            root.dismissPreview()
+        }
     }
 }

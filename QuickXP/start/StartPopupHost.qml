@@ -5,21 +5,19 @@ import qs.QuickXP
 import qs.QuickXP.controls
 import qs.QuickXP.settings
 
-// Classic Start host — open/close, Esc/outside dismiss, position above Start.
-// Programs cascade via ClassicStartMenu + ProgramsCatalog; fixed shell rows via runAction.
+// Classic Start host — XP Classic Start chrome (banner + beveled face).
 PopupWindow {
   id: host
 
   property Item anchorItem: null
 
   visible: false
-  color: Theme.color("menu", "white")
+  color: "transparent"
   grabFocus: true
 
   property bool armed: false
   property string pendingSessionAction: ""
 
-  readonly property int menuWidth: 200
   readonly property int menuMinHeight: 120
 
   function open() {
@@ -88,7 +86,7 @@ PopupWindow {
     if (id === "shutdown") {
       close()
       pendingSessionAction = "poweroff"
-      confirmBox.title = "Shut Down"
+      confirmBox.title = "Turn Off Computer"
       confirmBox.open("Do you want to turn off the computer?\n\n(Full Turn Off dialog is Epic 7.)", true)
       return
     }
@@ -154,15 +152,12 @@ PopupWindow {
   anchor.gravity: Edges.Top | Edges.Right
   anchor.adjustment: PopupAdjustment.Slide
 
-  implicitWidth: menuWidth
-  implicitHeight: Math.max(menuMinHeight, Math.min(480, body.implicitHeight + 4))
+  implicitWidth: classicMenu.width + 4
+  implicitHeight: Math.max(menuMinHeight, Math.min(520, classicMenu.implicitHeight + 4))
 
-  Rectangle {
+  ClassicMenuFrame {
     id: frame
     anchors.fill: parent
-    color: Theme.color("menu", "white")
-    border.width: 1
-    border.color: Theme.color("border", "#003C74")
 
     HoverHandler {
       onHoveredChanged: {
@@ -176,24 +171,24 @@ PopupWindow {
 
     Item {
       id: contentFocus
+      parent: frame.contentItem
       anchors.fill: parent
-      anchors.margins: 1
       focus: true
       Keys.onEscapePressed: host.close()
 
-      Column {
-        id: body
+      ClassicStartMenu {
+        id: classicMenu
         anchors.left: parent.left
-        anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 2
-        spacing: 0
-
-        ClassicStartMenu {
-          id: classicMenu
-          width: parent.width
-          host: host
-          programsNode: ProgramsCatalog.programsNode
+        host: host
+        programsNode: ProgramsCatalog.programsNode
+        bannerText: {
+          const g = GenerationPolicy.forItem("startMenu")
+          if (g === "classic")
+            return "Microsoft Windows"
+          if (g === "vista" || g === "win7")
+            return "Windows"
+          return "Windows XP Professional"
         }
       }
     }

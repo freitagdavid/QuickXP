@@ -112,21 +112,32 @@ function withMnemonic(node, mnemonic) {
 }
 
 // Classic Start middle block: Documents/Settings/Search cascade; Help/Run are leaves.
-function classicShellItems() {
-  return [
-    separatorNode("sep-shell"),
-    folderNode("documents", "Documents", "folder-documents", [
-      actionNode("documents", "My Documents", "folder-documents", "d")
-    ], "d"),
-    folderNode("settings", "Settings", "preferences-system", [
-      actionNode("settings", "Control Panel", "preferences-system", "c")
-    ], "s"),
-    folderNode("search", "Search", "system-search", [
-      actionNode("search", "For Files or Folders...", "system-search", "f")
-    ], "c"),
-    actionNode("help", "Help and Support", "help-browser", "h"),
-    actionNode("run", "Run...", "system-run", "r")
-  ]
+// recentNodes / favoriteNodes are optional action-node arrays from RecentCatalog.
+function classicShellItems(recentNodes, favoriteNodes) {
+  const docsChildren = [actionNode("documents", "My Documents", "folder-documents", "d")]
+  const recent = Array.isArray(recentNodes) ? recentNodes : []
+  if (recent.length) {
+    docsChildren.push(separatorNode("sep-recent"))
+    for (let i = 0; i < recent.length; ++i)
+      docsChildren.push(recent[i])
+  }
+
+  const rows = []
+  const favorites = Array.isArray(favoriteNodes) ? favoriteNodes : []
+  if (favorites.length) {
+    rows.push(folderNode("favorites", "Favorites", "folder", favorites.slice(), "a"))
+  }
+  rows.push(separatorNode("sep-shell"))
+  rows.push(folderNode("documents", "Documents", "folder-documents", docsChildren, "d"))
+  rows.push(folderNode("settings", "Settings", "preferences-system", [
+    actionNode("settings", "Control Panel", "preferences-system", "c")
+  ], "s"))
+  rows.push(folderNode("search", "Search", "system-search", [
+    actionNode("search", "For Files or Folders...", "system-search", "f")
+  ], "c"))
+  rows.push(actionNode("help", "Help and Support", "help-browser", "h"))
+  rows.push(actionNode("run", "Run...", "system-run", "r"))
+  return rows
 }
 
 function classicSessionItems(userName) {

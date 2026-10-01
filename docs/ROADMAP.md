@@ -274,7 +274,7 @@ Ship first for Start UX. Classic Windows menu: one column of cascaded folders an
 - [x] **Open from Start button** — Wire [QuickXP/taskbar/TaskBar.qml](QuickXP/taskbar/TaskBar.qml) Start `MouseArea`: left-click opens classic Start; right-click Properties / Settings ([`StartChromeMenu.qml`](../QuickXP/settings/StartChromeMenu.qml)). Placeholder Programs row until cascade lands.
 - [x] **Programs cascade** — Recursive flyouts via [`MenuBridge.py`](../QuickXP/services/MenuBridge.py) (XDG) or category buckets ([`StartMenuModel.js`](../QuickXP/StartMenuModel.js)); toggle `Config.options.startProgramsSource` in Settings → Start Menu.
 - [x] **Fixed shell items** — Documents / Settings / Help / Search / Run as classic menu rows (Run → Epic R stub; Search stub → later Search Companion).
-- **Favorites / recent docs (optional)** — Classic Documents / Recent Documents submenu if cheap after Programs; clear list separately from MFU.
+- [x] **Favorites / recent docs** — Documents submenu includes recent from `recently-used.xbel`; Favorites from GTK bookmarks when present ([`RecentBridge.py`](../QuickXP/services/RecentBridge.py)). Clear list in Customize (#67).
 - [x] **Bottom session rows** — Log Off / Shut Down with confirm → [`SessionBridge.py`](../QuickXP/services/SessionBridge.py) (`loginctl` / `systemctl`); Epic 7 replaces confirms with full dialogs.
 - [x] **Keyboard nav** — Up/down, Enter/Right open, Left/Esc close submenu then menu, letter mnemonics (`StartMenuModel` helpers + host Keys).
 - **Highlight newly installed** — Optional; after Programs works.

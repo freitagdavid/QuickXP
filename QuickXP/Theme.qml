@@ -165,15 +165,27 @@ Singleton {
     return value
   }
 
-  // XP Start flag lives in explorer resources, not .msstyles — fall back to Luna's.
+  // XP Start flag lives in explorer resources, not .msstyles — fall back to Luna's
+  // only when the theme's Start button expects a separate flag overlay.
   readonly property string defaultStartFlag: Quickshell.shellPath(
     "QuickXP/themes/luna/explorer_assets/explorer/images/143.png"
   )
 
+  readonly property bool composeStartFlag: {
+    const flag = root.value("startButton", "composeFlag", undefined)
+    if (flag === false)
+      return false
+    if (flag === true)
+      return true
+    // Legacy themes without composeFlag: hide when Start art is TrueSize.
+    const sizing = String(root.value("startButton", "sizingType", "stretch")).toLowerCase()
+    return sizing !== "truesize" && sizing !== "true_size"
+  }
+
   function image(key: string): string {
     const value = root.images[key]
     if (value === undefined || value === null || value === "") {
-      if (key === "startFlagImage")
+      if (key === "startFlagImage" && root.composeStartFlag)
         return root.defaultStartFlag
       return ""
     }
@@ -182,8 +194,12 @@ Singleton {
     if (path.startsWith("/") || path.startsWith("file:"))
       return path
     // Relative explorer/flag paths only exist on the Luna fixture tree.
-    if (key === "startFlagImage" && path.indexOf("explorer_assets/") === 0)
-      return root.defaultStartFlag
+    if (key === "startFlagImage") {
+      if (!root.composeStartFlag)
+        return ""
+      if (path.indexOf("explorer_assets/") === 0)
+        return root.defaultStartFlag
+    }
     return root.themeDir + "/" + path
   }
 

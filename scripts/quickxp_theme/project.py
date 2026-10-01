@@ -69,6 +69,11 @@ def pick_image_field(section: dict[str, str], field: str) -> str | None:
             if section.get(key):
                 return section[key]
         return None
+    if field == "imagefile3":
+        for key in ("imagefile3", "glyphimagefile", "imagefile2", "imagefile1"):
+            if section.get(key):
+                return section[key]
+        return None
     if field == "stockimagefile":
         return section.get("stockimagefile") or section.get("imagefile1") or section.get(
             "imagefile"
@@ -98,6 +103,53 @@ def relative_image(theme_root: Path, absolute: Path) -> str:
         return absolute.resolve().relative_to(theme_root.resolve()).as_posix()
     except ValueError:
         return absolute.name
+
+
+def _derive_caption_frames(
+    theme_root: Path,
+    images: dict[str, str],
+    caption: dict,
+) -> None:
+    """Slice Window.Caption strip into captionActiveImage / captionInactiveImage."""
+    rel = images.get("captionImage")
+    if not rel:
+        return
+    src = theme_root / rel
+    if not src.is_file():
+        return
+    try:
+        from PIL import Image
+    except Exception:
+        return
+    try:
+        sheet = Image.open(src).convert("RGBA")
+    except Exception:
+        return
+    frames = int(caption.get("frames") or 2)
+    layout = str(caption.get("imageLayout") or "vertical").lower()
+    if frames < 1:
+        frames = 1
+    width, height = sheet.size
+    out_dir = theme_root / "images" / "caption_frames"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stem = src.stem
+
+    def save_frame(index: int, name: str) -> None:
+        if layout == "horizontal":
+            fw = max(1, width // frames)
+            box = (index * fw, 0, min(width, (index + 1) * fw), height)
+        else:
+            fh = max(1, height // frames)
+            box = (0, index * fh, width, min(height, (index + 1) * fh))
+        dest = out_dir / f"{stem}-{name}.png"
+        sheet.crop(box).save(dest)
+        images[f"caption{name.capitalize()}Image"] = relative_image(theme_root, dest)
+
+    save_frame(0, "active")
+    if frames > 1:
+        save_frame(1, "inactive")
+    else:
+        images["captionInactiveImage"] = images.get("captionActiveImage", rel)
 
 
 def infer_image_layout(
@@ -255,6 +307,9 @@ def project_theme(
     scroll_w = parse_int(sysm.get("scrollbarwidth"))
     if scroll_w:
         sizes["taskbarHeight"] = 30  # shell default; real height from taskbar art
+    caption_h = parse_int(sysm.get("captionbarheight"))
+    if caption_h:
+        sizes["captionBarHeight"] = caption_h
 
     # Group projections
     for spec in keymap.GROUP_BINDINGS:
@@ -344,6 +399,22 @@ def project_theme(
                     except ValueError:
                         pass
 
+        if spec.get("offset") and section:
+            offset = section.get("offset")
+            if offset:
+                parts = re.split(r"[,\s]+", offset.strip())
+                if len(parts) >= 2:
+                    try:
+                        bag["offsetX"] = int(parts[0])
+                        bag["offsetY"] = int(parts[1])
+                        # Vertical component is top padding inside the caption bar.
+                        bag["offsetTop"] = abs(int(parts[1]))
+                    except ValueError:
+                        pass
+            offset_type = (section.get("offsettype") or "").strip()
+            if offset_type:
+                bag["offsetType"] = offset_type
+
         if spec.get("disabled_text_section"):
             disabled = _section_get(sections, spec["disabled_text_section"])
             hex_color = rgb_to_hex(parse_color(disabled.get("textcolor")))
@@ -428,16 +499,24 @@ def project_theme(
         else:
             display_name = root.name
 
+    # Start::Button that already paints its own logo (TrueSize / negative
+    # contentLeft / tiny font) must not get the explorer flag composited on top.
+    start_bag = groups.setdefault("startButton", {})
+    start_bag["composeFlag"] = infer_compose_start_flag(start_bag)
+
     # Start flag is explorer/shell art (not in .msstyles). Prefer theme-local
-    # explorer assets, else leave unset for the caller to install a default.
-    if "startFlagImage" not in images:
-        for candidate in (
-            root / "explorer_assets" / "explorer" / "images" / "143.png",
-            root / "assets" / "start_flag.png",
-        ):
-            if candidate.is_file():
-                images["startFlagImage"] = relative_image(root, candidate)
-                break
+    # explorer assets only when the Start button expects a separate flag.
+    if start_bag.get("composeFlag"):
+        if "startFlagImage" not in images:
+            for candidate in (
+                root / "explorer_assets" / "explorer" / "images" / "143.png",
+                root / "assets" / "start_flag.png",
+            ):
+                if candidate.is_file():
+                    images["startFlagImage"] = relative_image(root, candidate)
+                    break
+    else:
+        images.pop("startFlagImage", None)
 
     required = [
         "buttonImage",
@@ -447,6 +526,9 @@ def project_theme(
     for key in required:
         if key not in images:
             errors.append(f"required image missing: {key}")
+
+    # Caption strip: frame 0 = active, frame 1 = inactive (XP Window.Caption).
+    _derive_caption_frames(root, images, groups.get("caption") or {})
 
     doc: dict = {
         "name": display_name if not display_name.startswith("luna") else (
@@ -567,6 +649,32 @@ def write_theme_json(theme_root: str | Path, document: dict) -> Path:
     return path
 
 
+def infer_compose_start_flag(start_button: dict) -> bool:
+    """Whether TaskBar should overlay the explorer Start flag on the button.
+
+    Official Luna leaves a content gutter for the flag + "start" text. Many
+    third-party styles (e.g. Concave) use TrueSize art with the logo baked in.
+    """
+    sizing = str(start_button.get("sizingType") or "stretch").lower().replace(" ", "")
+    if sizing in ("truesize", "true_size"):
+        return False
+    content_left = start_button.get("contentLeft")
+    if content_left is not None:
+        try:
+            if int(content_left) < 0:
+                return False
+        except (TypeError, ValueError):
+            pass
+    font_size = start_button.get("fontSize")
+    if font_size is not None:
+        try:
+            if int(font_size) <= 1:
+                return False
+        except (TypeError, ValueError):
+            pass
+    return True
+
+
 def default_start_flag_source() -> Path | None:
     """Bundled XP Start flag (explorer resource 143) next to the Luna fixture."""
     # scripts/quickxp_theme/project.py → repo root
@@ -588,9 +696,22 @@ def ensure_start_flag(theme_root: str | Path, document: dict) -> dict:
     """Copy the default XP Start flag into the theme when missing.
 
     Real Windows XP draws the flag from explorer resources, not the .msstyles
-    file, so every visual style needs this overlay for QuickXP's Start button.
+    file. Themes whose Start art already includes a logo (composeFlag=false)
+    must not receive this overlay.
     """
     images = document.setdefault("images", {})
+    start = document.get("startButton")
+    if not isinstance(start, dict):
+        start = {}
+        document["startButton"] = start
+    if "composeFlag" not in start:
+        start["composeFlag"] = infer_compose_start_flag(start)
+
+    if not start.get("composeFlag"):
+        images.pop("startFlagImage", None)
+        _propagate_start_flag(document, None)
+        return document
+
     if images.get("startFlagImage"):
         flag_path = Path(theme_root) / images["startFlagImage"]
         if flag_path.is_file():
@@ -612,13 +733,21 @@ def ensure_start_flag(theme_root: str | Path, document: dict) -> dict:
     return document
 
 
-def _propagate_start_flag(document: dict, relative: str) -> None:
+def _propagate_start_flag(document: dict, relative: str | None) -> None:
     scheme_data = document.get("schemeData")
     if not isinstance(scheme_data, dict):
         return
     for variant in scheme_data.values():
         if not isinstance(variant, dict):
             continue
-        images = variant.setdefault("images", {})
-        if not images.get("startFlagImage"):
-            images["startFlagImage"] = relative
+        images = variant.get("images")
+        if not isinstance(images, dict):
+            if relative is None:
+                continue
+            images = {}
+            variant["images"] = images
+        if relative:
+            if not images.get("startFlagImage"):
+                images["startFlagImage"] = relative
+        else:
+            images.pop("startFlagImage", None)

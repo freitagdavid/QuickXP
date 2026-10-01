@@ -34,6 +34,9 @@ InactiveCaption = 122 150 223
 InactiveCaptionText = 216 228 248
 HighlightText = 255 255 255
 Menu = 255 255 255
+WindowText = 0 0 0
+BtnText = 0 0 0
+MenuText = 0 0 0
 ScrollbarWidth = 17
 
 [button.pushbutton]

@@ -18,6 +18,6 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Post a freedesktop notification; tray / balloon / queue behaves as expected for the generation
 - [ ] Run dialog (Epic R) — Win+R / Start → Run when implemented
 - [ ] Shell hotkeys (Epic H) — Win, Win+R/E/D/L, etc. when implemented
-- [ ] Match window borders / Aurorae (Epic K) when “Match window borders” is on
+- [ ] Match window borders / Aurorae: Apply with toggle on → KWin titlebar updates to `quickxp-<slug>`; toggle off → KWin unchanged; Theme Sample shows titlebar preview; Regenerate borders works for Luna
 
 Mark items N/A until the matching epic lands. Prefer a short note of failures over silent skips.

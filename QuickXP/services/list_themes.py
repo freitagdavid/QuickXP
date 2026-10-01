@@ -44,6 +44,8 @@ def scan(root: pathlib.Path, *, deletable: bool = False) -> list:
                 "activeScheme": data.get("activeScheme", "") or "",
                 "schemes": schemes,
                 "schemeData": scheme_data,
+                "hasAurorae": (path / "aurorae" / "decoration.svg").is_file()
+                or (path / "aurorae" / "metadata.desktop").is_file(),
                 "images": data.get("images", {}) if isinstance(data.get("images"), dict) else {},
                 "colors": data.get("colors", {}) if isinstance(data.get("colors"), dict) else {},
                 "sizes": data.get("sizes", {}) if isinstance(data.get("sizes"), dict) else {},

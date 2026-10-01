@@ -245,10 +245,10 @@ PanelWindow {
 
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                width: source.toString() === "" ? 0 : 25
-                height: source.toString() === "" ? 0 : 20
-                visible: source.toString() !== ""
-                source: themeImage("startFlagImage")
+                width: visible ? 25 : 0
+                height: visible ? 20 : 0
+                visible: Theme.composeStartFlag && source.toString() !== ""
+                source: Theme.composeStartFlag ? themeImage("startFlagImage") : ""
                 fillMode: Image.PreserveAspectFit
                 smooth: false
             }

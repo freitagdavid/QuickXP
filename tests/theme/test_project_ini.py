@@ -44,10 +44,20 @@ def test_project_luna_normalblue(luna_theme: Path):
     assert doc["colors"]["taskbar"].startswith("#")
     assert "taskbar" in doc
     assert doc["taskbar"]["borderTop"] >= 0
+    # Epic K caption / frame / button assets
+    assert "captionImage" in images
+    assert images.get("captionActiveImage")
+    assert images.get("closeButtonImage")
+    assert images.get("closeGlyphImage")
+    assert images.get("frameLeftImage")
+    assert doc["caption"]["frames"] == 2
+    assert doc["sizes"].get("captionBarHeight") == 25
     assert "buttonImage" in images
     assert images["buttonImage"].endswith("BLUE_BUTTON_BMP.png")
     assert "startFlagImage" in images
     assert images["startFlagImage"].endswith("143.png")
+    assert doc["startButton"].get("composeFlag") is True
+    assert doc["captionButton"].get("offsetTop") == 5
 
 
 def test_infer_horizontal_start_layout(tmp_path: Path):
@@ -86,6 +96,9 @@ def test_project_alt_imagefile_names(tmp_path: Path):
         "InactiveCaptionText = 216 228 248",
         "HighlightText = 255 255 255",
         "Menu = 255 255 255",
+        "WindowText = 12 34 56",
+        "BtnText = 78 90 12",
+        "MenuText = 34 56 78",
         "ScrollbarWidth = 17",
         "",
         "[button.pushbutton]",
@@ -124,6 +137,81 @@ def test_project_alt_imagefile_names(tmp_path: Path):
     assert doc["images"]["taskbarImage"] == "images/SKIN_BAR_BMP.png"
     assert doc["images"]["startButtonImage"] == "images/SKIN_START_BMP.png"
     assert doc["name"] == "Alt Skin"
+    assert doc["colors"]["windowText"] == "#0C2238"
+    assert doc["colors"]["buttonText"] == "#4E5A0C"
+    assert doc["colors"]["menuText"] == "#22384E"
+
+
+def test_infer_compose_start_flag_truesize():
+    assert project.infer_compose_start_flag({"sizingType": "truesize"}) is False
+    assert project.infer_compose_start_flag({"contentLeft": -20}) is False
+    assert project.infer_compose_start_flag({"fontSize": 1}) is False
+    assert project.infer_compose_start_flag({
+        "sizingType": "stretch",
+        "contentLeft": 10,
+        "fontSize": 14,
+    }) is True
+
+
+def test_ensure_start_flag_skips_truesize(tmp_path: Path):
+    doc = {
+        "images": {},
+        "startButton": {"sizingType": "truesize", "composeFlag": False},
+    }
+    out = project.ensure_start_flag(tmp_path, doc)
+    assert "startFlagImage" not in out["images"]
+
+
+def test_project_sysmetrics_text_colors_default_black(tmp_path: Path):
+    """Luna-style SysMetrics omit WindowText/BtnText/MenuText → black defaults."""
+    settings = tmp_path / "settings"
+    images = tmp_path / "images"
+    settings.mkdir()
+    images.mkdir()
+    (settings / "NORMALBLUE.ini").write_text(
+        """
+[SysMetrics]
+Btnface = 236 233 216
+Background = 58 110 165
+Highlight = 49 106 197
+ActiveCaption = 0 84 227
+CaptionText = 255 255 255
+Menu = 255 255 255
+HighlightText = 255 255 255
+ScrollbarWidth = 17
+
+[button.pushbutton]
+ImageFile = Skin\\Push.bmp
+SizingMargins = 4, 4, 4, 4
+imageCount = 5
+
+[TaskBar.BackgroundBottom]
+ImageFile = Skin\\Bar.bmp
+FillColorHint = 36 94 220
+
+[Start::Button]
+ImageFile = Skin\\Start.bmp
+ContentMargins = 10, 24, 2, 4
+TextColor = 255 255 255
+imageCount = 3
+""",
+        encoding="utf-8",
+    )
+    png = (
+        b"\x89PNG\r\n\x1a\n"
+        b"\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
+        b"\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
+    for image_file in ("Skin\\Push.bmp", "Skin\\Bar.bmp", "Skin\\Start.bmp"):
+        (images / f"{resource_name(image_file)}.png").write_bytes(png)
+
+    doc, _, errors = project.project_theme(
+        tmp_path, settings / "NORMALBLUE.ini", name="No Text Keys", generation="xp"
+    )
+    assert not errors, errors
+    assert doc["colors"]["windowText"] == "#000000"
+    assert doc["colors"]["buttonText"] == "#000000"
+    assert doc["colors"]["menuText"] == "#000000"
 
 
 def test_list_schemes_luna(luna_theme: Path):

@@ -10,8 +10,8 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 - [x] Epic 0 — Shell foundation (generation policy, theme seams, config store, Start popup host, app catalog, shared controls atlas)
 - [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, Appearance, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
 - [ ] Epic T — Theme import (partial: XP detect → project → user-data install → Settings Import…; Vista/7 #32 still open)
-- [ ] Epic K — Generate and sync matching KWin Aurorae window decorations
-- [ ] Epic QA — Testing (partial: harness + detect/project/pipeline + extract/convert/list_themes + QML normalize + smoke checklist; Aurorae with Epic K)
+- [x] Epic K — Generate and sync matching KWin Aurorae window decorations
+- [ ] Epic QA — Testing (partial: harness + detect/project/pipeline/aurorae + extract/convert/list_themes + QML normalize + smoke checklist; bridges/CI later)
 - [ ] Epic H — Shell hotkeys (Win/Ctrl+Esc, Win+R/E/F/D/M/L, Alt+Esc, Win+Tab taskbar cycle, …)
 - [ ] Epic R — Run dialog (Win+R + Start → Run)
 - [ ] Epic 1 — Classic Start menu (single-column)
@@ -114,14 +114,14 @@ One tabbed configuration UI for the shell (XP-styled dialog chrome). This is the
 
 ### Shell
 
-- [x] **Window host** — [`SettingsWindow.qml`](../QuickXP/settings/SettingsWindow.qml) `FloatingWindow` with OK / Cancel / Apply (XP Display Properties pattern): Cancel discards draft; Apply writes config + theme side effects (KWin sync later).
+- [x] **Window host** — [`SettingsWindow.qml`](../QuickXP/settings/SettingsWindow.qml) `FloatingWindow` with OK / Cancel / Apply (XP Display Properties pattern): Cancel discards draft; Apply writes config + theme side effects (Aurorae sync when Match window borders is on).
 - [x] **Tab bar** — Extensible tab list on the host; deep-link via `Settings.open("theme")` etc.
 - [x] **Draft vs applied** — [`SettingsDraft.qml`](../QuickXP/settings/SettingsDraft.qml); Theme tab previews candidate assets without mutating live `Theme.name` until Apply.
 - [x] **Entry points** — **Primary: right-click the Start button** → Properties ([`StartChromeMenu.qml`](../QuickXP/settings/StartChromeMenu.qml)). Still open: empty-taskbar / desktop Properties; Start menu Control Panel stub.
 
 ### Tabs (initial set)
 
-- [x] **Theme** — Installed list + color-scheme dropdown + taskbar/Start preview + “Match window borders” + shell generation / per-feature generation overrides. Import… installs one pack (all schemes embedded); Delete removes user-data themes.
+- [x] **Theme** — Installed list + color-scheme dropdown + taskbar/Start/titlebar preview + “Match window borders” (Aurorae sync on Apply) + shell generation / per-feature generation overrides. Import… installs one pack (all schemes + aurorae/); Delete removes user-data themes; Regenerate borders for installed themes.
 - [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets (flags persist; behavior lands with later epics). Height applies on Apply. Later: keep-on-top, grouping policy (crowding vs always), multi-row.
 - [ ] **Start Menu** — Classic vs XP dual-column (when both exist); Customize depth (icon size, program count, clear list, Internet/E-mail handlers, link/menu/hidden for special folders, hover-open, highlight new, Scroll Programs, Admin Tools, Favorites, Recent Documents); later search-related toggles for Vista/7 (SMS-01–17).
 - [ ] **Desktop** — Wallpaper path/fit, icon arrange/align defaults, special-icon visibility, Show Desktop Icons (when Epic 6 exists).
@@ -208,36 +208,32 @@ flowchart LR
 
 ## Epic K — KWin window decorations (generate + sync)
 
-Goal: when the shell theme is applied, **window titlebars and caption buttons match the taskbar** (same Luna/Aero color scheme). Target format: **Aurorae** (`~/.local/share/aurorae/themes/<id>/` with `metadata.desktop`, `<id>rc`, `decoration.svg(z)`, button SVGs).
-
-`.msstyles` already contain the source art — e.g. `Window.CloseButton`, `Window.MaxButton` / `MinButton` / `RestoreButton`, `Window.Caption` / frame left/right/bottom in Luna INI. QuickXP does not draw decorations today; KWin does.
+Goal: when the shell theme is applied, **window titlebars and caption buttons match the taskbar** (same Luna/Aero color scheme). Target format: **Aurorae** (`~/.local/share/aurorae/themes/<id>/` with `metadata.desktop`, `<id>rc`, `decoration.svg`, button SVGs).
 
 ### Generate
 
-- **Map caption assets** — From extracted INI + PNGs: titlebar active/inactive strips, frame borders, close/min/max/restore/help glyph strips (XP uses multi-frame vertical strips; Aurorae wants per-state SVG elements).
-- **Emit Aurorae package** — Build `decoration.svgz` (Plasma FrameSvg regions for active/inactive), `close.svgz` / `minimize.svgz` / `maximize.svgz` / `restore.svgz` (and help if present), plus `<id>rc` (borders, title edge, button sizes, text colors from theme colors).
-- **Slug pairing** — Decoration id mirrors shell theme slug (e.g. `quickxp-luna-blue`) so Settings → Theme can list them as one product.
-- **Store alongside shell theme** — Prefer `themes/<slug>/aurorae/` in the QuickXP theme tree, then install/copy into Aurorae’s search path on sync.
+- [x] **Map caption assets** — [`class_key_map`](../scripts/quickxp_theme/class_key_map.py) + projector: `Window.Caption` / frames / close·min·max·restore·help (+ glyphs) → logical image keys + `caption` / `frame` groups; active/inactive caption frames sliced for preview.
+- [x] **Emit Aurorae package** — [`quickxp_theme.aurorae`](../scripts/quickxp_theme/aurorae.py): `decoration.svg`, button SVGs, `quickxp-<slug>rc`, `metadata.desktop` under `themes/<slug>/aurorae/`. Id = `quickxp-<slug>`.
+- [x] **Generate from import** — [`pipeline.import_theme`](../scripts/quickxp_theme/pipeline.py) emits Aurorae after projection (best-effort warnings if caption art missing).
+- [x] **Luna fixture package** — Checked-in [`QuickXP/themes/luna/aurorae/`](../QuickXP/themes/luna/aurorae/).
 
 ### Synchronize
 
-- **On Apply / Theme.name change** — Install package to `~/.local/share/aurorae/themes/<id>/`, then select it as the active KWin decoration (KWin scripting, `kwriteconfig` / config + DBus reload, or `qdbus`/`plasma` decoration API — pick whatever works on current Plasma 6).
-- **Keep in sync** — Changing shell theme always updates decoration when “Match window borders” is on; turning the toggle off leaves KWin alone.
-- **Reload** — Force decoration refresh without logging out when possible.
-- **Non-KDE sessions** — No-op or warn; shell theme still applies.
+- [x] **On Apply** — [`sync_aurorae.py`](../QuickXP/services/sync_aurorae.py) copies to `~/.local/share/aurorae/themes/quickxp-<slug>/`, selects via `kwriteconfig6` + KWin `reconfigure`. Wired from Settings Apply when “Match window borders” is on; auto-generates package if missing.
+- [x] **Toggle off** — Leaves KWin decoration alone.
+- [x] **Non-KDE** — Returns `skipped` + warning; shell theme still applies.
 
 ### Features
 
-- **Generate from import** — Part of Epic T pipeline after convert/INI projection.
-- **Regenerate for installed themes** — CLI/GUI action for themes that already have extracted assets but no Aurorae package yet (including the existing Luna tree).
-- **Preview** — Settings → Theme shows a fake titlebar using the same assets before Apply.
-- **pytest** — Golden tests for SVG/`rc` emission from a fixture INI + PNG set (Epic QA).
+- [x] **Regenerate** — CLI [`scripts/generate_aurorae.py`](../scripts/generate_aurorae.py) / Settings “Regenerate borders”; `import_xp_theme.py --aurorae-only`.
+- [x] **Preview** — Theme tab Sample shows fake active titlebar + close chrome from caption assets.
+- [x] **pytest** — [`tests/theme/test_aurorae.py`](../tests/theme/test_aurorae.py) (Luna emission + sync install-only).
 
 ### Risks / notes
 
-- Aurorae SVG layout is finicky (element ids, FrameSvg margins); budget iteration against a known Luna Blue reference.
+- Aurorae SVG layout is finicky; Luna Blue is the golden reference — third-party packs may need margin tweaks.
 - Maximized borderless / no-border apps stay compositor policy.
-- True Aero glass blur is compositor-side; decoration assets may be opaque approximations at first.
+- True Aero glass blur is compositor-side; decoration assets are opaque bitmap approximations.
 
 ---
 
@@ -551,7 +547,7 @@ Not started until Start, Quick Launch, and desktop exist.
 
 **Partial.** Harness lives under [`tests/`](../tests/); library wrap in [`scripts/quickxp_theme/`](../scripts/quickxp_theme/). Prefer cheap, reliable coverage on the theme pipeline and pure logic; keep full-shell checks thin. **New pipeline / helper features must land with tests** (see [`.cursor/rules/testing.mdc`](../.cursor/rules/testing.mdc)). Run `./scripts/run-tests.sh` before every push (`.githooks/pre-push`).
 
-- [x] **pytest scaffolding + theme tooling** — Importable [`quickxp_theme`](../scripts/quickxp_theme/) (extract/convert/detect/project/pipeline/schemes). Real tests for parsers, BMP→PNG, detect, INI→`theme.json`, import install, `list_themes.scan_many`. Aurorae still skipped until Epic K. Run `python3 -m pytest tests/` or `./scripts/run-tests.sh`.
+- [x] **pytest scaffolding + theme tooling** — Importable [`quickxp_theme`](../scripts/quickxp_theme/) (extract/convert/detect/project/pipeline/schemes/aurorae). Real tests for parsers, BMP→PNG, detect, INI→`theme.json`, import install, Aurorae emission, `list_themes.scan_many`. Run `python3 -m pytest tests/` or `./scripts/run-tests.sh`.
 - [ ] **pytest for other Python bridges** — Optional coverage for [QuickXP/services/TasksBridge.py](QuickXP/services/TasksBridge.py) helpers once notification or theme install logic lands in Python (`tests/bridges/`).
 - [x] **QML helper tests (`qmltestrunner`) (scaffold)** — [`GenerationNormalize.js`](../QuickXP/GenerationNormalize.js) + [`tests/qml/tst_GenerationNormalize.qml`](../tests/qml/tst_GenerationNormalize.qml). Expand for paging / grouping / Start model as those land. `./scripts/run-qml-tests.sh`.
 - [x] **Shell smoke checks** — Manual checklist [docs/SMOKE.md](SMOKE.md) (REF-01); `./scripts/smoke-notes.sh` prints it. Not hermetic CI.

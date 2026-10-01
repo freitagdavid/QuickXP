@@ -52,6 +52,31 @@ IMAGE_BINDINGS: dict[str, list[tuple[str, str]]] = {
     "traynotifyhoriz::traynotify.background": [("trayImage", "imagefile")],
     "traynotifyhoriz::button": [("trayChevronImage", "imagefile")],
     "traynotifyhorizopen::button": [("trayChevronOpenImage", "imagefile")],
+    # Window caption / frame / buttons (Epic K → Aurorae).
+    "window.caption": [("captionImage", "imagefile")],
+    "window.frameleft": [("frameLeftImage", "imagefile")],
+    "window.frameright": [("frameRightImage", "imagefile")],
+    "window.framebottom": [("frameBottomImage", "imagefile")],
+    "window.closebutton": [
+        ("closeButtonImage", "imagefile"),
+        ("closeGlyphImage", "imagefile3"),
+    ],
+    "window.minbutton": [
+        ("minButtonImage", "imagefile"),
+        ("minGlyphImage", "imagefile3"),
+    ],
+    "window.maxbutton": [
+        ("maxButtonImage", "imagefile"),
+        ("maxGlyphImage", "imagefile3"),
+    ],
+    "window.restorebutton": [
+        ("restoreButtonImage", "imagefile"),
+        ("restoreGlyphImage", "imagefile3"),
+    ],
+    "window.helpbutton": [
+        ("helpButtonImage", "imagefile"),
+        ("helpGlyphImage", "imagefile3"),
+    ],
 }
 
 # Logical image keys that are optional chrome (omit without hard error).
@@ -59,6 +84,22 @@ OPTIONAL_IMAGES = frozenset(
     {
         "wallpaper",
         "startFlagImage",
+        "captionImage",
+        "captionActiveImage",
+        "captionInactiveImage",
+        "frameLeftImage",
+        "frameRightImage",
+        "frameBottomImage",
+        "closeButtonImage",
+        "closeGlyphImage",
+        "minButtonImage",
+        "minGlyphImage",
+        "maxButtonImage",
+        "maxGlyphImage",
+        "restoreButtonImage",
+        "restoreGlyphImage",
+        "helpButtonImage",
+        "helpGlyphImage",
     }
 )
 
@@ -145,6 +186,48 @@ GROUP_BINDINGS: list[dict] = [
         "sizing": True,
     },
     {
+        "section": "window.caption",
+        "group": "caption",
+        "frames": "imagecount",
+        "sizing": True,
+        "content": True,
+        "image_layout": True,
+        "sizing_type": True,
+    },
+    {
+        "section": "window.closebutton",
+        "group": "captionButton",
+        "frames": "imagecount",
+        "sizing": True,
+        "image_layout": True,
+        # Offset = x,y from OffsetType (TopRight); y is caption-button top padding.
+        "offset": True,
+    },
+    {
+        "section": "window.frameleft",
+        "group": "frame",
+        "frames_key": "leftFrames",
+        "frames": "imagecount",
+        "image_layout": True,
+        "sizing_prefix": "left",
+    },
+    {
+        "section": "window.frameright",
+        "group": "frame",
+        "frames_key": "rightFrames",
+        "frames": "imagecount",
+        "image_layout": True,
+        "sizing_prefix": "right",
+    },
+    {
+        "section": "window.framebottom",
+        "group": "frame",
+        "frames_key": "bottomFrames",
+        "frames": "imagecount",
+        "image_layout": True,
+        "sizing_prefix": "bottom",
+    },
+    {
         "section": "button.groupbox",
         "group": "groupBox",
         "globals_edges": True,
@@ -156,6 +239,9 @@ COLOR_MAP = {
     "background": "desktop",
     "btnface": "button",
     "window": "window",  # often white; shell uses window chrome fill separately
+    "windowtext": "windowText",
+    "btntext": "buttonText",
+    "menutext": "menuText",
     "menu": "menu",
     "highlight": "highlight",
     "highlighttext": "highlightText",

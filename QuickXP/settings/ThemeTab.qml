@@ -19,7 +19,9 @@ Item {
   // Lives under QuickXP/services so shellPath resolves when config only symlinks QuickXP/.
   readonly property string importScript: Quickshell.shellPath("QuickXP/services/import_xp_theme.py")
   readonly property string deleteScript: Quickshell.shellPath("QuickXP/services/delete_theme.py")
+  readonly property string generateAuroraeScript: Quickshell.shellPath("QuickXP/services/generate_aurorae.py")
   readonly property string userThemesDir: ThemeRegistry.userThemesDir
+  property bool regenBusy: false
 
   function themeImageUrl(entry: var, key: string): string {
     if (entry === undefined || entry === null || !entry.images)
@@ -67,7 +69,12 @@ Item {
 
   readonly property bool canDeleteSelected: {
     const entry = root.selected
-    return entry !== null && entry.deletable === true && !root.importBusy && !root.deleteBusy
+    return entry !== null && entry.deletable === true && !root.importBusy && !root.deleteBusy && !root.regenBusy
+  }
+
+  readonly property bool canRegenerateBorders: {
+    const entry = root.selected
+    return entry !== null && entry.path && !root.importBusy && !root.deleteBusy && !root.regenBusy
   }
 
   function defaultSchemeFor(entry: var): string {
@@ -276,6 +283,38 @@ Item {
     ])
   }
 
+  function regenerateBorders(): void {
+    const entry = root.selected
+    if (entry === null || !entry.path)
+      return
+    root.regenBusy = true
+    root.importStatus = "Regenerating window borders…"
+    regenProc.exec([
+      "/usr/bin/python3",
+      root.generateAuroraeScript,
+      entry.path,
+      "--slug",
+      entry.slug
+    ])
+  }
+
+  function handleRegenResult(text: string): void {
+    root.regenBusy = false
+    const payload = root.parseJsonOutput(text)
+    if (payload === null || payload === undefined || !payload.ok) {
+      const detail = (payload && payload.errors)
+        ? payload.errors.join("\n")
+        : "Regenerate failed."
+      root.importStatus = ""
+      root.showImportMessage("Could not regenerate borders", detail)
+      return
+    }
+    ThemeRegistry.refresh()
+    root.importStatus = "Window borders regenerated for “"
+      + ((root.selected && root.selected.name) || payload.path) + "”."
+    root.showImportMessage("Borders regenerated", root.importStatus)
+  }
+
   function handleDeleteResult(text: string): void {
     root.deleteBusy = false
     const payload = root.parseJsonOutput(text)
@@ -357,6 +396,17 @@ Item {
         root.importStderr = root.importStderr === "" ? line : (root.importStderr + "\n" + line)
         console.warn("QuickXP delete theme:", line)
       }
+    }
+  }
+
+  Process {
+    id: regenProc
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.handleRegenResult(text)
+    }
+    stderr: SplitParser {
+      onRead: data => console.warn("QuickXP aurorae regenerate:", data.trim())
     }
   }
 
@@ -614,6 +664,12 @@ Item {
           enabled: root.canDeleteSelected
           onClicked: root.confirmDelete()
         }
+
+        XpPushButton {
+          text: "Regenerate borders"
+          enabled: root.canRegenerateBorders
+          onClicked: root.regenerateBorders()
+        }
       }
 
       Text {
@@ -663,7 +719,7 @@ Item {
 
       XpGroupBox {
         width: parent.width
-        height: 72
+        height: 96
         title: "Sample"
 
         Rectangle {
@@ -677,6 +733,77 @@ Item {
           border.width: 1
           border.color: Theme.value("edit", "border", "#7F9DB9")
           clip: true
+
+          // Fake active titlebar (Epic K preview).
+          Item {
+            id: titlePreview
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: 26
+
+            readonly property string captionSource: root.themeImageUrl(root.selectedVariant, "captionActiveImage")
+              || root.themeImageUrl(root.selected, "captionActiveImage")
+              || root.themeImageUrl(root.selectedVariant, "captionImage")
+              || root.themeImageUrl(root.selected, "captionImage")
+            readonly property string closeSource: root.themeImageUrl(root.selectedVariant, "closeButtonImage")
+              || root.themeImageUrl(root.selected, "closeButtonImage")
+
+            Rectangle {
+              anchors.fill: parent
+              color: {
+                const entry = root.selectedVariant
+                if (entry && entry.colors && entry.colors.titleActive)
+                  return entry.colors.titleActive
+                return Theme.color("titleActive", "#0054E3")
+              }
+              visible: titlePreview.captionSource === ""
+            }
+
+            BorderImage {
+              anchors.fill: parent
+              source: titlePreview.captionSource
+              border.left: 28
+              border.right: 35
+              border.top: 9
+              border.bottom: 8
+              horizontalTileMode: BorderImage.Stretch
+              verticalTileMode: BorderImage.Stretch
+              visible: titlePreview.captionSource !== ""
+            }
+
+            Text {
+              anchors.left: parent.left
+              anchors.leftMargin: 8
+              anchors.verticalCenter: parent.verticalCenter
+              anchors.right: closePreview.left
+              anchors.rightMargin: 4
+              elide: Text.ElideRight
+              text: (root.selected && (root.selected.name || root.selected.slug)) || "Window"
+              color: {
+                const entry = root.selectedVariant
+                if (entry && entry.colors && entry.colors.titleActiveText)
+                  return entry.colors.titleActiveText
+                return Theme.color("titleActiveText", "white")
+              }
+              font.family: Theme.value("fonts", "ui", "Tahoma")
+              font.pixelSize: Theme.size("fontSize", 11)
+              font.bold: true
+            }
+
+            Image {
+              id: closePreview
+              anchors.right: parent.right
+              anchors.rightMargin: 4
+              anchors.verticalCenter: parent.verticalCenter
+              width: 16
+              height: 16
+              source: titlePreview.closeSource
+              fillMode: Image.PreserveAspectFit
+              visible: titlePreview.closeSource !== ""
+              smooth: false
+            }
+          }
 
           Item {
             anchors.left: parent.left

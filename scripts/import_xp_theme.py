@@ -29,7 +29,12 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="project an existing extract tree to theme.json (no copy)",
     )
-    parser.add_argument("path", type=Path, help=".msstyles file or extract directory")
+    mode.add_argument(
+        "--aurorae-only",
+        action="store_true",
+        help="emit/regenerate Aurorae package for an installed theme root",
+    )
+    parser.add_argument("path", type=Path, help=".msstyles file or extract/theme directory")
     parser.add_argument("--dest", type=Path, help="install root (themes/ parent)")
     parser.add_argument(
         "--ini",
@@ -46,6 +51,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.probe:
         payload = pipeline.probe(args.path)
+    elif args.aurorae_only:
+        from quickxp_theme import aurorae
+
+        payload = aurorae.generate_for_theme_root(
+            args.path,
+            slug=args.slug,
+            ini=args.ini,
+        )
     elif args.project_only:
         from quickxp_theme import project
 

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import qs.QuickXP
 import qs.QuickXP.controls
 
@@ -15,9 +16,101 @@ FloatingWindow {
   implicitHeight: 520
 
   property alias draft: draft
+  property string auroraeStatus: ""
 
   SettingsDraft {
     id: draft
+  }
+
+  readonly property string syncAuroraeScript: Quickshell.shellPath("QuickXP/services/sync_aurorae.py")
+  readonly property string generateAuroraeScript: Quickshell.shellPath("QuickXP/services/generate_aurorae.py")
+
+  Process {
+    id: auroraeSyncProc
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        try {
+          const payload = JSON.parse(String(text).trim())
+          if (payload.skipped)
+            window.auroraeStatus = "Window borders: skipped (not Plasma/KWin?)"
+          else if (payload.ok)
+            window.auroraeStatus = "Window borders: matched to theme"
+          else
+            window.auroraeStatus = "Window borders: "
+              + ((payload.errors && payload.errors[0]) || "sync failed")
+        } catch (error) {
+          window.auroraeStatus = "Window borders: invalid sync response"
+        }
+      }
+    }
+    stderr: SplitParser {
+      onRead: data => console.warn("QuickXP aurorae sync:", data.trim())
+    }
+  }
+
+  function syncAuroraeForDraft(): void {
+    if (!draft.matchWindowBorders) {
+      window.auroraeStatus = ""
+      return
+    }
+    const entry = ThemeRegistry.themeBySlug(draft.theme)
+    if (entry === undefined || entry === null || !entry.path) {
+      window.auroraeStatus = "Window borders: theme path missing"
+      return
+    }
+    const themeRoot = String(entry.path)
+    // Generate package if missing, then install + select.
+    const hasDeco = entry.hasAurorae === true
+    if (!hasDeco) {
+      generateThenSyncProc.exec([
+        "/usr/bin/python3",
+        window.generateAuroraeScript,
+        themeRoot,
+        "--slug",
+        draft.theme
+      ])
+      return
+    }
+    auroraeSyncProc.exec([
+      "/usr/bin/python3",
+      window.syncAuroraeScript,
+      "--theme-root",
+      themeRoot
+    ])
+  }
+
+  Process {
+    id: generateThenSyncProc
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        try {
+          const payload = JSON.parse(String(text).trim())
+          if (!payload.ok) {
+            window.auroraeStatus = "Window borders: "
+              + ((payload.errors && payload.errors[0]) || "generate failed")
+            return
+          }
+        } catch (error) {
+          window.auroraeStatus = "Window borders: generate failed"
+          return
+        }
+        const entry = ThemeRegistry.themeBySlug(draft.theme)
+        if (entry === undefined || entry === null || !entry.path)
+          return
+        ThemeRegistry.refresh()
+        auroraeSyncProc.exec([
+          "/usr/bin/python3",
+          window.syncAuroraeScript,
+          "--theme-root",
+          String(entry.path)
+        ])
+      }
+    }
+    stderr: SplitParser {
+      onRead: data => console.warn("QuickXP aurorae generate:", data.trim())
+    }
   }
 
   readonly property var tabs: [
@@ -48,6 +141,7 @@ FloatingWindow {
 
   function apply() {
     draft.applyToConfig()
+    window.syncAuroraeForDraft()
   }
 
   function accept() {

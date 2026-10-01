@@ -9,7 +9,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from . import convert, detect, extract, project, schemes
+from . import aurorae, convert, detect, extract, project, schemes
 
 
 def sanitize_slug(value: str) -> str:
@@ -278,6 +278,17 @@ def import_theme(
         elif source.is_dir():
             doc["sourceFile"] = source.name
         project.write_theme_json(install_dir, doc)
+
+        aurorae_summary, aurorae_warnings, aurorae_errors = aurorae.emit_aurorae(
+            install_dir,
+            slug=final_slug,
+            document=doc,
+        )
+        result["warnings"].extend(aurorae_warnings)
+        if aurorae_errors:
+            # Caption/Aurorae is best-effort — shell theme still installs.
+            result["warnings"].extend(aurorae_errors)
+        result["aurorae"] = aurorae_summary
 
         result["ok"] = True
         result["slug"] = final_slug

@@ -21,7 +21,8 @@
   },
   "sizes": {
     "taskbarHeight": 30,
-    "fontSize": 11
+    "fontSize": 11,
+    "captionBarHeight": 25
   },
   "images": {
     "wallpaper": "wallpaper.png",
@@ -54,7 +55,23 @@
     "scrollThumbVerticalImage": "luna/images/BLUE_SCROLLTHUMBVERTICAL_BMP.png",
     "scrollGripperVerticalImage": "luna/images/BLUE_SCROLLTHUMBGRIPPERVERTICAL_BMP.png",
     "scrollShaftVerticalImage": "luna/images/BLUE_SCROLLSHAFTVERTICAL_BMP.png",
-    "tooltipCloseImage": "luna/images/BLUE_BALLOONCLOSE_BMP.png"
+    "tooltipCloseImage": "luna/images/BLUE_BALLOONCLOSE_BMP.png",
+    "captionImage": "luna/images/BLUE_FRAMECAPTION_BMP.png",
+    "captionActiveImage": "images/caption_frames/BLUE_FRAMECAPTION_BMP-active.png",
+    "captionInactiveImage": "images/caption_frames/BLUE_FRAMECAPTION_BMP-inactive.png",
+    "frameLeftImage": "luna/images/BLUE_FRAMELEFT_BMP.png",
+    "frameRightImage": "luna/images/BLUE_FRAMERIGHT_BMP.png",
+    "frameBottomImage": "luna/images/BLUE_FRAMEBOTTOM_BMP.png",
+    "closeButtonImage": "luna/images/BLUE_CLOSEBUTTON_BMP.png",
+    "closeGlyphImage": "luna/images/BLUE_CLOSEGLYPH_BMP.png",
+    "minButtonImage": "luna/images/BLUE_CAPTIONBUTTON_BMP.png",
+    "minGlyphImage": "luna/images/BLUE_MINIMIZEGLYPH_BMP.png",
+    "maxButtonImage": "luna/images/BLUE_CAPTIONBUTTON_BMP.png",
+    "maxGlyphImage": "luna/images/BLUE_MAXIMIZEGLYPH_BMP.png",
+    "restoreButtonImage": "luna/images/BLUE_CAPTIONBUTTON_BMP.png",
+    "restoreGlyphImage": "luna/images/BLUE_RESTOREGLYPH_BMP.png",
+    "helpButtonImage": "luna/images/BLUE_CAPTIONBUTTON_BMP.png",
+    "helpGlyphImage": "luna/images/BLUE_HELPGLYPH_BMP.png"
   },
   "button": {
     "frames": 5,
@@ -131,21 +148,73 @@
     "buttonWidth": 15
   },
   "startButton": {
-    "text": "start",
-    "font": "Franklin Gothic Medium",
-    "fontSize": 14,
-    "italic": true,
-    "textColor": "#FFFFFF",
-    "shadowColor": "#454C10",
-    "shadowOffsetX": 2,
-    "shadowOffsetY": 2,
+    "frames": 3,
+    "borderLeft": 6,
+    "borderRight": 52,
+    "borderTop": 13,
+    "borderBottom": 14,
     "contentLeft": 10,
     "contentRight": 24,
     "contentTop": 2,
     "contentBottom": 4,
-    "extraWidth": 10
+    "imageLayout": "vertical",
+    "sizingType": "stretch",
+    "font": "Franklin Gothic Medium",
+    "fontSize": 14,
+    "italic": true,
+    "bold": false,
+    "text": "start",
+    "extraWidth": 10,
+    "textColor": "#FFFFFF",
+    "shadowColor": "#454C10",
+    "shadowOffsetX": 2,
+    "shadowOffsetY": 2,
+    "composeFlag": true
   },
   "fonts": {
     "ui": "Tahoma"
+  },
+  "caption": {
+    "frames": 2,
+    "borderLeft": 28,
+    "borderRight": 35,
+    "borderTop": 9,
+    "borderBottom": 17,
+    "contentLeft": 1,
+    "contentRight": 1,
+    "contentTop": 1,
+    "contentBottom": 1,
+    "imageLayout": "vertical",
+    "sizingType": "stretch"
+  },
+  "captionButton": {
+    "frames": 8,
+    "borderLeft": 5,
+    "borderRight": 5,
+    "borderTop": 5,
+    "borderBottom": 5,
+    "imageLayout": "vertical",
+    "offsetX": -25,
+    "offsetY": 5,
+    "offsetTop": 5,
+    "offsetType": "TopRight"
+  },
+  "frame": {
+    "leftFrames": 2,
+    "leftBorderLeft": 2,
+    "leftBorderRight": 2,
+    "leftBorderTop": 0,
+    "leftBorderBottom": 0,
+    "imageLayout": "vertical",
+    "rightFrames": 2,
+    "rightBorderLeft": 2,
+    "rightBorderRight": 2,
+    "rightBorderTop": 0,
+    "rightBorderBottom": 0,
+    "bottomFrames": 2,
+    "bottomBorderLeft": 5,
+    "bottomBorderRight": 5,
+    "bottomBorderTop": 2,
+    "bottomBorderBottom": 2
   }
 }

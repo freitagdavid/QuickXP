@@ -95,22 +95,11 @@ PopupWindow {
     onTriggered: host.armed = true
   }
 
-  anchor.window: anchorItem !== null && anchorItem.QsWindow ? anchorItem.QsWindow.window : null
+  // Sit flush on the taskbar: attach to the Start button's top-left and expand up/right.
+  anchor.item: anchorItem
+  anchor.edges: Edges.Top | Edges.Left
+  anchor.gravity: Edges.Top | Edges.Right
   anchor.adjustment: PopupAdjustment.Slide
-  anchor.gravity: Edges.Top | Edges.Left
-  anchor.onAnchoring: {
-    const item = host.anchorItem
-    if (item === null)
-      return
-    const shellWindow = item.QsWindow
-    if (shellWindow === null || shellWindow.contentItem === null)
-      return
-    const pos = shellWindow.contentItem.mapFromItem(item, 0, -host.menuHeight)
-    host.anchor.rect.x = pos.x
-    host.anchor.rect.y = pos.y
-    host.anchor.rect.width = Math.max(item.width, host.menuWidth)
-    host.anchor.rect.height = 1
-  }
 
   implicitWidth: menuWidth
   implicitHeight: menuHeight

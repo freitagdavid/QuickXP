@@ -47,8 +47,10 @@ Item {
     if (node.kind === "app") {
       const entry = AppCatalog.byId(node.entryId || node.id)
       if (entry && AppCatalog.launch(entry)) {
-        StartHighlightStore.markSeen(node.entryId || node.id)
-        StartPersonalizeStore.bump(node.entryId || node.id)
+        const id = node.entryId || node.id
+        StartHighlightStore.markSeen(id)
+        StartPersonalizeStore.bump(id)
+        StartMfuStore.bump(id)
         host.close()
       }
       return
@@ -135,7 +137,6 @@ Item {
           }
         }
 
-        // Separator between pins and MFU (MFU lands in #71).
         Item {
           width: parent.width
           height: StartPinStore.pinRows.length ? 10 : 0
@@ -148,6 +149,21 @@ Item {
             anchors.rightMargin: 4
             height: 1
             color: "#C4C4C4"
+          }
+        }
+
+        Repeater {
+          model: StartMfuStore.mfuRows
+
+          XpStartAppItem {
+            required property var modelData
+            required property int index
+            width: pinCol.width
+            node: modelData
+            draggable: false
+            onActivated: root.activateNode(modelData)
+            // Right-click: Remove from This List (≠ Unpin).
+            onUnpinRequested: StartMfuStore.removeFromList(modelData.entryId || modelData.id)
           }
         }
       }

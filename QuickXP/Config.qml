@@ -76,6 +76,10 @@ Singleton {
       // XP Start pinned apps (JSON string array of desktop ids).
       property string startPinnedApps: "[]"
       property bool startPinnedAppsSeeded: false
+      // XP Start MFU list: usage scores + exclusions + visible count.
+      property string startMfuScores: "{}"
+      property string startMfuExcluded: "[]"
+      property int startMfuCount: 6
       // XP Start right-column place visibility: link | menu | hidden
       property string startPlaceDocuments: "link"
       property string startPlaceRecentDocuments: "menu"

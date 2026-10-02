@@ -25,6 +25,7 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] XP Start right column: Help / Search / Run stubs at bottom (not a Vista search box)
 - [ ] XP Start All Programs: flyout from left footer with Programs tree; nested cascades align; reopen works
 - [ ] XP Start pins: defaults seed browser/mail; launch works; right-click unpins; drag reorders
+- [ ] XP Start MFU: launches populate list below pins; right-click removes from list without unpinning
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload
 - [ ] Settings → Theme → Import… an XP `.msstyles` → one theme with schemes → Color scheme dropdown → Apply reloads chrome; Delete removes user-data themes only
 - [ ] Post a freedesktop notification; tray / balloon / queue behaves as expected for the generation

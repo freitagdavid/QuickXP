@@ -292,7 +292,7 @@ Builds on the classic app catalog and session hooks. Default Luna Start when `ge
 
 - [x] **Two-column frame** — Luna STARTPANEL skins (user bar, MFU/places columns), interactive account tile (`~/.face` + stub User Accounts) — STA-32.
 - [x] **Left: pinned apps** — Pin/unpin (right-click), drag reorder, persisted list; defaults from WebBrowser/Email categories (STA-05).
-- **Left: most-frequent list** — Usage scoring with decay (not a pure chronological MRU); exclusions; **Remove from This List** ≠ Unpin; Clear List from Customize (STA-10–14).
+- [x] **Left: most-frequent list** — Decay-scored MFU; excludes pins; right-click Remove from This List ≠ Unpin; Clear List API for Customize (STA-10–14).
 - [x] **Left: All Programs** — Bottom “All Programs” + Luna arrow; reuses classic Programs cascade (`StartSubmenu`).
 - [x] **Right: special folders** — My Documents / Recent / Pictures / Music / Computer / Network / Control Panel / Connect To / Printers / Admin Tools; link|menu|hidden via Config (STA-24–29).
 - [x] **Right: Help / Search / Run** — XP right-column rows; Search/Help stubs; Run → Epic R stub; not the Vista search box.

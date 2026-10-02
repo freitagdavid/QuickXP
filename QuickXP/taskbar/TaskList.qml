@@ -409,7 +409,9 @@ Item {
             previewSerial += 1
             if (capture.running)
                 capture.running = false
-        } else if (previewPopup.visible) {
+        } else if (previewPopup.visible || previewTimer.running) {
+            // Keep showing / waiting; refresh target after entryStore sync.
+            previewToplevel = toplevel
             return
         }
         previewButton = button
@@ -445,8 +447,13 @@ Item {
         groupMenu.dismiss()
         groupPreviewOnButton = true
         groupStripCloseTimer.stop()
-        if (groupPreviewButton === button && groupStrip.visible
-            && groupPreviewEntry === entry) {
+        const sameButton = groupPreviewButton === button
+        const sameKey = sameButton && groupPreviewEntry
+            && TaskbandModel.entryKey(groupPreviewEntry) === TaskbandModel.entryKey(entry)
+        if (sameKey && (groupStrip.visible || groupStripTimer.running)) {
+            groupPreviewEntry = entry
+            if (groupStrip.visible)
+                groupStrip.windows = entry.windows
             return
         }
         groupPreviewButton = button
@@ -619,10 +626,19 @@ Item {
     }
 
     function restorePreviewGrab() {
+        // Peeks stay grab-less; only click menus use grabFocus.
         if (previewPopup.visible)
-            previewPopup.grabFocus = true
+            previewPopup.grabFocus = false
         if (groupStrip.visible)
-            groupStrip.grabFocus = true
+            groupStrip.grabFocus = false
+    }
+
+    function cycleGroup(entry) {
+        if (!entry || !entry.windows || entry.windows.length === 0)
+            return
+        const next = TaskbandModel.nextInGroup(entry.windows)
+        if (next)
+            root.activateWindow(next)
     }
 
     function openGroupPopup(button, entry) {
@@ -631,7 +647,7 @@ Item {
         dismissPreview()
         taskMenu.dismiss()
         // Icons-only / modern: strip is already the hover UI — keep or open it.
-        // Labeled XP: click opens the title list instead.
+        // Labeled XP: open the title list (e.g. from a future affordance).
         if (root.iconsOnly) {
             groupMenu.dismiss()
             groupPreviewOnButton = true

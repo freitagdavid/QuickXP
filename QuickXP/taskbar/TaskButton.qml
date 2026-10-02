@@ -388,8 +388,9 @@ Item {
             if (mouse.button === Qt.RightButton)
                 return
             root.hideTip()
+            // Grouped button: cycle focus through members (hover still peeks / lists).
             if (root.count > 1 && taskList !== null && root.entry !== null) {
-                taskList.openGroupPopup(root, root.entry)
+                taskList.cycleGroup(root.entry)
                 return
             }
             root.activateOrMinimize(root.toplevel)

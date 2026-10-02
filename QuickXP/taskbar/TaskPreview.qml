@@ -20,8 +20,9 @@ PopupWindow {
 
     visible: false
     color: Theme.color("menu", "white")
-    // Outside click / loss of grab dismisses (same pattern as Start / dropdowns).
-    grabFocus: true
+    // Hover peek: do not steal grab — grabFocus makes the task button lose
+    // containsMouse and the leave timer immediately dismisses the peek.
+    grabFocus: false
 
     onClosed: preview.closedOut()
 

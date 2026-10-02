@@ -57,6 +57,26 @@ function pickRepresentative(windows) {
     return windows[0]
 }
 
+// Left-click on a grouped task button: activate the next window after the
+// focused member (wrap). If none focused, activate the representative.
+function nextInGroup(windows) {
+    if (!windows || windows.length === 0)
+        return null
+    if (windows.length === 1)
+        return windows[0]
+    var active = -1
+    for (var i = 0; i < windows.length; ++i) {
+        var w = windows[i]
+        if (w && w.activated && !w.minimized) {
+            active = i
+            break
+        }
+    }
+    if (active < 0)
+        return pickRepresentative(windows)
+    return windows[(active + 1) % windows.length]
+}
+
 function windowIdentity(win) {
     if (win === null || win === undefined)
         return ""

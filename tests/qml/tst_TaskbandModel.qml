@@ -175,6 +175,29 @@ TestCase {
     compare(diff.updates.length, 0)
   }
 
+  function test_nextInGroup_cycles_after_active() {
+    const windows = [
+      win("app.a", "A1", { windowId: "1", activated: true, minimized: false }),
+      win("app.a", "A2", { windowId: "2", activated: false }),
+      win("app.a", "A3", { windowId: "3", activated: false })
+    ]
+    compare(TaskbandModel.nextInGroup(windows).title, "A2")
+    windows[0].activated = false
+    windows[1].activated = true
+    compare(TaskbandModel.nextInGroup(windows).title, "A3")
+    windows[1].activated = false
+    windows[2].activated = true
+    compare(TaskbandModel.nextInGroup(windows).title, "A1")
+  }
+
+  function test_nextInGroup_none_active_picks_representative() {
+    const windows = [
+      win("app.a", "A1", { windowId: "1", activated: false, minimized: true }),
+      win("app.a", "A2", { windowId: "2", activated: false, minimized: false })
+    ]
+    compare(TaskbandModel.nextInGroup(windows).title, "A1")
+  }
+
   function test_pageSlice() {
     const all = TaskbandModel.stampEntries([
       TaskbandModel.entryFromWindows([win("a", "1", { windowId: "1" })]),

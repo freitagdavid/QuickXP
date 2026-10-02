@@ -2,7 +2,7 @@ import QtQuick
 import qs.QuickXP
 import "../StartMenuModel.js" as StartMenuModel
 
-// Right column: special folders (Epic 2 #73); Help/Search/Run land in #74.
+// Right column: special folders + Help/Search/Run (Epic 2 #73/#74).
 Item {
   id: root
 

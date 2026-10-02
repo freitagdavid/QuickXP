@@ -75,6 +75,9 @@ TestCase {
     verify(ids.indexOf("music") >= 0)
     verify(ids.indexOf("computer") >= 0)
     verify(ids.indexOf("control-panel") >= 0)
+    verify(ids.indexOf("help") >= 0)
+    verify(ids.indexOf("search") >= 0)
+    verify(ids.indexOf("run") >= 0)
     verify(ids.indexOf("network") < 0)
     verify(ids.indexOf("printers") < 0)
     const recent = rows.filter(function(r) { return r.id === "recent-documents" })[0]

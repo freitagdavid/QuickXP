@@ -367,10 +367,10 @@ PanelWindow {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: visible ? 6 : 0
-        color: Qt.rgba(1, 1, 1, area.containsMouse ? 0.35 : 0.15)
+        color: Qt.rgba(1, 1, 1, showDesktopEdgeArea.containsMouse ? 0.35 : 0.15)
 
         MouseArea {
-            id: area
+            id: showDesktopEdgeArea
             anchors.fill: parent
             hoverEnabled: true
             onClicked: TasksService.toggleShowDesktop()
@@ -404,15 +404,14 @@ PanelWindow {
             Config.options.taskbarToolbars, id, path, 120)
     }
 
-    FileDialog {
+    FolderDialog {
         id: newToolbarDialog
         title: "New Toolbar — Choose Folder"
-        fileMode: FileDialog.OpenDirectory
         onAccepted: {
-            const url = String(selectedFile || "")
+            const url = String(selectedFolder || "")
             let path = url
             if (path.startsWith("file://"))
-                path = path.slice(7)
+                path = decodeURIComponent(path.slice(7))
             if (!path)
                 return
             const parts = path.split("/")
@@ -425,7 +424,7 @@ PanelWindow {
     PopupWindow {
         id: toolbarsMenu
         visible: false
-        color: Theme.color("menu", "white")
+        color: Theme.color("menu", "#FFFFFF")
         grabFocus: true
         implicitWidth: 200
         implicitHeight: 148

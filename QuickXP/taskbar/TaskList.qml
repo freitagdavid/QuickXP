@@ -484,10 +484,8 @@ Item {
         const serial = TasksService.nextPreviewSerial()
         previewSerial = serial
         const windowId = previewToplevel.windowId
-        // Show disk cache immediately; bridge refreshes that one window async.
-        const cached = root.previewCachePath(windowId)
-        if (cached !== "")
-            root.previewReady(serial, cached, false)
+        // Wait for bridge PREVIEW reply (warm cache or fresh capture). Pointing
+        // Image at the cache path before the file exists spams "Cannot open".
         root.requestBridgePreview(serial, windowId)
     }
 

@@ -208,7 +208,7 @@ Item {
     id: ctxMenu
     property string targetId: ""
     visible: false
-    color: Theme.color("menu", "white")
+    color: Theme.color("menu", "#FFFFFF")
     grabFocus: true
     implicitWidth: 140
     implicitHeight: 28
@@ -224,7 +224,7 @@ Item {
 
     Rectangle {
       anchors.fill: parent
-      color: parent.color
+      color: Theme.color("menu", "#FFFFFF")
       border.color: Theme.color("border", "#003C74")
       border.width: 1
 
@@ -234,7 +234,7 @@ Item {
         text: "Remove from Quick Launch"
         font.family: Theme.value("fonts", "ui", "Tahoma")
         font.pixelSize: 11
-        color: Theme.color("menuText", "black")
+        color: Theme.color("menuText", "#000000")
       }
 
       MouseArea {
@@ -250,7 +250,7 @@ Item {
   PopupWindow {
     id: overflowMenu
     visible: false
-    color: Theme.color("menu", "white")
+    color: Theme.color("menu", "#FFFFFF")
     grabFocus: true
     implicitWidth: 180
     implicitHeight: Math.min(320, 8 + root.overflowIds.length * 24)

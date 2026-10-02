@@ -78,18 +78,9 @@ PopupWindow {
   }
 
   function seedFromCache() {
-    const next = ({})
-    if (!windows)
-      return next
-    for (let i = 0; i < windows.length; ++i) {
-      const win = windows[i]
-      if (!win || !win.windowId)
-        continue
-      const path = cachePathFor(String(win.windowId))
-      if (path !== "")
-        next[String(i)] = path
-    }
-    return next
+    // Do not invent Image sources for paths that may not exist yet — Qt logs
+    // "Cannot open" for missing PNGs. Cards fill in via PREVIEW replies on hover.
+    return ({})
   }
 
   function open() {
@@ -97,8 +88,7 @@ PopupWindow {
       return
     armed = false
     hovered = false
-    // Paint cached peeks only; refresh the card under the pointer on hover.
-    previews = seedFromCache()
+    previews = ({})
     previewSerials = ({})
     serial += 1
     Qt.callLater(() => {

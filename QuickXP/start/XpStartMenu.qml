@@ -15,11 +15,11 @@ Item {
   property string searchQuery: ""
   property int resultsFocusIndex: -1
 
-  // Lowercase haystack + pin map rebuilt when Start opens (or catalogs change while open).
+  // Lowercase haystack + pin map; searchResults is updated imperatively (not a
+  // binding) so rebuilds cannot form a QML binding loop.
   property var appSearchIndex: []
   property var pinSet: ({})
-  property int _searchIndexAppsRev: -1
-  property int _searchIndexPinsRev: -1
+  property var searchResults: []
 
   // Search chrome when the startSearch toggle is on (default for shell vista/win7),
   // or when Start menu layout override is Vista/7 ("Search Start" choices).
@@ -31,31 +31,66 @@ Item {
   function rebuildSearchIndex() {
     root.appSearchIndex = StartSearchModel.buildAppSearchIndex(AppCatalog.applications)
     root.pinSet = StartSearchModel.pinIdSet(StartPinStore.pinIds)
-    root._searchIndexAppsRev = AppCatalog._revision
-    root._searchIndexPinsRev = StartPinStore._revision
   }
 
-  function prepareOpen() {
-    root.rebuildSearchIndex()
-  }
-
-  readonly property var searchResults: {
-    if (!root.searchActive)
-      return []
-    const __recent = RecentCatalog._revision
-    const __mfu = StartMfuStore._revision
-    const __cfg = Config.options.startMfuScores
-    // Refresh index if apps/pins changed while the menu stayed open.
-    if (root._searchIndexAppsRev !== AppCatalog._revision
-        || root._searchIndexPinsRev !== StartPinStore._revision)
-      root.rebuildSearchIndex()
-    return StartSearchModel.buildResults(root.searchQuery, {
+  function refreshSearchResults() {
+    if (!root.searchActive) {
+      if (root.searchResults.length)
+        root.searchResults = []
+      return
+    }
+    root.searchResults = StartSearchModel.buildResults(root.searchQuery, {
       appIndex: root.appSearchIndex,
       pinSet: root.pinSet,
       recentItems: RecentCatalog.recentItems,
       rawMfuScores: Config.options.startMfuScores,
       settings: StartSearchModel.defaultSettingsIndex()
     })
+  }
+
+  function prepareOpen() {
+    root.rebuildSearchIndex()
+    root.refreshSearchResults()
+  }
+
+  onSearchQueryChanged: root.refreshSearchResults()
+  onSearchActiveChanged: root.refreshSearchResults()
+
+  Connections {
+    target: AppCatalog
+    function on_RevisionChanged() {
+      root.rebuildSearchIndex()
+      root.refreshSearchResults()
+    }
+  }
+
+  Connections {
+    target: StartPinStore
+    function on_RevisionChanged() {
+      root.rebuildSearchIndex()
+      root.refreshSearchResults()
+    }
+  }
+
+  Connections {
+    target: RecentCatalog
+    function on_RevisionChanged() {
+      root.refreshSearchResults()
+    }
+  }
+
+  Connections {
+    target: StartMfuStore
+    function on_RevisionChanged() {
+      root.refreshSearchResults()
+    }
+  }
+
+  Connections {
+    target: Config.options
+    function onStartMfuScoresChanged() {
+      root.refreshSearchResults()
+    }
   }
 
   readonly property int leftW: Number(Theme.value("startPanel", "leftColumnWidth", 190))

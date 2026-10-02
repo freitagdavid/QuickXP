@@ -18,6 +18,7 @@ QtObject {
   property string startProgramsSource: "xdgMenu"
   property bool startHighlightNew: true
   property bool startPersonalizedMenus: false
+  property bool debugKeepStartMenuOpen: false
   property string activeTab: "theme"
 
   readonly property bool dirty: {
@@ -36,6 +37,7 @@ QtObject {
       || draft.startProgramsSource !== o.startProgramsSource
       || draft.startHighlightNew !== o.startHighlightNew
       || draft.startPersonalizedMenus !== o.startPersonalizedMenus
+      || draft.debugKeepStartMenuOpen !== o.debugKeepStartMenuOpen
   }
 
   function loadFromConfig() {
@@ -54,6 +56,7 @@ QtObject {
     draft.startProgramsSource = o.startProgramsSource || "xdgMenu"
     draft.startHighlightNew = o.startHighlightNew !== false
     draft.startPersonalizedMenus = !!o.startPersonalizedMenus
+    draft.debugKeepStartMenuOpen = !!o.debugKeepStartMenuOpen
     draft.activeTab = o.lastSettingsTab || "theme"
   }
 
@@ -73,6 +76,7 @@ QtObject {
     o.startProgramsSource = draft.startProgramsSource || "xdgMenu"
     o.startHighlightNew = draft.startHighlightNew
     o.startPersonalizedMenus = draft.startPersonalizedMenus
+    o.debugKeepStartMenuOpen = draft.debugKeepStartMenuOpen
     o.lastSettingsTab = draft.activeTab
     Theme.name = draft.theme
     Theme.scheme = draft.themeScheme || ""

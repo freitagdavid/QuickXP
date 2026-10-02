@@ -62,6 +62,34 @@ TestCase {
     compare(shutdown.label, "Turn Off Computer...")
   }
 
+  function test_xpPlacesItems() {
+    const rows = StartMenuModel.xpPlacesItems({
+      recentNodes: [{ kind: "action", action: "open-uri", label: "a.txt", uri: "file:///a.txt" }],
+      network: "hidden",
+      printers: "hidden"
+    })
+    const ids = rows.filter(function(r) { return r.kind !== "separator" }).map(function(r) { return r.id })
+    verify(ids.indexOf("documents") >= 0)
+    verify(ids.indexOf("recent-documents") >= 0)
+    verify(ids.indexOf("pictures") >= 0)
+    verify(ids.indexOf("music") >= 0)
+    verify(ids.indexOf("computer") >= 0)
+    verify(ids.indexOf("control-panel") >= 0)
+    verify(ids.indexOf("network") < 0)
+    verify(ids.indexOf("printers") < 0)
+    const recent = rows.filter(function(r) { return r.id === "recent-documents" })[0]
+    compare(recent.kind, "folder")
+    verify(recent.children.length >= 1)
+    const docs = rows.filter(function(r) { return r.id === "documents" })[0]
+    compare(docs.bold, true)
+  }
+
+  function test_xpPlaceVisibility() {
+    compare(StartMenuModel.xpPlaceVisibility("menu", "link"), "menu")
+    compare(StartMenuModel.xpPlaceVisibility("bogus", "link"), "link")
+    compare(StartMenuModel.xpPlaceVisibility("", "hidden"), "hidden")
+  }
+
   function test_buildCategoryTree() {
     const entries = [
       { id: "a", name: "Alpha", icon: "a", categories: ["Network"], noDisplay: false },

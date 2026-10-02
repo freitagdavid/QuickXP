@@ -18,7 +18,7 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Classic Start: Documents/Settings/Search open submenus; Help/Run stubs; Log Off / Turn Off Computer confirm (Cancel safe)
 - [ ] Settings → Start Menu: Programs source, highlight-new, personalized menus; Clear highlight / Clear recent
 - [ ] Settings → Start Menu still toggles Programs source after session rows land
-- [ ] XP Start stub (pre-skins): dual-column placeholder opens when layout is XP
+- [ ] XP Start: dual-column Luna chrome (user bar + tile/name, white left / places right); tile click opens User Accounts stub; `~/.face` shows when present
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload
 - [ ] Settings → Theme → Import… an XP `.msstyles` → one theme with schemes → Color scheme dropdown → Apply reloads chrome; Delete removes user-data themes only
 - [ ] Post a freedesktop notification; tray / balloon / queue behaves as expected for the generation

@@ -2,18 +2,20 @@ import QtQuick
 import Quickshell
 import qs.QuickXP
 
-// XP dual-column Start shell. Filled in by Epic 2 tickets (#69–#77).
+// XP dual-column Start — Luna STARTPANEL chrome (#69); content tickets fill columns.
 Item {
   id: root
 
   property var host: null
   property var programsNode: null
 
-  readonly property int panelWidth: 380
-  readonly property int panelHeight: 420
+  readonly property int leftW: Number(Theme.value("startPanel", "leftColumnWidth", 190))
+  readonly property int rightW: Number(Theme.value("startPanel", "rightColumnWidth", 186))
+  readonly property int bodyH: Number(Theme.value("startPanel", "bodyHeight", 340))
+  readonly property color outerBorder: String(Theme.value("startPanel", "outerBorder", "#003C74"))
 
-  width: panelWidth
-  implicitHeight: panelHeight
+  width: leftW + rightW + 4
+  implicitHeight: userBar.height + bodyH + 2
 
   readonly property bool submenuOpen: false
 
@@ -25,30 +27,45 @@ Item {
     event.accepted = false
   }
 
-  // Stub chrome so layout switch is visible before #69 skins land.
   Rectangle {
     anchors.fill: parent
-    color: Theme.color("classicMenu", "#ECE9D8")
-    border.color: Theme.color("classicStartBannerMid", "#0A246A")
-    border.width: 2
+    color: root.outerBorder
+  }
 
-    Column {
-      anchors.centerIn: parent
-      spacing: 6
+  Column {
+    id: stack
+    anchors.fill: parent
+    anchors.margins: 2
+    spacing: 0
 
-      Text {
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: "Start"
-        color: Theme.color("classicStartBannerMid", "#0A246A")
-        font.pixelSize: 16
-        font.bold: true
+    XpStartUserTile {
+      id: userBar
+      width: parent.width
+      host: root.host
+      onTileActivated: {
+        if (!root.host)
+          return
+        // Host maps user-tile → stub until account UI exists.
+      }
+    }
+
+    Row {
+      id: bodyRow
+      width: parent.width
+      height: root.bodyH
+      spacing: 0
+
+      XpStartLeftColumn {
+        id: leftCol
+        height: parent.height
+        host: root.host
+        programsNode: root.programsNode
       }
 
-      Text {
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: "XP dual-column (loading…)"
-        color: "#404040"
-        font.pixelSize: 11
+      XpStartRightColumn {
+        id: rightCol
+        height: parent.height
+        host: root.host
       }
     }
   }

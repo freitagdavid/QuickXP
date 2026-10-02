@@ -83,6 +83,14 @@ Item {
 
   signal allProgramsOpened()
 
+  function openAppContextMenu(anchor, entryId, showRemoveFromList) {
+    const id = String(entryId || "").trim()
+    if (!anchor || !id)
+      return
+    pokeSuppress()
+    appContextMenu.openAt(anchor, id, StartPinStore.isPinned(id), !!showRemoveFromList)
+  }
+
   function openAllPrograms() {
     pokeSuppress()
     allProgramsHot = true
@@ -173,12 +181,12 @@ Item {
               draggable: true
               dragIndex: index
               onActivated: root.activateNode(modelData)
-              onUnpinRequested: StartPinStore.unpin(modelData.entryId || modelData.id)
               onDragFinished: (fromIndex, toIndex) => StartPinStore.move(fromIndex, toIndex)
               onHovered: {
                 if (root.submenuOpen)
                   root.closeSubmenus()
               }
+              onContextMenuRequested: root.openAppContextMenu(this, modelData.entryId || modelData.id, false)
             }
           }
 
@@ -223,11 +231,11 @@ Item {
               node: modelData
               draggable: false
               onActivated: root.activateNode(modelData)
-              onUnpinRequested: StartMfuStore.removeFromList(modelData.entryId || modelData.id)
               onHovered: {
                 if (root.submenuOpen)
                   root.closeSubmenus()
               }
+              onContextMenuRequested: root.openAppContextMenu(this, modelData.entryId || modelData.id, true)
             }
           }
         }
@@ -300,5 +308,12 @@ Item {
     id: programsSubmenu
     chrome: "xp"
     onClosed: root.allProgramsHot = false
+  }
+
+  StartAppContextMenu {
+    id: appContextMenu
+    onPinRequested: (id) => StartPinStore.pin(id)
+    onUnpinRequested: (id) => StartPinStore.unpin(id)
+    onRemoveFromListRequested: (id) => StartMfuStore.removeFromList(id)
   }
 }

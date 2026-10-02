@@ -30,6 +30,9 @@ QtObject {
   property string startPlaceConnectTo: "link"
   property string startPlacePrinters: "link"
   property string startPlaceAdminTools: "menu"
+  property string startPlaceHelp: "link"
+  property string startPlaceSearch: "link"
+  property string startPlaceRun: "link"
   property string activeTab: "theme"
 
   readonly property bool dirty: {
@@ -60,6 +63,9 @@ QtObject {
       || draft.startPlaceConnectTo !== o.startPlaceConnectTo
       || draft.startPlacePrinters !== o.startPlacePrinters
       || draft.startPlaceAdminTools !== o.startPlaceAdminTools
+      || draft.startPlaceHelp !== o.startPlaceHelp
+      || draft.startPlaceSearch !== o.startPlaceSearch
+      || draft.startPlaceRun !== o.startPlaceRun
   }
 
   function loadFromConfig() {
@@ -90,6 +96,9 @@ QtObject {
     draft.startPlaceConnectTo = o.startPlaceConnectTo || "link"
     draft.startPlacePrinters = o.startPlacePrinters || "link"
     draft.startPlaceAdminTools = o.startPlaceAdminTools || "menu"
+    draft.startPlaceHelp = o.startPlaceHelp || "link"
+    draft.startPlaceSearch = o.startPlaceSearch || "link"
+    draft.startPlaceRun = o.startPlaceRun || "link"
     draft.activeTab = o.lastSettingsTab || "theme"
   }
 
@@ -121,6 +130,9 @@ QtObject {
     o.startPlaceConnectTo = draft.startPlaceConnectTo || "link"
     o.startPlacePrinters = draft.startPlacePrinters || "link"
     o.startPlaceAdminTools = draft.startPlaceAdminTools || "menu"
+    o.startPlaceHelp = draft.startPlaceHelp || "link"
+    o.startPlaceSearch = draft.startPlaceSearch || "link"
+    o.startPlaceRun = draft.startPlaceRun || "link"
     o.lastSettingsTab = draft.activeTab
     Theme.name = draft.theme
     Theme.scheme = draft.themeScheme || ""

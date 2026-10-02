@@ -91,6 +91,9 @@ Singleton {
       property string startPlaceConnectTo: "link"
       property string startPlacePrinters: "link"
       property string startPlaceAdminTools: "menu"
+      property string startPlaceHelp: "link"
+      property string startPlaceSearch: "link"
+      property string startPlaceRun: "link"
 
       // Per-feature generation overrides. Empty string = use shell generation.
       property JsonObject generationOverrides: JsonObject {

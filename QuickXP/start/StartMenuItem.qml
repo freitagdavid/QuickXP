@@ -17,6 +17,7 @@ Item {
   signal activated()
   signal hovered()
   signal unhovered()
+  signal contextMenuRequested()
 
   width: parent ? parent.width : 180
   height: separator ? 9 : rowHeight
@@ -157,7 +158,14 @@ Item {
     anchors.fill: parent
     hoverEnabled: true
     enabled: !root.separator
-    onClicked: root.activated()
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    onClicked: (mouse) => {
+      if (mouse.button === Qt.RightButton) {
+        root.contextMenuRequested()
+        return
+      }
+      root.activated()
+    }
     onEntered: root.hovered()
     onExited: root.unhovered()
   }

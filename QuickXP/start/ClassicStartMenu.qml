@@ -56,6 +56,14 @@ Item {
       host.onFlyoutLeft()
   }
 
+  function openAppContextMenu(anchor, entryId, showRemoveFromList) {
+    const id = String(entryId || "").trim()
+    if (!anchor || !id)
+      return
+    pokeSuppress()
+    appContextMenu.openAt(anchor, id, StartPinStore.isPinned(id), !!showRemoveFromList)
+  }
+
   function activateNode(node) {
     if (!host || !node)
       return
@@ -293,6 +301,11 @@ Item {
             if (root.focusIndex === index && root.openIndex !== index)
               root.focusIndex = -1
           }
+          onContextMenuRequested: {
+            if (!modelData || modelData.kind !== "app")
+              return
+            root.openAppContextMenu(this, modelData.entryId || modelData.id, false)
+          }
         }
       }
     }
@@ -303,5 +316,12 @@ Item {
     host: root
     alignBottom: false
     cascadeDepth: 0
+  }
+
+  StartAppContextMenu {
+    id: appContextMenu
+    onPinRequested: (id) => StartPinStore.pin(id)
+    onUnpinRequested: (id) => StartPinStore.unpin(id)
+    onRemoveFromListRequested: (id) => StartMfuStore.removeFromList(id)
   }
 }

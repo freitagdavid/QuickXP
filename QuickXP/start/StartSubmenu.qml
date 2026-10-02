@@ -245,6 +245,12 @@ PopupWindow {
               popup.childMenu.close()
           }
         }
+        onContextMenuRequested: {
+          if (!modelData || modelData.kind !== "app")
+            return
+          if (popup.host && typeof popup.host.openAppContextMenu === "function")
+            popup.host.openAppContextMenu(this, modelData.entryId || modelData.id, false)
+        }
       }
     }
   }

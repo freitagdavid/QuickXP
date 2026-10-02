@@ -7,22 +7,12 @@ Item {
 
   required property var draft
 
-  function placeModeLabel(mode) {
-    const m = String(mode || "link")
-    if (m === "menu")
-      return "Display as a menu"
-    if (m === "hidden")
-      return "Don't display this item"
-    return "Display as a link"
-  }
-
   function placeValue(prop) {
     return String(root.draft[prop] || "link")
   }
 
-  function cyclePlace(prop) {
-    const cur = placeValue(prop)
-    const next = cur === "link" ? "menu" : (cur === "menu" ? "hidden" : "link")
+  function setPlace(prop, value) {
+    const next = String(value || "link")
     if (prop === "startPlaceDocuments") root.draft.startPlaceDocuments = next
     else if (prop === "startPlaceRecentDocuments") root.draft.startPlaceRecentDocuments = next
     else if (prop === "startPlacePictures") root.draft.startPlacePictures = next
@@ -33,6 +23,25 @@ Item {
     else if (prop === "startPlaceConnectTo") root.draft.startPlaceConnectTo = next
     else if (prop === "startPlacePrinters") root.draft.startPlacePrinters = next
     else if (prop === "startPlaceAdminTools") root.draft.startPlaceAdminTools = next
+    else if (prop === "startPlaceHelp") root.draft.startPlaceHelp = next
+    else if (prop === "startPlaceSearch") root.draft.startPlaceSearch = next
+    else if (prop === "startPlaceRun") root.draft.startPlaceRun = next
+  }
+
+  function setPlaceShown(prop, shown) {
+    if (!shown) {
+      setPlace(prop, "hidden")
+      return
+    }
+    const cur = placeValue(prop)
+    setPlace(prop, cur === "hidden" ? "link" : cur)
+  }
+
+  function togglePlaceStyle(prop) {
+    const cur = placeValue(prop)
+    if (cur === "hidden")
+      return
+    setPlace(prop, cur === "menu" ? "link" : "menu")
   }
 
   Flickable {
@@ -156,7 +165,7 @@ Item {
       XpGroupBox {
         width: parent.width
         height: placesCol.height + 28
-        title: "XP special folders"
+        title: "XP right column (places)"
 
         Column {
           id: placesCol
@@ -168,7 +177,7 @@ Item {
           Text {
             width: parent.width
             wrapMode: Text.WordWrap
-            text: "Click a row to cycle link / menu / hidden (Apply to save)."
+            text: "Enable items on the light-blue Start column. When enabled, click the style to switch link vs menu. Apply to save."
             color: Theme.value("button", "disabledText", "#A1A192")
             font.family: Theme.value("fonts", "ui", "Tahoma")
             font.pixelSize: Theme.size("fontSize", 11)
@@ -176,52 +185,78 @@ Item {
 
           Repeater {
             model: [
-              { prop: "startPlaceDocuments", label: "My Documents" },
-              { prop: "startPlaceRecentDocuments", label: "My Recent Documents" },
-              { prop: "startPlacePictures", label: "My Pictures" },
-              { prop: "startPlaceMusic", label: "My Music" },
-              { prop: "startPlaceComputer", label: "My Computer" },
-              { prop: "startPlaceNetwork", label: "My Network Places" },
-              { prop: "startPlaceControlPanel", label: "Control Panel" },
-              { prop: "startPlaceConnectTo", label: "Connect To" },
-              { prop: "startPlacePrinters", label: "Printers and Faxes" },
-              { prop: "startPlaceAdminTools", label: "Administrative Tools" }
+              { prop: "startPlaceDocuments", label: "My Documents", allowMenu: true },
+              { prop: "startPlaceRecentDocuments", label: "My Recent Documents", allowMenu: true },
+              { prop: "startPlacePictures", label: "My Pictures", allowMenu: true },
+              { prop: "startPlaceMusic", label: "My Music", allowMenu: true },
+              { prop: "startPlaceComputer", label: "My Computer", allowMenu: true },
+              { prop: "startPlaceNetwork", label: "My Network Places", allowMenu: true },
+              { prop: "startPlaceControlPanel", label: "Control Panel", allowMenu: true },
+              { prop: "startPlaceConnectTo", label: "Connect To", allowMenu: true },
+              { prop: "startPlacePrinters", label: "Printers and Faxes", allowMenu: true },
+              { prop: "startPlaceAdminTools", label: "Administrative Tools", allowMenu: true },
+              { prop: "startPlaceHelp", label: "Help and Support", allowMenu: false },
+              { prop: "startPlaceSearch", label: "Search", allowMenu: false },
+              { prop: "startPlaceRun", label: "Run...", allowMenu: false }
             ]
 
             Item {
               required property var modelData
               width: placesCol.width
-              height: 22
+              height: Math.max(22, showBox.implicitHeight)
 
-              Text {
+              readonly property string mode: root.placeValue(modelData.prop)
+              readonly property bool shown: mode !== "hidden"
+
+              XpCheckBox {
+                id: showBox
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width * 0.45
-                elide: Text.ElideRight
                 text: modelData.label
-                color: Theme.color("windowText", "black")
-                font.family: Theme.value("fonts", "ui", "Tahoma")
-                font.pixelSize: Theme.size("fontSize", 11)
+                checked: parent.shown
+                onToggled: root.setPlaceShown(modelData.prop, !parent.shown)
               }
 
               Text {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width * 0.52
-                horizontalAlignment: Text.AlignRight
-                elide: Text.ElideRight
-                text: root.placeModeLabel(root.placeValue(modelData.prop))
+                visible: parent.shown && modelData.allowMenu
+                text: parent.mode === "menu" ? "Display as a menu" : "Display as a link"
                 color: Theme.color("highlight", "#316AC5")
                 font.family: Theme.value("fonts", "ui", "Tahoma")
                 font.pixelSize: Theme.size("fontSize", 11)
-              }
 
-              MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.cyclePlace(modelData.prop)
+                MouseArea {
+                  anchors.fill: parent
+                  anchors.margins: -2
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: root.togglePlaceStyle(modelData.prop)
+                }
               }
             }
+          }
+        }
+      }
+
+      XpGroupBox {
+        width: parent.width
+        height: pinHintCol.height + 28
+        title: "Pinned programs"
+
+        Column {
+          id: pinHintCol
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.top: parent.top
+          spacing: 6
+
+          Text {
+            width: parent.width
+            wrapMode: Text.WordWrap
+            text: "On the XP Start menu, right-click a program (pinned list, most-frequent list, or All Programs) and choose Pin to Start menu or Unpin from Start menu. Drag pinned items to reorder."
+            color: Theme.color("windowText", "black")
+            font.family: Theme.value("fonts", "ui", "Tahoma")
+            font.pixelSize: Theme.size("fontSize", 11)
           }
         }
       }

@@ -35,7 +35,10 @@ Item {
       controlPanel: Config.options.startPlaceControlPanel,
       connectTo: Config.options.startPlaceConnectTo,
       printers: Config.options.startPlacePrinters,
-      adminTools: Config.options.startPlaceAdminTools
+      adminTools: Config.options.startPlaceAdminTools,
+      help: Config.options.startPlaceHelp,
+      search: Config.options.startPlaceSearch,
+      run: Config.options.startPlaceRun
     })
   }
 

@@ -16,6 +16,7 @@ Item {
   signal hovered()
   signal unhovered()
   signal unpinRequested()
+  signal contextMenuRequested()
   signal dragFinished(int fromIndex, int toIndex)
 
   width: parent ? parent.width : 180
@@ -79,7 +80,7 @@ Item {
     drag.axis: Drag.YAxis
     onClicked: (mouse) => {
       if (mouse.button === Qt.RightButton) {
-        root.unpinRequested()
+        root.contextMenuRequested()
         return
       }
       root.activated()

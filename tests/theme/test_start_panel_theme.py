@@ -39,3 +39,4 @@ def test_start_panel_sizing_group() -> None:
     assert panel["leftColumnWidth"] > 0
     assert panel["rightColumnWidth"] > 0
     assert panel["userBarHeight"] > 0
+    assert panel["footerHeight"] > 0

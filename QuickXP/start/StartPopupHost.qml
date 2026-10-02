@@ -24,6 +24,7 @@ PopupWindow {
 
   property bool armed: false
   property bool suppressDismiss: false
+  property bool chromeHovered: false
   property string pendingSessionAction: ""
 
   readonly property int menuMinHeight: 120
@@ -44,6 +45,14 @@ PopupWindow {
   function pokeSuppress() {
     suppressDismiss = true
     suppressTimer.restart()
+    leaveRegionClose.stop()
+  }
+
+  // Flyout lost hover — if the pointer isn't back on Start chrome, dismiss.
+  function onFlyoutLeft() {
+    if (host.chromeHovered || host.suppressDismiss)
+      return
+    leaveRegionClose.restart()
   }
 
   function open() {
@@ -222,7 +231,7 @@ PopupWindow {
     if (id === "user-tile") {
       close()
       stubBox.title = "User Accounts"
-      stubBox.open("Account picture and user settings will expand later.\n\nPlace an image at ~/.face to show your picture on the Start menu.", false)
+      stubBox.open("Account picture and user settings will expand later.\n\nPlace an image at ~/.face to replace the default chess picture on the Start menu.", false)
       return
     }
     if (id === "help") {
@@ -304,6 +313,20 @@ PopupWindow {
     onTriggered: host.suppressDismiss = false
   }
 
+  // Pointer left Start chrome; delay so transit into a flyout PopupWindow can pokeSuppress.
+  Timer {
+    id: leaveRegionClose
+    interval: 320
+    onTriggered: {
+      if (host.suppressDismiss)
+        return
+      if (host.activeMenu && host.activeMenu.submenuOpen)
+        host.activeMenu.closeSubmenus()
+      if (StartPopupPolicy.allowAutoClose(host.keepOpen))
+        host.close()
+    }
+  }
+
   Process {
     id: docsProc
     running: false
@@ -377,13 +400,14 @@ PopupWindow {
     HoverHandler {
       enabled: host.useClassicStart
       onHoveredChanged: {
-        if (!StartPopupPolicy.allowAutoClose(host.keepOpen))
+        host.chromeHovered = hovered
+        if (hovered) {
+          leaveRegionClose.stop()
           return
-        if (!host.armed || hovered || host.suppressDismiss)
+        }
+        if (!host.armed || host.suppressDismiss)
           return
-        if (classicMenu.submenuOpen)
-          return
-        host.close()
+        leaveRegionClose.restart()
       }
     }
 
@@ -422,13 +446,14 @@ PopupWindow {
     HoverHandler {
       enabled: !host.useClassicStart
       onHoveredChanged: {
-        if (!StartPopupPolicy.allowAutoClose(host.keepOpen))
+        host.chromeHovered = hovered
+        if (hovered) {
+          leaveRegionClose.stop()
           return
-        if (!host.armed || hovered || host.suppressDismiss)
+        }
+        if (!host.armed || host.suppressDismiss)
           return
-        if (xpMenu.submenuOpen)
-          return
-        host.close()
+        leaveRegionClose.restart()
       }
     }
 

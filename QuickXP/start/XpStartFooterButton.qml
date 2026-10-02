@@ -7,11 +7,13 @@ Item {
   property var host: null
   property string label: ""
   property string action: ""
-  // 0=person, 1=key, 2=power in BLUE_STARTPANELLOGOFFBUTTONS (3×24).
+  // 0=person, 1=key, 2=power in LOGOFFBUTTONS strip (3×24).
   property int iconIndex: 0
 
   readonly property int iconSize: 24
   readonly property bool hot: area.containsMouse
+  readonly property color labelColor: String(Theme.value("startPanel", "logoffText", "#FFFFFF"))
+  readonly property color labelShadow: String(Theme.value("startPanel", "logoffTextShadow", "#09428B"))
 
   width: iconBox.width + 6 + labelText.implicitWidth
   height: Math.max(iconSize, labelText.implicitHeight)
@@ -43,7 +45,9 @@ Item {
       anchors.fill: parent
       visible: !glyph.visible
       radius: 3
-      color: root.iconIndex === 2 ? "#C43C22" : "#E8A825"
+      color: root.iconIndex === 2
+        ? String(Theme.value("startPanel", "logoffPowerFallback", "#C43C22"))
+        : String(Theme.value("startPanel", "logoffKeyFallback", "#E8A825"))
     }
   }
 
@@ -53,11 +57,11 @@ Item {
     anchors.leftMargin: 6
     anchors.verticalCenter: parent.verticalCenter
     text: root.label
-    color: root.hot ? "#FFFFFF" : "#FFFFFF"
+    color: root.labelColor
     font.family: Theme.value("fonts", "ui", "Tahoma")
     font.pixelSize: Theme.size("fontSize", 11)
     style: Text.Raised
-    styleColor: "#003366"
+    styleColor: root.labelShadow
   }
 
   MouseArea {

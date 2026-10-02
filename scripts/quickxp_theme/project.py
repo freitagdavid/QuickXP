@@ -349,10 +349,11 @@ def project_theme(
             margins = parse_margins(section.get("contentmargins"))
             if margins:
                 left, right, top, bottom = margins
-                bag["contentLeft"] = left
-                bag["contentRight"] = right
-                bag["contentTop"] = top
-                bag["contentBottom"] = bottom
+                prefix = spec.get("content_prefix", "content")
+                bag[f"{prefix}Left"] = left
+                bag[f"{prefix}Right"] = right
+                bag[f"{prefix}Top"] = top
+                bag[f"{prefix}Bottom"] = bottom
 
         if spec.get("image_layout") and section:
             frames = parse_int(section.get("imagecount")) or bag.get("frames") or 1
@@ -385,12 +386,17 @@ def project_theme(
         if spec.get("text_color") and section:
             hex_color = rgb_to_hex(parse_color(section.get("textcolor")))
             if hex_color:
-                bag["textColor"] = hex_color
+                bag[spec.get("text_color_key", "textColor")] = hex_color
+
+        if spec.get("hot_tracking") and section:
+            hex_color = rgb_to_hex(parse_color(section.get("hottracking")))
+            if hex_color:
+                bag[spec.get("hot_tracking_key", "hotTracking")] = hex_color
 
         if spec.get("shadow") and section:
             hex_color = rgb_to_hex(parse_color(section.get("textshadowcolor")))
             if hex_color:
-                bag["shadowColor"] = hex_color
+                bag[spec.get("shadow_color_key", "shadowColor")] = hex_color
             offset = section.get("textshadowoffset")
             if offset:
                 parts = re.split(r"[,\s]+", offset.strip())
@@ -428,6 +434,12 @@ def project_theme(
             hex_color = rgb_to_hex(parse_color(hint_sec.get("fillcolorhint")))
             if hex_color:
                 bag[spec["fill_hint_key"]] = hex_color
+
+        if spec.get("accent_hint_key"):
+            hint_sec = _section_get(sections, spec.get("accent_hint_section", spec["section"]))
+            hex_color = rgb_to_hex(parse_color(hint_sec.get("accentcolorhint")))
+            if hex_color:
+                bag[spec["accent_hint_key"]] = hex_color
 
         if spec.get("width_from_sysmetrics") and scroll_w:
             bag["width"] = scroll_w

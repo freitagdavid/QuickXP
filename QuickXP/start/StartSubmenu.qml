@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs.QuickXP
+import "StartSubmenuChrome.js" as StartSubmenuChrome
 
 PopupWindow {
   id: popup
@@ -11,17 +12,35 @@ PopupWindow {
   // First cascade from Start is bottom-aligned; each nested level flips.
   property bool alignBottom: false
   property int cascadeDepth: 0
+  // "classic" → beige ClassicMenuFrame; "xp" → white StartGroup chrome.
+  property string chrome: "classic"
 
   visible: false
   color: "transparent"
-  grabFocus: false
+  // Outside click dismisses (same pattern as task strip / combo popups).
+  grabFocus: true
 
   property bool armed: false
   property int openIndex: -1
   property var childMenu: null
 
-  readonly property int menuWidth: 200
-  readonly property int itemRowHeight: 32
+  // grabFocus may hide us without close(); keep child/state in sync.
+  onClosed: {
+    armed = false
+    openIndex = -1
+    armTimer.stop()
+    hoverOpen.stop()
+    hoverOpen.pending = -1
+    leaveClose.stop()
+    if (childMenu)
+      childMenu.close()
+  }
+
+  readonly property bool xpChrome: StartSubmenuChrome.isXp(popup.chrome)
+  readonly property int menuWidth: xpChrome ? 180 : 200
+  readonly property int itemRowHeight: StartSubmenuChrome.rowHeight(popup.chrome)
+  readonly property int itemIconSize: StartSubmenuChrome.iconSize(popup.chrome)
+  readonly property Item activeFrame: xpChrome ? xpFrame : classicFrame
 
   function openAt(item) {
     if (childMenu)
@@ -69,6 +88,8 @@ PopupWindow {
     childMenu = comp.createObject(popup)
     if (!childMenu)
       console.warn("QuickXP StartSubmenu: createObject failed")
+    else
+      childMenu.chrome = popup.chrome
     return childMenu
   }
 
@@ -80,7 +101,6 @@ PopupWindow {
       openIndex = -1
       return
     }
-    // Only one open flyout at this level.
     if (childMenu && childMenu.visible && openIndex !== index)
       childMenu.close()
     const delegate = list.itemAt(index)
@@ -90,6 +110,7 @@ PopupWindow {
     if (!child)
       return
     openIndex = index
+    child.chrome = popup.chrome
     child.cascadeDepth = popup.cascadeDepth + 1
     child.alignBottom = !popup.alignBottom
     child.nodes = node.children || []
@@ -129,68 +150,99 @@ PopupWindow {
     }
   }
 
-  // Attach to the parent row's right edge; gravity uses the opposite vertical
-  // side so the flyout sits beside the row (tops or bottoms flush), not
-  // corner-to-corner diagonally. Same pattern as XpComboBox dropdowns.
+  // Close when the pointer leaves this flyout (and any open child) for a beat.
+  Timer {
+    id: leaveClose
+    interval: 280
+    onTriggered: {
+      if (popup.childMenu && popup.childMenu.visible)
+        return
+      popup.close()
+      if (popup.host && typeof popup.host.onFlyoutLeft === "function")
+        popup.host.onFlyoutLeft()
+    }
+  }
+
+  function onFrameHoverChanged(hovered) {
+    if (hovered) {
+      leaveClose.stop()
+      if (popup.host && typeof popup.host.pokeSuppress === "function")
+        popup.host.pokeSuppress()
+      return
+    }
+    if (popup.armed && popup.visible)
+      leaveClose.restart()
+  }
+
   anchor.item: anchorItem
   anchor.edges: popup.alignBottom ? (Edges.Bottom | Edges.Right) : (Edges.Top | Edges.Right)
   anchor.gravity: popup.alignBottom ? (Edges.Top | Edges.Right) : (Edges.Bottom | Edges.Right)
   anchor.adjustment: PopupAdjustment.Slide
 
   implicitWidth: menuWidth
-  implicitHeight: Math.min(420, Math.max(28, frame.implicitHeight))
+  implicitHeight: Math.min(420, Math.max(28, column.implicitHeight + 8))
 
   ClassicMenuFrame {
-    id: frame
+    id: classicFrame
     anchors.fill: parent
+    visible: !popup.xpChrome
     implicitHeight: column.implicitHeight + 8
 
     HoverHandler {
-      // Keep parent Start from dismissing while the pointer is in this flyout.
-      onHoveredChanged: {
-        if (hovered && popup.host && typeof popup.host.pokeSuppress === "function")
-          popup.host.pokeSuppress()
-      }
+      onHoveredChanged: popup.onFrameHoverChanged(hovered)
     }
+  }
 
-    Column {
-      id: column
-      parent: frame.contentItem
-      anchors.left: parent.left
-      anchors.right: parent.right
-      anchors.top: parent.top
-      anchors.margins: 2
-      spacing: 0
+  XpStartMenuFrame {
+    id: xpFrame
+    anchors.fill: parent
+    visible: popup.xpChrome
+    implicitHeight: column.implicitHeight + 8
 
-      Repeater {
-        id: list
-        model: popup.nodes
+    HoverHandler {
+      onHoveredChanged: popup.onFrameHoverChanged(hovered)
+    }
+  }
 
-        delegate: StartMenuItem {
-          required property var modelData
-          required property int index
+  Column {
+    id: column
+    parent: popup.activeFrame.contentItem
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+    anchors.margins: popup.xpChrome ? 1 : 2
+    spacing: 0
 
-          node: modelData
-          rowHeight: popup.itemRowHeight
-          selected: popup.openIndex === index
-          onActivated: {
-            if (modelData && modelData.kind === "folder")
-              popup.requestOpenNow(index)
-            else
-              popup.activateNode(modelData)
-          }
-          onHovered: {
-            if (!modelData || modelData.kind === "separator")
-              return
-            if (modelData.kind === "folder") {
-              popup.requestOpen(index)
-            } else {
-              hoverOpen.stop()
-              hoverOpen.pending = -1
-              popup.openIndex = -1
-              if (popup.childMenu)
-                popup.childMenu.close()
-            }
+    Repeater {
+      id: list
+      model: popup.nodes
+
+      delegate: StartMenuItem {
+        required property var modelData
+        required property int index
+
+        node: modelData
+        chrome: popup.chrome
+        rowHeight: popup.itemRowHeight
+        iconSize: popup.itemIconSize
+        selected: popup.openIndex === index
+        onActivated: {
+          if (modelData && modelData.kind === "folder")
+            popup.requestOpenNow(index)
+          else
+            popup.activateNode(modelData)
+        }
+        onHovered: {
+          if (!modelData || modelData.kind === "separator")
+            return
+          if (modelData.kind === "folder") {
+            popup.requestOpen(index)
+          } else {
+            hoverOpen.stop()
+            hoverOpen.pending = -1
+            popup.openIndex = -1
+            if (popup.childMenu)
+              popup.childMenu.close()
           }
         }
       }

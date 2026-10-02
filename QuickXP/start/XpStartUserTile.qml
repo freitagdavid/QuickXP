@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 import qs.QuickXP
 
-// XP Start user bar: STARTUSERPANEL skin + account tile + display name (STA-32).
+// XP Start user bar — STARTUSERPANEL skin + account tile (theme-driven).
 Item {
   id: root
 
@@ -18,6 +18,8 @@ Item {
       return ""
     return home + "/.face"
   }
+  // CC0 Staunton crop — see start/assets/SOURCES.txt (not the Corbis XP chess.bmp).
+  readonly property string defaultFacePath: Quickshell.shellPath("QuickXP/start/assets/default-user-chess.png")
   property bool faceAvailable: false
 
   FileView {
@@ -30,13 +32,34 @@ Item {
     onLoadFailed: root.faceAvailable = false
   }
 
-  readonly property int barHeight: Number(Theme.value("startPanel", "userBarHeight", 46))
-  readonly property int tileSize: Number(Theme.value("startPanel", "tileSize", 42))
+  readonly property string faceSource: {
+    if (root.faceAvailable && root.facePath.length > 0)
+      return "file://" + root.facePath
+    if (root.defaultFacePath.length > 0)
+      return "file://" + root.defaultFacePath
+    return ""
+  }
+
+  readonly property int barHeight: Number(Theme.value("startPanel", "userBarHeight", 64))
+  // Account picture content size (XP default 48); outer chrome comes from UserTileBackground.
+  readonly property int tileSize: Number(Theme.value("startPanel", "tileSize", 48))
+  readonly property int tileContentLeft: Number(Theme.value("startPanel", "tileContentLeft", 8))
+  readonly property int tileContentRight: Number(Theme.value("startPanel", "tileContentRight", 6))
+  readonly property int tileContentTop: Number(Theme.value("startPanel", "tileContentTop", 8))
+  readonly property int tileContentBottom: Number(Theme.value("startPanel", "tileContentBottom", 6))
+  readonly property int tileOuterWidth: root.tileSize + root.tileContentLeft + root.tileContentRight
+  readonly property int tileOuterHeight: root.tileSize + root.tileContentTop + root.tileContentBottom
 
   height: barHeight
   implicitHeight: barHeight
 
   signal tileActivated()
+
+  // Opaque underlay so magenta-keyed corners never show MFU orange through the header.
+  Rectangle {
+    anchors.fill: parent
+    color: String(Theme.value("startPanel", "userFill", Theme.color("titleActive", "#0054E3")))
+  }
 
   BorderImage {
     id: panelSkin
@@ -45,72 +68,69 @@ Item {
       const path = Theme.image("startUserPanelImage")
       return path ? ("file://" + path) : ""
     }
-    border.left: 12
-    border.right: 12
-    border.top: 10
-    border.bottom: 8
+    border.left: Number(Theme.value("startPanel", "userBorderLeft", 59))
+    border.right: Number(Theme.value("startPanel", "userBorderRight", 60))
+    border.top: Number(Theme.value("startPanel", "userBorderTop", 62))
+    border.bottom: Math.max(0, Number(Theme.value("startPanel", "userBorderBottom", 0)))
     horizontalTileMode: BorderImage.Stretch
     verticalTileMode: BorderImage.Stretch
     visible: status === Image.Ready
   }
 
-  // Fallback when theme art is missing: black → Luna blue (matches Classic banner family).
-  Rectangle {
-    anchors.fill: parent
-    visible: !panelSkin.visible
-    gradient: Gradient {
-      GradientStop { position: 0.0; color: Theme.color("classicStartBannerTop", "#000000") }
-      GradientStop { position: 0.35; color: Theme.color("classicStartBannerMid", "#0A246A") }
-      GradientStop { position: 1.0; color: Theme.color("classicStartBannerBottom", "#1E4A8C") }
-    }
-  }
-
+  // StartPanel.UserPicture — theme UserTileBackground frame with face in ContentMargins.
   Item {
     id: tile
     anchors.left: parent.left
     anchors.leftMargin: 8
     anchors.verticalCenter: parent.verticalCenter
-    width: root.tileSize + 6
-    height: root.tileSize + 6
+    width: root.tileOuterWidth
+    height: root.tileOuterHeight
 
-    Image {
+    BorderImage {
       id: tileFrame
       anchors.fill: parent
       source: {
         const path = Theme.image("startUserTileImage")
         return path ? ("file://" + path) : ""
       }
-      fillMode: Image.Stretch
+      border.left: Number(Theme.value("startPanel", "tileBorderLeft", 6))
+      border.right: Number(Theme.value("startPanel", "tileBorderRight", 10))
+      border.top: Number(Theme.value("startPanel", "tileBorderTop", 6))
+      border.bottom: Number(Theme.value("startPanel", "tileBorderBottom", 10))
+      horizontalTileMode: BorderImage.Stretch
+      verticalTileMode: BorderImage.Stretch
       smooth: true
       visible: status === Image.Ready
     }
 
     Rectangle {
       anchors.fill: parent
-      anchors.margins: 3
       visible: !tileFrame.visible
-      color: "#4A90D9"
-      border.color: "#FFFFFF"
-      border.width: 1
+      color: String(Theme.value("startPanel", "tileFill", "#CCD6EB"))
+      radius: 4
     }
 
     Image {
       id: face
       anchors.fill: parent
-      anchors.margins: 5
-      source: root.faceAvailable ? ("file://" + root.facePath) : ""
+      anchors.leftMargin: root.tileContentLeft
+      anchors.rightMargin: root.tileContentRight
+      anchors.topMargin: root.tileContentTop
+      anchors.bottomMargin: root.tileContentBottom
+      source: root.faceSource
       fillMode: Image.PreserveAspectCrop
       smooth: true
       asynchronous: true
-      visible: root.faceAvailable && status === Image.Ready
+      visible: status === Image.Ready && root.faceSource.length > 0
     }
 
-    // Placeholder glyph when no ~/.face
     Text {
-      anchors.centerIn: parent
+      anchors.fill: face
       visible: !face.visible
+      horizontalAlignment: Text.AlignHCenter
+      verticalAlignment: Text.AlignVCenter
       text: root.userName.length > 0 ? root.userName.charAt(0).toUpperCase() : "?"
-      color: "#FFFFFF"
+      color: String(Theme.value("startPanel", "userNameColor", "#FFFFFF"))
       font.pixelSize: 18
       font.bold: true
     }
@@ -141,6 +161,6 @@ Item {
     font.pixelSize: 14
     font.bold: true
     style: Text.Raised
-    styleColor: String(Theme.value("startPanel", "userNameShadow", "#003366"))
+    styleColor: String(Theme.value("startPanel", "userNameShadow", "#09428B"))
   }
 }

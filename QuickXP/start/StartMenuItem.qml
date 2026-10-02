@@ -1,5 +1,6 @@
 import QtQuick
 import qs.QuickXP
+import "StartSubmenuChrome.js" as StartSubmenuChrome
 
 Item {
   id: root
@@ -8,8 +9,10 @@ Item {
   property bool selected: false
   property bool hasSubmenu: node && node.kind === "folder"
   property bool separator: node && node.kind === "separator"
-  // XP classic Start large-icon row (32px icon fills the row).
-  property int rowHeight: 32
+  // "classic" = large-icon beige menus; "xp" = compact StartGroup flyouts.
+  property string chrome: "classic"
+  property int rowHeight: StartSubmenuChrome.rowHeight(chrome)
+  property int iconSize: StartSubmenuChrome.iconSize(chrome)
 
   signal activated()
   signal hovered()
@@ -18,13 +21,17 @@ Item {
   width: parent ? parent.width : 180
   height: separator ? 9 : rowHeight
 
-  readonly property bool hot: selected || area.containsMouse
-  readonly property color classicHighlight: Theme.color("classicMenuHighlight", "#0A246A")
+  // Hover-only unless `selected` (open cascade parent).
+  readonly property bool hot: area.containsMouse || selected
+  readonly property bool xpChrome: StartSubmenuChrome.isXp(chrome)
+  readonly property color highlightColor: xpChrome
+    ? String(Theme.value("startPanel", "mfuHot", Theme.color("highlight", "#316AC5")))
+    : Theme.color("classicMenuHighlight", "#0A246A")
 
   Rectangle {
     anchors.fill: parent
     visible: !root.separator
-    color: root.hot ? root.classicHighlight : "transparent"
+    color: root.hot ? root.highlightColor : "transparent"
   }
 
   // Etched separator (classic light/dark pair)
@@ -57,10 +64,10 @@ Item {
     id: icon
     visible: !root.separator
     anchors.left: parent.left
-    anchors.leftMargin: 4
+    anchors.leftMargin: root.xpChrome ? 3 : 4
     anchors.verticalCenter: parent.verticalCenter
-    width: 32
-    height: 32
+    width: root.iconSize
+    height: root.iconSize
     source: {
       if (!root.node)
         return ""

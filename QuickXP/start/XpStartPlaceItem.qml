@@ -1,7 +1,7 @@
 import QtQuick
 import qs.QuickXP
 
-// Right-column places row (smaller icons, Luna blue highlight).
+// Right-column places row — text/hot/separator colors from Theme.startPanel.
 Item {
   id: root
 
@@ -9,7 +9,8 @@ Item {
   property bool selected: false
   property bool hasSubmenu: node && node.kind === "folder"
   property bool separator: node && node.kind === "separator"
-  property int rowHeight: 28
+  property int rowHeight: Number(Theme.value("startPanel", "placeRowHeight", 26))
+  property int iconSize: Number(Theme.value("startPanel", "placeIconSize", 24))
 
   signal activated()
   signal hovered()
@@ -17,9 +18,14 @@ Item {
 
   width: parent ? parent.width : 180
   height: separator ? 9 : rowHeight
+  clip: true
 
   readonly property bool hot: selected || area.containsMouse
-  readonly property color placeHighlight: Theme.color("highlight", "#316AC5")
+  readonly property color placeHighlight: String(Theme.value("startPanel", "placesHot", Theme.color("highlight", "#316AC5")))
+  readonly property color placeText: String(Theme.value("startPanel", "placesText", "#0A246A"))
+  readonly property color placeHotText: String(Theme.value("startPanel", "placesHotText", Theme.color("highlightText", "#FFFFFF")))
+  readonly property color sepColor: String(Theme.value("startPanel", "placesSeparator", "#7BA0D0"))
+  readonly property int glyphSize: Math.min(iconSize, Math.max(12, rowHeight - 2))
 
   Rectangle {
     anchors.fill: parent
@@ -36,19 +42,36 @@ Item {
     anchors.leftMargin: 4
     anchors.rightMargin: 4
     height: 2
+
+    Image {
+      id: sepSkin
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      height: Math.min(sourceSize.height || 2, 4)
+      source: {
+        const path = Theme.image("startPanelPlacesSeparatorImage")
+        return path ? ("file://" + path) : ""
+      }
+      fillMode: Image.Stretch
+      visible: status === Image.Ready
+    }
+
     Rectangle {
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: parent.top
       height: 1
-      color: "#7BA0D0"
+      visible: !sepSkin.visible
+      color: root.sepColor
     }
     Rectangle {
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.bottom: parent.bottom
       height: 1
-      color: "#FFFFFF"
+      visible: !sepSkin.visible
+      color: Theme.color("menu", "#FFFFFF")
     }
   }
 
@@ -56,10 +79,10 @@ Item {
     id: icon
     visible: !root.separator
     anchors.left: parent.left
-    anchors.leftMargin: 6
+    anchors.leftMargin: 2
     anchors.verticalCenter: parent.verticalCenter
-    width: 24
-    height: 24
+    width: root.glyphSize
+    height: root.glyphSize
     source: {
       if (!root.node)
         return ""
@@ -85,8 +108,11 @@ Item {
     anchors.rightMargin: 4
     anchors.verticalCenter: parent.verticalCenter
     elide: Text.ElideRight
+    clip: true
+    maximumLineCount: 1
+    wrapMode: Text.NoWrap
     text: root.node ? String(root.node.label || "") : ""
-    color: root.hot ? Theme.color("highlightText", "white") : "#000000"
+    color: root.hot ? root.placeHotText : root.placeText
     font.family: Theme.value("fonts", "ui", "Tahoma")
     font.pixelSize: Theme.size("fontSize", 11)
     font.bold: !!(root.node && root.node.bold)
@@ -96,14 +122,14 @@ Item {
     id: cascade
     visible: root.hasSubmenu
     anchors.right: parent.right
-    anchors.rightMargin: 6
+    anchors.rightMargin: 4
     anchors.verticalCenter: parent.verticalCenter
     width: 5
     height: 9
     onPaint: {
       const ctx = getContext("2d")
       ctx.clearRect(0, 0, width, height)
-      ctx.fillStyle = root.hot ? "#FFFFFF" : "#215DC6"
+      ctx.fillStyle = root.hot ? root.placeHotText : root.placeText
       ctx.beginPath()
       ctx.moveTo(0, 0)
       ctx.lineTo(width, height / 2)
@@ -115,6 +141,8 @@ Item {
     Connections {
       target: root
       function onHotChanged() { cascade.requestPaint() }
+      function onPlaceTextChanged() { cascade.requestPaint() }
+      function onPlaceHotTextChanged() { cascade.requestPaint() }
     }
   }
 

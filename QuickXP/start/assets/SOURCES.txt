@@ -1,0 +1,23 @@
+default-user-chess.png
+=======================
+
+Public-domain (CC0) default Start-menu account picture.
+
+Source photograph
+  Title: Piece Chess
+  Author: George Becker
+  Provider: StockSnap (via Openverse)
+  Photo ID: GJM8XE7EE9
+  License: Creative Commons CC0 1.0 Universal
+  URL: https://stocksnap.io/photo/piece-chess-GJM8XE7EE9
+
+Derivative
+  Square crop centered on the foreground pawn against the saturated
+  burgundy / purple background, lightly contrast-boosted, resized to
+  128×128 PNG for the QuickXP Start user tile fallback.
+
+Note
+  The original Windows XP "chess" user-account bitmap is a Corbis /
+  Digital Stock photograph and is not public domain. This asset is an
+  independent CC0 substitute chosen for a punchy, colorful look in the
+  same spirit.

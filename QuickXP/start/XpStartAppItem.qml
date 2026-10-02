@@ -1,13 +1,14 @@
 import QtQuick
 import qs.QuickXP
 
-// Left-column app row (pins / MFU) with optional drag reorder.
+// Left-column app row (pins / MFU) — colors/sizes from Theme.startPanel.
 Item {
   id: root
 
   property var node: null
   property bool selected: false
-  property int rowHeight: 32
+  property int rowHeight: Number(Theme.value("startPanel", "rowHeight", 32))
+  property int iconSize: Number(Theme.value("startPanel", "iconSize", 32))
   property bool draggable: false
   property int dragIndex: -1
 
@@ -21,21 +22,23 @@ Item {
   height: rowHeight
 
   readonly property bool hot: selected || area.containsMouse
-  property int dropTarget: -1
+  readonly property color mfuHot: String(Theme.value("startPanel", "mfuHot", Theme.color("highlight", "#316AC5")))
+  readonly property color mfuText: String(Theme.value("startPanel", "mfuText", "#373738"))
+  readonly property color mfuHotText: String(Theme.value("startPanel", "mfuHotText", Theme.color("highlightText", "#FFFFFF")))
 
   Rectangle {
     anchors.fill: parent
-    color: root.hot ? Theme.color("highlight", "#316AC5") : "transparent"
+    color: root.hot ? root.mfuHot : "transparent"
     radius: 2
   }
 
   Image {
     id: icon
     anchors.left: parent.left
-    anchors.leftMargin: 4
+    anchors.leftMargin: 2
     anchors.verticalCenter: parent.verticalCenter
-    width: 32
-    height: 32
+    width: root.iconSize
+    height: root.iconSize
     source: {
       if (!root.node)
         return ""
@@ -61,7 +64,7 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     elide: Text.ElideRight
     text: root.node ? String(root.node.label || "") : ""
-    color: root.hot ? Theme.color("highlightText", "white") : "#000000"
+    color: root.hot ? root.mfuHotText : root.mfuText
     font.family: Theme.value("fonts", "ui", "Tahoma")
     font.pixelSize: Theme.size("fontSize", 11)
     font.bold: !!(root.node && root.node.bold)

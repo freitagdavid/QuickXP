@@ -51,6 +51,11 @@ Item {
       host.pokeSuppress()
   }
 
+  function onFlyoutLeft() {
+    if (host && typeof host.onFlyoutLeft === "function")
+      host.onFlyoutLeft()
+  }
+
   function activateNode(node) {
     if (!host || !node)
       return
@@ -261,7 +266,7 @@ Item {
           width: rowsCol.width
           rowHeight: root.itemRowHeight
           node: modelData
-          selected: root.focusIndex === index || root.openIndex === index
+          selected: root.openIndex === index
           onActivated: {
             root.focusIndex = index
             if (modelData && modelData.kind === "folder")
@@ -283,6 +288,10 @@ Item {
             } else {
               root.closeOpenSubmenu()
             }
+          }
+          onUnhovered: {
+            if (root.focusIndex === index && root.openIndex !== index)
+              root.focusIndex = -1
           }
         }
       }

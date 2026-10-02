@@ -1,13 +1,13 @@
 import QtQuick
 import qs.QuickXP
 
-// XP Start bottom bar: Log Off + Turn Off Computer (Luna LOGOFF art).
+// XP Start bottom bar — LOGOFF art + theme fill/text.
 Item {
   id: root
 
   property var host: null
 
-  readonly property int barHeight: Number(Theme.value("startPanel", "footerHeight", 39))
+  readonly property int barHeight: Number(Theme.value("startPanel", "footerHeight", 40))
   readonly property int iconSize: 24
 
   height: barHeight
@@ -20,10 +20,10 @@ Item {
       const path = Theme.image("startPanelLogoffBackgroundImage")
       return path ? ("file://" + path) : ""
     }
-    border.left: 8
-    border.right: 8
-    border.top: 4
-    border.bottom: 4
+    border.left: Number(Theme.value("startPanel", "logoffBorderLeft", 49))
+    border.right: Number(Theme.value("startPanel", "logoffBorderRight", 47))
+    border.top: Number(Theme.value("startPanel", "logoffBorderTop", 0))
+    border.bottom: Number(Theme.value("startPanel", "logoffBorderBottom", 38))
     horizontalTileMode: BorderImage.Stretch
     verticalTileMode: BorderImage.Stretch
     visible: status === Image.Ready
@@ -32,7 +32,7 @@ Item {
   Rectangle {
     anchors.fill: parent
     visible: !barSkin.visible
-    color: Theme.color("classicStartBannerMid", "#0A246A")
+    color: String(Theme.value("startPanel", "logoffFill", "#2577DF"))
   }
 
   Row {
@@ -43,14 +43,14 @@ Item {
 
     XpStartFooterButton {
       label: "Log Off"
-      iconIndex: 1 // key glyph in LOGOFFBUTTONS strip
+      iconIndex: 1
       host: root.host
       action: "logoff"
     }
 
     XpStartFooterButton {
       label: "Turn Off Computer"
-      iconIndex: 2 // power glyph
+      iconIndex: 2
       host: root.host
       action: "shutdown"
     }

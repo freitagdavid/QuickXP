@@ -79,6 +79,12 @@ PopupWindow {
       Settings.open("start")
       return
     }
+    if (id === "user-tile") {
+      close()
+      stubBox.title = "User Accounts"
+      stubBox.open("Account picture and user settings will expand later.\n\nPlace an image at ~/.face to show your picture on the Start menu.", false)
+      return
+    }
     if (id === "help") {
       close()
       stubBox.title = "Help and Support"

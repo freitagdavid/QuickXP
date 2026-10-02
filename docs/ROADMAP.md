@@ -124,6 +124,7 @@ One tabbed configuration UI for the shell (XP-styled dialog chrome). This is the
 - [x] **Theme** — Installed list + color-scheme dropdown + taskbar/Start/titlebar preview + “Match window borders” (Aurorae sync on Apply) + shell generation / per-feature generation overrides. Import… installs one pack (all schemes + aurorae/); Delete removes user-data themes; Regenerate borders for installed themes.
 - [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets. **Icons only** and **Group similar** apply on Apply (compact buttons; crowding vs always-combine by `iconsOnly`; XP list / thumbnail group popups). Height applies on Apply. Later: auto-hide behavior, keep-on-top, multi-row, Quick Launch.
 - [x] **Start Menu** — Classic Customize surface (Programs source, highlight-new, personalized menus, clear recent/highlight). XP dual-column / SMS depth remains Epic 2.
+- [x] **Debugging** — Dev aids (keep Start open by default / skip grab-hover dismiss; survives hot reload).
 - [ ] **Desktop** — Wallpaper path/fit, icon arrange/align defaults, special-icon visibility, Show Desktop Icons (when Epic 6 exists).
 - [ ] **Notification Area** — Hide inactive icons; per-icon Always show / Always hide / Hide when inactive + Customize list + Restore Defaults; which system control icons to show (volume, network, Bluetooth, brightness, drives, battery); Show Clock; notification queue retention (generation-gated); balloon on/off (Epic 8 / Epic C).
 - [ ] **Appearance / Effects** (Display Properties–shaped) — Windows and Buttons style (**Luna vs Windows Classic**, independent of Classic Start — REF-11 / VIS-03), color scheme, font size; Effects: menu/tooltip fade vs scroll, menu shadows, hide mnemonic underlines until Alt (DSP-09–17). Can ship as Theme sub-pages or a dedicated tab.
@@ -289,7 +290,7 @@ No dual-column chrome, no user tile, no search box in this epic.
 
 Builds on the classic app catalog and session hooks. Default Luna Start when `generation` is XP. Benefits from Epic T once imported themes supply Start menu bitmaps.
 
-- **Two-column frame** — Luna left/right skins, user tile on right column (account picture is interactive / measured, not only decorative — STA-32).
+- [x] **Two-column frame** — Luna STARTPANEL skins (user bar, MFU/places columns), interactive account tile (`~/.face` + stub User Accounts) — STA-32.
 - **Left: pinned apps** — Pin/unpin, drag reorder, persisted list; default Internet and E-mail entries from configured handlers (STA-05).
 - **Left: most-frequent list** — Usage scoring with decay (not a pure chronological MRU); exclusions; **Remove from This List** ≠ Unpin; Clear List from Customize (STA-10–14).
 - **Left: All Programs** — Reuse classic Programs cascade as flyout (in-place expand later for Vista).

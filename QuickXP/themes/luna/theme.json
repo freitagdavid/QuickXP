@@ -77,7 +77,27 @@
     "restoreButtonImage": "luna/images/BLUE_CAPTIONBUTTON_BMP.png",
     "restoreGlyphImage": "luna/images/BLUE_RESTOREGLYPH_BMP.png",
     "helpButtonImage": "luna/images/BLUE_CAPTIONBUTTON_BMP.png",
-    "helpGlyphImage": "luna/images/BLUE_HELPGLYPH_BMP.png"
+    "helpGlyphImage": "luna/images/BLUE_HELPGLYPH_BMP.png",
+    "startUserPanelImage": "luna/images/BLUE_STARTUSERPANEL_BMP.png",
+    "startUserTileImage": "luna/images/BLUE_USERTILEBACKGROUND_BMP.png",
+    "startPanelMfuBackgroundImage": "luna/images/BLUE_STARTPANELMFUBACKGROUND_BMP.png",
+    "startPanelPlacesBackgroundImage": "luna/images/BLUE_STARTPANELPLACESBACKGROUND_BMP.png",
+    "startPanelMoreProgBackgroundImage": "luna/images/BLUE_STARTPANELMOREPROGBACKGROUND_BMP.png",
+    "startPanelMoreProgArrowImage": "luna/images/BLUE_STARTPANELMOREPROGARROW_BMP.png",
+    "startPanelMoreProgArrowHotImage": "luna/images/BLUE_STARTPANELMOREPROGARROWHOT_BMP.png",
+    "startPanelLogoffBackgroundImage": "luna/images/BLUE_STARTPANELLOGOFFBACKGROUND_BMP.png",
+    "startPanelLogoffButtonsImage": "luna/images/BLUE_STARTPANELLOGOFFBUTTONS_BMP.png",
+    "startPanelLogoffButtonsHotImage": "luna/images/BLUE_STARTPANELLOGOFFBUTTONSHOT_BMP.png"
+  },
+  "startPanel": {
+    "userBarHeight": 46,
+    "leftColumnWidth": 190,
+    "rightColumnWidth": 186,
+    "bodyHeight": 340,
+    "tileSize": 42,
+    "outerBorder": "#003C74",
+    "userNameColor": "#FFFFFF",
+    "userNameShadow": "#003366"
   },
   "button": {
     "frames": 5,

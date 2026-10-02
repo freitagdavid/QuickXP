@@ -21,7 +21,7 @@ PopupWindow {
   property var childMenu: null
 
   readonly property int menuWidth: 200
-  readonly property int itemRowHeight: 18
+  readonly property int itemRowHeight: 32
 
   function openAt(item) {
     if (childMenu)

@@ -279,6 +279,8 @@ def project_theme(
     if btnface:
         colors["window"] = btnface
         colors["button"] = btnface
+        colors["classicMenu"] = btnface
+        colors["buttonFace"] = btnface
     elif "window" not in colors:
         colors["window"] = keymap.WINDOW_FACE_FALLBACK
 

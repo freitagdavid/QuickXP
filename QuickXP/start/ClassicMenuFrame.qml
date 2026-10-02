@@ -5,7 +5,7 @@ import qs.QuickXP
 Item {
   id: root
 
-  property color face: Theme.color("classicMenu", "#D4D0C8")
+  property color face: Theme.color("classicMenu", "#ECE9D8")
   property alias contentItem: content
 
   // Outer shadow edge

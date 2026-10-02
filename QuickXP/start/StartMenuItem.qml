@@ -8,8 +8,8 @@ Item {
   property bool selected: false
   property bool hasSubmenu: node && node.kind === "folder"
   property bool separator: node && node.kind === "separator"
-  // Classic Start / Win2k menu row (~SM_CYMENU); 16px icon + padding.
-  property int rowHeight: 18
+  // XP classic Start large-icon row (32px icon fills the row).
+  property int rowHeight: 32
 
   signal activated()
   signal hovered()
@@ -59,8 +59,8 @@ Item {
     anchors.left: parent.left
     anchors.leftMargin: 4
     anchors.verticalCenter: parent.verticalCenter
-    width: 16
-    height: 16
+    width: 32
+    height: 32
     source: {
       if (!root.node)
         return ""

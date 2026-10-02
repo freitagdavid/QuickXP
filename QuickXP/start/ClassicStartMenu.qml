@@ -18,7 +18,7 @@ Item {
 
   readonly property int bannerWidth: 28
   readonly property int contentWidth: 190
-  readonly property int itemRowHeight: 18
+  readonly property int itemRowHeight: 32
 
   width: bannerWidth + contentWidth
   implicitHeight: Math.max(banner.height, rowsCol.implicitHeight + 4)

@@ -212,6 +212,9 @@ imageCount = 3
     assert doc["colors"]["windowText"] == "#000000"
     assert doc["colors"]["buttonText"] == "#000000"
     assert doc["colors"]["menuText"] == "#000000"
+    assert doc["colors"]["button"] == "#ECE9D8"
+    assert doc["colors"]["classicMenu"] == "#ECE9D8"
+    assert doc["colors"]["buttonFace"] == "#ECE9D8"
 
 
 def test_list_schemes_luna(luna_theme: Path):

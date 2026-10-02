@@ -129,11 +129,13 @@ PopupWindow {
     }
   }
 
-  // Rebind when alignBottom changes between opens.
+  // Attach to the parent row's right edge; gravity uses the opposite vertical
+  // side so the flyout sits beside the row (tops or bottoms flush), not
+  // corner-to-corner diagonally. Same pattern as XpComboBox dropdowns.
   anchor.item: anchorItem
   anchor.edges: popup.alignBottom ? (Edges.Bottom | Edges.Right) : (Edges.Top | Edges.Right)
-  anchor.gravity: popup.alignBottom ? (Edges.Bottom | Edges.Right) : (Edges.Top | Edges.Right)
-  anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
+  anchor.gravity: popup.alignBottom ? (Edges.Top | Edges.Right) : (Edges.Bottom | Edges.Right)
+  anchor.adjustment: PopupAdjustment.Slide
 
   implicitWidth: menuWidth
   implicitHeight: Math.min(420, Math.max(28, frame.implicitHeight))

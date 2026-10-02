@@ -210,6 +210,17 @@ function xpPlacesItems(opts) {
   push(xpPlaceNode("admin-tools", "Administrative Tools", "applications-system", "a",
     o.adminTools !== undefined ? o.adminTools : "menu", adminKids, false))
 
+  // Help / Search / Run (Epic 2 #74) — XP right-column bottom actions, not Vista search box.
+  if (o.includeHelpSearchRun !== false) {
+    rows.push(separatorNode("sep-help"))
+    push(xpPlaceNode("help", "Help and Support", "help-browser", "h",
+      o.help !== undefined ? o.help : "link", [], false))
+    push(xpPlaceNode("search", "Search", "system-search", "s",
+      o.search !== undefined ? o.search : "link", [], false))
+    push(xpPlaceNode("run", "Run...", "system-run", "r",
+      o.run !== undefined ? o.run : "link", [], false))
+  }
+
   return rows
 }
 

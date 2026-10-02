@@ -291,7 +291,7 @@ No dual-column chrome, no user tile, no search box in this epic.
 Builds on the classic app catalog and session hooks. Default Luna Start when `generation` is XP. Benefits from Epic T once imported themes supply Start menu bitmaps.
 
 - [x] **Two-column frame** — Luna STARTPANEL skins (user bar, MFU/places columns), interactive account tile (`~/.face` + stub User Accounts) — STA-32.
-- **Left: pinned apps** — Pin/unpin, drag reorder, persisted list; default Internet and E-mail entries from configured handlers (STA-05).
+- [x] **Left: pinned apps** — Pin/unpin (right-click), drag reorder, persisted list; defaults from WebBrowser/Email categories (STA-05).
 - **Left: most-frequent list** — Usage scoring with decay (not a pure chronological MRU); exclusions; **Remove from This List** ≠ Unpin; Clear List from Customize (STA-10–14).
 - [x] **Left: All Programs** — Bottom “All Programs” + Luna arrow; reuses classic Programs cascade (`StartSubmenu`).
 - [x] **Right: special folders** — My Documents / Recent / Pictures / Music / Computer / Network / Control Panel / Connect To / Printers / Admin Tools; link|menu|hidden via Config (STA-24–29).

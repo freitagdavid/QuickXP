@@ -4,8 +4,9 @@ import Quickshell.Io
 import qs.QuickXP
 import qs.QuickXP.controls
 import qs.QuickXP.settings
+import "StartMenuLayout.js" as StartMenuLayout
 
-// Classic Start host — XP Classic Start chrome (banner + beveled face).
+// Start popup host — Classic single-column or XP dual-column via GenerationPolicy.
 PopupWindow {
   id: host
 
@@ -21,6 +22,11 @@ PopupWindow {
 
   readonly property int menuMinHeight: 120
 
+  // Classic only when startMenu override/shell is classic; XP dual-column otherwise
+  // (vista/win7 keep XP chrome until Epic 3 search Start).
+  readonly property bool useClassicStart: StartMenuLayout.useClassic(GenerationPolicy.forItem("startMenu"))
+  readonly property Item activeMenu: useClassicStart ? classicMenu : xpMenu
+
   function pokeSuppress() {
     suppressDismiss = true
     suppressTimer.restart()
@@ -31,17 +37,20 @@ PopupWindow {
       return
     armed = false
     suppressDismiss = false
-    classicMenu.closeSubmenus()
+    activeMenu.closeSubmenus()
     Qt.callLater(() => {
       visible = true
-      classicMenu.resetFocus()
+      activeMenu.resetFocus()
       armTimer.restart()
-      contentFocus.forceActiveFocus()
+      if (host.useClassicStart)
+        classicFocus.forceActiveFocus()
+      else
+        xpFocus.forceActiveFocus()
     })
   }
 
   function close() {
-    classicMenu.closeSubmenus()
+    activeMenu.closeSubmenus()
     visible = false
     armed = false
     armTimer.stop()
@@ -188,14 +197,20 @@ PopupWindow {
   anchor.gravity: Edges.Top | Edges.Right
   anchor.adjustment: PopupAdjustment.Slide
 
-  implicitWidth: classicMenu.width + 4
-  implicitHeight: Math.max(menuMinHeight, Math.min(520, classicMenu.implicitHeight + 4))
+  implicitWidth: useClassicStart ? (classicMenu.width + 4) : xpMenu.width
+  implicitHeight: useClassicStart
+      ? Math.max(menuMinHeight, Math.min(520, classicMenu.implicitHeight + 4))
+      : Math.max(menuMinHeight, xpMenu.implicitHeight)
 
+  // Classic beveled frame (single-column).
   ClassicMenuFrame {
-    id: frame
+    id: classicFrame
     anchors.fill: parent
+    visible: host.useClassicStart
+    enabled: host.useClassicStart
 
     HoverHandler {
+      enabled: host.useClassicStart
       onHoveredChanged: {
         if (!host.armed || hovered || host.suppressDismiss)
           return
@@ -206,11 +221,14 @@ PopupWindow {
     }
 
     Item {
-      id: contentFocus
-      parent: frame.contentItem
+      id: classicFocus
+      parent: classicFrame.contentItem
       anchors.fill: parent
-      focus: true
-      Keys.onPressed: (event) => classicMenu.handleKey(event)
+      focus: host.useClassicStart
+      Keys.onPressed: (event) => {
+        if (host.useClassicStart)
+          classicMenu.handleKey(event)
+      }
 
       ClassicStartMenu {
         id: classicMenu
@@ -219,6 +237,38 @@ PopupWindow {
         host: host
         programsNode: ProgramsCatalog.programsNode
       }
+    }
+  }
+
+  // XP dual-column shell (own chrome; no classic bevel).
+  Item {
+    id: xpFocus
+    anchors.fill: parent
+    visible: !host.useClassicStart
+    enabled: !host.useClassicStart
+    focus: !host.useClassicStart
+    Keys.onPressed: (event) => {
+      if (!host.useClassicStart)
+        xpMenu.handleKey(event)
+    }
+
+    HoverHandler {
+      enabled: !host.useClassicStart
+      onHoveredChanged: {
+        if (!host.armed || hovered || host.suppressDismiss)
+          return
+        if (xpMenu.submenuOpen)
+          return
+        host.close()
+      }
+    }
+
+    XpStartMenu {
+      id: xpMenu
+      anchors.left: parent.left
+      anchors.top: parent.top
+      host: host
+      programsNode: ProgramsCatalog.programsNode
     }
   }
 

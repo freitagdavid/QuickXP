@@ -104,13 +104,53 @@ Item {
     anchors.fill: parent
     anchors.margins: 2
 
-    // Pins / MFU fill this space in later tickets.
     Item {
       id: upper
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: parent.top
       anchors.bottom: allProgramsBar.top
+
+      Column {
+        id: pinCol
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 4
+        spacing: 0
+
+        Repeater {
+          model: StartPinStore.pinRows
+
+          XpStartAppItem {
+            required property var modelData
+            required property int index
+            width: pinCol.width
+            node: modelData
+            draggable: true
+            dragIndex: index
+            onActivated: root.activateNode(modelData)
+            onUnpinRequested: StartPinStore.unpin(modelData.entryId || modelData.id)
+            onDragFinished: (fromIndex, toIndex) => StartPinStore.move(fromIndex, toIndex)
+          }
+        }
+
+        // Separator between pins and MFU (MFU lands in #71).
+        Item {
+          width: parent.width
+          height: StartPinStore.pinRows.length ? 10 : 0
+          visible: StartPinStore.pinRows.length > 0
+          Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: 4
+            anchors.rightMargin: 4
+            height: 1
+            color: "#C4C4C4"
+          }
+        }
+      }
     }
 
     Item {

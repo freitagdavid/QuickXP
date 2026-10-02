@@ -73,6 +73,9 @@ Singleton {
       property string startAppUsage: "{}"
       // Debugging: open Start on load and skip hover/grab dismiss.
       property bool debugKeepStartMenuOpen: false
+      // XP Start pinned apps (JSON string array of desktop ids).
+      property string startPinnedApps: "[]"
+      property bool startPinnedAppsSeeded: false
       // XP Start right-column place visibility: link | menu | hidden
       property string startPlaceDocuments: "link"
       property string startPlaceRecentDocuments: "menu"

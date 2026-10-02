@@ -17,9 +17,10 @@ Item {
   width: leftW + rightW + 4
   implicitHeight: userBar.height + bodyH + footer.height + 2
 
-  readonly property bool submenuOpen: rightCol.submenuOpen
+  readonly property bool submenuOpen: rightCol.submenuOpen || leftCol.submenuOpen
 
   function closeSubmenus() {
+    leftCol.closeSubmenus()
     rightCol.closeSubmenus()
   }
 

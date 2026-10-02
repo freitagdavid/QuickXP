@@ -83,4 +83,45 @@ TestCase {
     compare(hits.length, 1)
     compare(hits[0].entry.id, "firefox.desktop")
   }
+
+  function test_buildAppSearchIndex_and_filterIndexed() {
+    const apps = [
+      { id: "firefox.desktop", name: "Firefox", genericName: "Web Browser", noDisplay: false },
+      { id: "hidden.desktop", name: "Hidden", noDisplay: true }
+    ]
+    const index = StartSearchModel.buildAppSearchIndex(apps)
+    compare(index.length, 1)
+    compare(index[0].nameL, "firefox")
+    const hits = StartSearchModel.filterAppsIndexed(index, "FIRE")
+    compare(hits.length, 1)
+    compare(hits[0].entry.id, "firefox.desktop")
+  }
+
+  function test_pinIdSet_boost() {
+    const set = StartSearchModel.pinIdSet(["apricot.desktop", "  ", "other.desktop"])
+    verify(set["apricot.desktop"])
+    verify(set["other.desktop"])
+    verify(!set[""])
+    compare(StartSearchModel.pinBoost("apricot.desktop", set), 1000)
+    compare(StartSearchModel.pinBoost("missing.desktop", set), 0)
+    // Array fallback still works.
+    compare(StartSearchModel.pinBoost("apricot.desktop", ["apricot.desktop"]), 1000)
+  }
+
+  function test_buildResults_uses_appIndex_and_pinSet() {
+    const apps = [
+      { id: "zebra.desktop", name: "Zebra", icon: "z", noDisplay: false },
+      { id: "apple.desktop", name: "Apple", icon: "a", noDisplay: false },
+      { id: "apricot.desktop", name: "Apricot", icon: "ap", noDisplay: false }
+    ]
+    const rows = StartSearchModel.buildResults("ap", {
+      appIndex: StartSearchModel.buildAppSearchIndex(apps),
+      pinSet: StartSearchModel.pinIdSet(["apricot.desktop"]),
+      mfuScores: { "apple.desktop": 5 },
+      recentItems: [],
+      settings: []
+    })
+    compare(rows[1].entryId, "apricot.desktop")
+    compare(rows[2].entryId, "apple.desktop")
+  }
 }

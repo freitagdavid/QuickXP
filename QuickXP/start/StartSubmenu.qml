@@ -103,7 +103,9 @@ PopupWindow {
     }
     if (childMenu && childMenu.visible && openIndex !== index)
       childMenu.close()
-    const delegate = list.itemAt(index)
+    // ListView may not have instantiated an off-screen row yet.
+    list.positionViewAtIndex(index, ListView.Contain)
+    const delegate = list.itemAtIndex(index)
     if (!delegate)
       return
     const child = ensureChildMenu()
@@ -117,6 +119,17 @@ PopupWindow {
     child.host = popup.host
     child.openAt(delegate)
   }
+
+  readonly property real listContentHeight: {
+    const nodes = popup.nodes || []
+    let h = 0
+    for (let i = 0; i < nodes.length; ++i) {
+      const n = nodes[i]
+      h += (n && n.kind === "separator") ? 9 : popup.itemRowHeight
+    }
+    return h
+  }
+  readonly property real panelHeight: Math.min(420, Math.max(28, listContentHeight + 8))
 
   function requestOpen(index) {
     if (index < 0)
@@ -180,13 +193,13 @@ PopupWindow {
   anchor.adjustment: PopupAdjustment.Slide
 
   implicitWidth: menuWidth
-  implicitHeight: Math.min(420, Math.max(28, column.implicitHeight + 8))
+  implicitHeight: panelHeight
 
   ClassicMenuFrame {
     id: classicFrame
     anchors.fill: parent
     visible: !popup.xpChrome
-    implicitHeight: column.implicitHeight + 8
+    implicitHeight: popup.panelHeight
 
     HoverHandler {
       onHoveredChanged: popup.onFrameHoverChanged(hovered)
@@ -197,60 +210,61 @@ PopupWindow {
     id: xpFrame
     anchors.fill: parent
     visible: popup.xpChrome
-    implicitHeight: column.implicitHeight + 8
+    implicitHeight: popup.panelHeight
 
     HoverHandler {
       onHoveredChanged: popup.onFrameHoverChanged(hovered)
     }
   }
 
-  Column {
-    id: column
+  ListView {
+    id: list
     parent: popup.activeFrame.contentItem
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
     anchors.margins: popup.xpChrome ? 1 : 2
+    height: Math.max(0, popup.panelHeight - 8)
+    clip: true
     spacing: 0
+    boundsBehavior: Flickable.StopAtBounds
+    interactive: contentHeight > height
+    model: popup.nodes
 
-    Repeater {
-      id: list
-      model: popup.nodes
+    delegate: StartMenuItem {
+      required property var modelData
+      required property int index
 
-      delegate: StartMenuItem {
-        required property var modelData
-        required property int index
-
-        node: modelData
-        chrome: popup.chrome
-        rowHeight: popup.itemRowHeight
-        iconSize: popup.itemIconSize
-        selected: popup.openIndex === index
-        onActivated: {
-          if (modelData && modelData.kind === "folder")
-            popup.requestOpenNow(index)
-          else
-            popup.activateNode(modelData)
+      width: list.width
+      node: modelData
+      chrome: popup.chrome
+      rowHeight: popup.itemRowHeight
+      iconSize: popup.itemIconSize
+      selected: popup.openIndex === index
+      onActivated: {
+        if (modelData && modelData.kind === "folder")
+          popup.requestOpenNow(index)
+        else
+          popup.activateNode(modelData)
+      }
+      onHovered: {
+        if (!modelData || modelData.kind === "separator")
+          return
+        if (modelData.kind === "folder") {
+          popup.requestOpen(index)
+        } else {
+          hoverOpen.stop()
+          hoverOpen.pending = -1
+          popup.openIndex = -1
+          if (popup.childMenu)
+            popup.childMenu.close()
         }
-        onHovered: {
-          if (!modelData || modelData.kind === "separator")
-            return
-          if (modelData.kind === "folder") {
-            popup.requestOpen(index)
-          } else {
-            hoverOpen.stop()
-            hoverOpen.pending = -1
-            popup.openIndex = -1
-            if (popup.childMenu)
-              popup.childMenu.close()
-          }
-        }
-        onContextMenuRequested: {
-          if (!modelData || modelData.kind !== "app")
-            return
-          if (popup.host && typeof popup.host.openAppContextMenu === "function")
-            popup.host.openAppContextMenu(this, modelData.entryId || modelData.id, false)
-        }
+      }
+      onContextMenuRequested: {
+        if (!modelData || modelData.kind !== "app")
+          return
+        if (popup.host && typeof popup.host.openAppContextMenu === "function")
+          popup.host.openAppContextMenu(this, modelData.entryId || modelData.id, false)
       }
     }
   }

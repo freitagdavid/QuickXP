@@ -102,15 +102,91 @@ function bestMatchQuality(parts, query) {
     return best
 }
 
-function pinBoost(entryId, pinIds) {
-    var id = String(entryId || "").trim()
-    if (!id || !pinIds || pinIds.length === undefined)
-        return 0
+function pinIdSet(pinIds) {
+    var out = {}
+    if (!pinIds || pinIds.length === undefined)
+        return out
     for (var i = 0; i < pinIds.length; ++i) {
-        if (String(pinIds[i] || "").trim() === id)
+        var id = String(pinIds[i] || "").trim()
+        if (id)
+            out[id] = true
+    }
+    return out
+}
+
+function pinBoost(entryId, pinIdsOrSet) {
+    var id = String(entryId || "").trim()
+    if (!id || !pinIdsOrSet)
+        return 0
+    // O(1) map from pinIdSet(); keep array fallback for older callers/tests.
+    if (pinIdsOrSet.length === undefined)
+        return pinIdsOrSet[id] ? 1000 : 0
+    for (var i = 0; i < pinIdsOrSet.length; ++i) {
+        if (String(pinIdsOrSet[i] || "").trim() === id)
             return 1000
     }
     return 0
+}
+
+function matchQualityLower(textL, query) {
+    var t = String(textL === undefined || textL === null ? "" : textL)
+    if (!query || !t)
+        return 0
+    if (t.indexOf(query) === 0)
+        return 2
+    if (t.indexOf(query) !== -1)
+        return 1
+    return 0
+}
+
+function bestMatchQualityLower(partsL, query) {
+    var best = 0
+    for (var i = 0; i < partsL.length; ++i) {
+        var q = matchQualityLower(partsL[i], query)
+        if (q > best)
+            best = q
+    }
+    return best
+}
+
+function buildAppSearchIndex(apps) {
+    var out = []
+    var count = entryCount(apps)
+    for (var i = 0; i < count; ++i) {
+        var entry = entryAt(apps, i)
+        if (!entry || entry.noDisplay === true)
+            continue
+        var name = entry.name
+        if (name === undefined || name === null || String(name).trim() === "")
+            continue
+        out.push({
+            entry: entry,
+            nameL: String(name).toLowerCase(),
+            genericL: String(entry.genericName || "").toLowerCase(),
+            idL: String(entry.id || "").toLowerCase()
+        })
+    }
+    return out
+}
+
+function filterAppsIndexed(index, query) {
+    var q = normalizeQuery(query)
+    var out = []
+    if (!index || q === "")
+        return out
+    for (var i = 0; i < index.length; ++i) {
+        var row = index[i]
+        if (!row)
+            continue
+        var quality = bestMatchQualityLower([row.nameL, row.genericL, row.idL], q)
+        if (quality <= 0)
+            continue
+        out.push({
+            entry: row.entry,
+            quality: quality
+        })
+    }
+    return out
 }
 
 function mfuBoost(entryId, mfuScores) {
@@ -271,13 +347,15 @@ function firstSelectableIndex(results) {
 }
 
 // Build ranked Start search rows. Empty query → [].
-// ctx: { apps, recentItems, pinIds, mfuScores|rawMfuScores, settings, limit }
+// ctx: { apps|appIndex, recentItems, pinIds|pinSet, mfuScores|rawMfuScores, settings, limit }
 function buildResults(query, ctx) {
     var q = normalizeQuery(query)
     if (q === "")
         return []
     ctx = ctx || {}
-    var pinIds = ctx.pinIds || []
+    var pinSet = ctx.pinSet
+    if (!pinSet)
+        pinSet = pinIdSet(ctx.pinIds || [])
     var mfuScores = ctx.mfuScores
     if (!mfuScores)
         mfuScores = parseScoreMap(ctx.rawMfuScores)
@@ -285,14 +363,18 @@ function buildResults(query, ctx) {
     if (!limit || limit < 1)
         limit = 40
 
+    var appIndex = ctx.appIndex
+    if (!appIndex)
+        appIndex = buildAppSearchIndex(ctx.apps)
+
     var programs = []
-    var appHits = filterApps(ctx.apps, q)
+    var appHits = filterAppsIndexed(appIndex, q)
     for (var a = 0; a < appHits.length; ++a) {
         var hit = appHits[a]
         var entry = hit.entry
         var entryId = String(entry.id || entry.name || "")
         var label = String(entry.name || entryId)
-        var score = qualityBoost(hit.quality) + pinBoost(entryId, pinIds) + mfuBoost(entryId, mfuScores)
+        var score = qualityBoost(hit.quality) + pinBoost(entryId, pinSet) + mfuBoost(entryId, mfuScores)
         programs.push({
             kind: "app",
             id: entryId,

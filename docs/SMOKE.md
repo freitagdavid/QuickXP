@@ -26,6 +26,7 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Vista/7 Start search (`generation` vista/win7 or `startSearch` enabled): search field in the left column, directly under All Programs, focuses on open; typing filters that column (Programs / Documents / Settings); right column stays beside it; menu stays open
 - [ ] Vista/7 Start search keyboard: Down/Up highlight results; Enter launches; Esc clears query then closes
 - [ ] XP Start All Programs: flyout from left footer with Programs tree; nested cascades align; reopen works
+- [ ] Start menu perf: large All Programs folder scrolls (virtualized ListView); with Start closed, desktop-file storms do not fork MenuBridge repeatedly; Vista/7 search typing stays responsive (haystack built on open)
 - [ ] XP Start pins: defaults seed browser/mail; launch works; right-click unpins; drag reorders
 - [ ] XP Start MFU: launches populate list below pins; right-click removes from list without unpinning
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload

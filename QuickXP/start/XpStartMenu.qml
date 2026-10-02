@@ -15,6 +15,12 @@ Item {
   property string searchQuery: ""
   property int resultsFocusIndex: -1
 
+  // Lowercase haystack + pin map rebuilt when Start opens (or catalogs change while open).
+  property var appSearchIndex: []
+  property var pinSet: ({})
+  property int _searchIndexAppsRev: -1
+  property int _searchIndexPinsRev: -1
+
   // Search chrome when the startSearch toggle is on (default for shell vista/win7),
   // or when Start menu layout override is Vista/7 ("Search Start" choices).
   readonly property bool searchEnabled: StartMenuLayout.useStartSearch(
@@ -22,19 +28,31 @@ Item {
       || GenerationPolicy.isVistaOrLater("startMenu"))
   readonly property bool searchActive: searchEnabled && searchQuery.trim() !== ""
 
+  function rebuildSearchIndex() {
+    root.appSearchIndex = StartSearchModel.buildAppSearchIndex(AppCatalog.applications)
+    root.pinSet = StartSearchModel.pinIdSet(StartPinStore.pinIds)
+    root._searchIndexAppsRev = AppCatalog._revision
+    root._searchIndexPinsRev = StartPinStore._revision
+  }
+
+  function prepareOpen() {
+    root.rebuildSearchIndex()
+  }
+
   readonly property var searchResults: {
     if (!root.searchActive)
       return []
-    const __apps = AppCatalog._revision
     const __recent = RecentCatalog._revision
-    const __pins = StartPinStore._revision
     const __mfu = StartMfuStore._revision
     const __cfg = Config.options.startMfuScores
-    // AppCatalog.applications is plain records (id/name/icon); safe for StartSearchModel.
+    // Refresh index if apps/pins changed while the menu stayed open.
+    if (root._searchIndexAppsRev !== AppCatalog._revision
+        || root._searchIndexPinsRev !== StartPinStore._revision)
+      root.rebuildSearchIndex()
     return StartSearchModel.buildResults(root.searchQuery, {
-      apps: AppCatalog.applications,
+      appIndex: root.appSearchIndex,
+      pinSet: root.pinSet,
       recentItems: RecentCatalog.recentItems,
-      pinIds: StartPinStore.pinIds,
       rawMfuScores: Config.options.startMfuScores,
       settings: StartSearchModel.defaultSettingsIndex()
     })

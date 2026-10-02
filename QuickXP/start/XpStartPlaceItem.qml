@@ -83,6 +83,8 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     width: root.glyphSize
     height: root.glyphSize
+    sourceSize.width: root.glyphSize
+    sourceSize.height: root.glyphSize
     source: {
       if (!root.node)
         return ""

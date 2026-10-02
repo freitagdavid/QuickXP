@@ -40,6 +40,8 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     width: root.iconSize
     height: root.iconSize
+    sourceSize.width: root.iconSize
+    sourceSize.height: root.iconSize
     source: {
       if (!root.node)
         return ""

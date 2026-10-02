@@ -33,6 +33,10 @@ PopupWindow {
   property bool everHovered: false
   property bool chromeHovered: false
   property string pendingSessionAction: ""
+  // ProgramsCatalog beginOpen/endOpen pairing (also covers grabFocus auto-hide).
+  property bool catalogHeld: false
+  // Skip catalog release during keepOpen grabFocus hide→show flicker.
+  property bool reshowGuard: false
 
   readonly property int menuMinHeight: 120
 
@@ -74,12 +78,22 @@ PopupWindow {
       pokeSuppress()
     else
       suppressDismiss = false
+    if (!host.catalogHeld) {
+      host.catalogHeld = true
+      ProgramsCatalog.beginOpen()
+    }
+    if (!host.useClassicStart && typeof xpMenu.prepareOpen === "function")
+      xpMenu.prepareOpen()
     activeMenu.closeSubmenus()
     Qt.callLater(() => {
       // grabFocus changes only apply after hide→show.
       if (host.visible && host.keepOpen && host.grabFocus) {
+        host.reshowGuard = true
         host.visible = false
-        Qt.callLater(host._showNow)
+        Qt.callLater(() => {
+          host._showNow()
+          host.reshowGuard = false
+        })
         return
       }
       host._showNow()
@@ -113,6 +127,13 @@ PopupWindow {
     openedByHotkey = false
     everHovered = false
     armTimer.stop()
+  }
+
+  function releaseCatalog() {
+    if (!host.catalogHeld)
+      return
+    host.catalogHeld = false
+    ProgramsCatalog.endOpen()
   }
 
   function toggle() {
@@ -151,8 +172,11 @@ PopupWindow {
   }
 
   onVisibleChanged: {
-    if (!visible)
+    if (!visible) {
+      if (!host.reshowGuard)
+        host.releaseCatalog()
       reclaimIfStolen()
+    }
   }
 
   Connections {

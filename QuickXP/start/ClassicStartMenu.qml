@@ -57,8 +57,10 @@ Item {
     if (node.kind === "app") {
       const entry = AppCatalog.byId(node.entryId || node.id)
       if (entry && AppCatalog.launch(entry)) {
-        StartHighlightStore.markSeen(node.entryId || node.id)
-        StartPersonalizeStore.bump(node.entryId || node.id)
+        const id = node.entryId || node.id
+        StartHighlightStore.markSeen(id)
+        StartPersonalizeStore.bump(id)
+        StartMfuStore.bump(id)
         host.close()
       }
       return

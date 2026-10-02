@@ -12,9 +12,10 @@ Singleton {
 
   readonly property var pinIds: {
     const _ = root._revision
+    const __seeded = Config.options.startPinnedAppsSeeded
+    const __pins = Config.options.startPinnedApps
     const __apps = AppCatalog._revision
-    ensureSeeded()
-    return StartPin.parsePins(Config.options.startPinnedApps)
+    return StartPin.parsePins(__pins)
   }
 
   readonly property var pinRows: {

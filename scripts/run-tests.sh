@@ -74,4 +74,6 @@ if [[ -z "$QMLTEST" ]]; then
 fi
 
 echo "==> qmltestrunner ($QMLTEST)"
+# Headless-friendly default; callers can override (e.g. QT_QPA_PLATFORM=xcb).
+export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-offscreen}"
 "$QMLTEST" -input "$ROOT/tests/qml"

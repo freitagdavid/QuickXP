@@ -10,13 +10,15 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 
 - [ ] Shell starts (`quickshell`) without QML errors for the active theme
 - [ ] Taskbar paints (Start button, plate, task buttons, tray, clock)
-- [ ] Left-click Start opens classic single-column popup above the button; Esc / click-away dismisses; right-click still opens Properties
+- [ ] Left-click Start opens the active Start layout above the button (XP dual-column by default on Luna; Classic when `startMenu` override is classic); Esc / click-away dismisses; right-click still opens Properties
+- [ ] Settings → Theme → Start menu layout: Dual column (XP) vs Single column (Classic) switches popup chrome without restart
 - [ ] Classic Start: black→blue banner with distro name; beveled gray face; ~18px rows; no search box
 - [ ] Classic Start flyouts: first level bottom-anchored, nested levels alternate; only one open per level; reopen after close works
 - [ ] Start button flush to taskbar bottom with a tiny top drag-bar inset
 - [ ] Classic Start: Documents/Settings/Search open submenus; Help/Run stubs; Log Off / Turn Off Computer confirm (Cancel safe)
 - [ ] Settings → Start Menu: Programs source, highlight-new, personalized menus; Clear highlight / Clear recent
 - [ ] Settings → Start Menu still toggles Programs source after session rows land
+- [ ] XP Start stub (pre-skins): dual-column placeholder opens when layout is XP
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload
 - [ ] Settings → Theme → Import… an XP `.msstyles` → one theme with schemes → Color scheme dropdown → Apply reloads chrome; Delete removes user-data themes only
 - [ ] Post a freedesktop notification; tray / balloon / queue behaves as expected for the generation

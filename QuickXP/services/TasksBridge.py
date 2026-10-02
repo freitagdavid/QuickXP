@@ -147,6 +147,35 @@ def parse_stdin_line(line: str) -> dict | None:
     return None
 
 
+def windows_runner_token(window_id: str) -> str:
+    """WindowsRunner Run() token: \"0_\" + KWin internalId."""
+    wid = str(window_id or "").strip()
+    if not wid:
+        return ""
+    return wid if wid.startswith("0_") else "0_" + wid
+
+
+def dispatch_stdin_message(
+    msg: dict | None,
+    *,
+    on_command=None,
+    on_preview=None,
+) -> str | None:
+    """Route a parsed stdin message. Returns the op name handled, or None."""
+    if not isinstance(msg, dict):
+        return None
+    op = msg.get("op")
+    if op == "command":
+        if on_command is not None:
+            on_command(msg.get("window_id"), msg.get("action"))
+        return "command"
+    if op == "preview":
+        if on_preview is not None:
+            on_preview(msg.get("serial"), msg.get("window_id"))
+        return "preview"
+    return None
+
+
 def live_window_ids(rows: list) -> set[str]:
     ids: set[str] = set()
     for row in rows:
@@ -416,15 +445,11 @@ if _HAS_DBUS:
             return True
 
         def _handle_stdin_line(self, line: str) -> None:
-            msg = parse_stdin_line(line)
-            if msg is None:
-                return
-            if msg["op"] == "command":
-                self.Command(msg["window_id"], msg["action"])
-                return
-            if msg["op"] == "preview":
-                self._preview_via_stdin(msg["serial"], msg["window_id"])
-                return
+            dispatch_stdin_message(
+                parse_stdin_line(line),
+                on_command=self.Command,
+                on_preview=self._preview_via_stdin,
+            )
 
         def _preview_via_stdin(self, serial: str, window_id: str) -> None:
             window_id = str(window_id).strip()
@@ -498,11 +523,9 @@ if _HAS_DBUS:
 
         def _activate_via_windows_runner(self, window_id: str) -> bool:
             """Raise/focus without a KWin script (sync from this process)."""
-            wid = str(window_id).strip()
-            if not wid:
+            token = windows_runner_token(window_id)
+            if not token:
                 return False
-            # Match tasks.js: WindowsRunner ids are "0_" + internalId.
-            token = wid if wid.startswith("0_") else "0_" + wid
             try:
                 remote = self.bus.get_object("org.kde.KWin", "/WindowsRunner")
                 runner = dbus.Interface(remote, "org.kde.krunner1")

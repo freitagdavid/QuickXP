@@ -12,6 +12,7 @@ When implementing a roadmap feature (especially Python theme pipeline or pure QM
 - Python theme tooling → `tests/theme/` (pytest via `scripts/quickxp_theme/`)
 - Python bridges → `tests/bridges/` once logic exists (#41)
 - Pure QML/JS helpers → `tests/qml/` (`qmltestrunner`)
+- Process-backed bridges (e.g. `TasksBridge` via `TasksService`): add/keep an **ownership contract** test in `tests/bridges/` when introducing or moving the Process — who owns stdin, and that per-screen UI does not spawn competing Processes
 - Prefer cheap unit/golden tests over hermetic full-shell automation
 - Replace `pytest.skip` stubs (`test_detect.py`, `test_project_ini.py`, `test_aurorae.py`) with real tests when Epic T/K modules land
 

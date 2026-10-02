@@ -98,11 +98,65 @@ def test_parse_stdin_line():
         "window_id": "{abc}",
     }
     assert tb.parse_stdin_line("NOPE") is None
+    assert tb.parse_stdin_line("  COMMAND  {abc}  activate  ") == {
+        "op": "command",
+        "window_id": "{abc}",
+        "action": "activate",
+    }
+
+
+def test_windows_runner_token():
+    assert tb.windows_runner_token("") == ""
+    assert tb.windows_runner_token("{abc}") == "0_{abc}"
+    assert tb.windows_runner_token("0_{abc}") == "0_{abc}"
+    assert tb.windows_runner_token("  {x}  ") == "0_{x}"
+
+
+def test_dispatch_stdin_message_command_activate():
+    calls = []
+    msg = tb.parse_stdin_line("COMMAND {abc} activate")
+    handled = tb.dispatch_stdin_message(
+        msg,
+        on_command=lambda wid, action: calls.append((wid, action)),
+        on_preview=lambda *_: calls.append("preview"),
+    )
+    assert handled == "command"
+    assert calls == [("{abc}", "activate")]
+
+
+def test_dispatch_stdin_message_preview_and_ignore():
+    commands = []
+    previews = []
+    assert (
+        tb.dispatch_stdin_message(
+            tb.parse_stdin_line("PREVIEW 9 {w}"),
+            on_command=lambda *a: commands.append(a),
+            on_preview=lambda *a: previews.append(a),
+        )
+        == "preview"
+    )
+    assert commands == []
+    assert previews == [("9", "{w}")]
+    assert tb.dispatch_stdin_message(None, on_command=lambda *_: None) is None
+    assert tb.dispatch_stdin_message({"op": "nope"}, on_command=lambda *_: None) is None
 
 
 def test_format_preview_reply():
     assert tb.format_preview_reply("3", "/tmp/x.png") == "PREVIEW 3 /tmp/x.png"
     assert tb.format_preview_reply("3", None) == "PREVIEW 3 -"
+
+
+def test_tasks_apply_js_sync_activate_contract():
+    helper = (ROOT / "QuickXP" / "services" / "kwin" / "tasks-apply.js").read_text()
+    assert "workspace.activeWindow = window" in helper
+    assert "function applyCommand" in helper
+    assert 'action === "minimize"' in helper
+    assert 'action === "close"' in helper
+    # Default branch calls activate(window) for activate and unknown actions.
+    assert "activate(window)" in helper
+    text = tb.build_apply_script_text(helper, [{"id": "x", "action": "activate"}])
+    assert "commands.forEach(applyCommand)" in text
+    assert '"action": "activate"' in text
 
 
 def test_prune_stale_preview_files(tmp_path):

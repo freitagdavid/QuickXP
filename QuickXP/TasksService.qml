@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "TasksModel.js" as TasksModel
 
 // One TasksBridge for the whole shell. TaskBar is per-screen; if each TaskList
 // spawned its own Process they reap each other and stdin COMMAND/PREVIEW dies.
@@ -23,22 +24,19 @@ Singleton {
     signal previewReply(int serial, string path)
 
     function applyTasks(text) {
+        // Ignore empty reads from a non-atomic truncate/write race.
         if (!text || !String(text).trim())
             return
-        try {
-            const parsed = JSON.parse(text)
-            root.kwinTasks = Array.isArray(parsed) ? parsed : []
-        } catch (error) {
-            console.warn("QuickXP tasks:", error)
-        }
+        root.kwinTasks = TasksModel.parseWindowsJson(text)
     }
 
     function sendCommand(windowId, action) {
-        const id = String(windowId || "").trim()
-        const act = String(action || "").trim()
-        if (!id || !act || !bridge.running)
+        if (!bridge.running)
             return
-        bridge.write("COMMAND " + id + " " + act + "\n")
+        const line = TasksModel.formatCommandLine(windowId, action)
+        if (!line)
+            return
+        bridge.write(line)
     }
 
     function nextPreviewSerial(): int {
@@ -47,25 +45,24 @@ Singleton {
     }
 
     function requestPreview(serial, windowId) {
-        const id = String(windowId || "").trim()
-        if (!id || !bridge.running)
+        if (!bridge.running)
             return
-        bridge.write("PREVIEW " + String(serial) + " " + id + "\n")
+        const line = TasksModel.formatPreviewRequest(serial, windowId)
+        if (!line)
+            return
+        bridge.write(line)
     }
 
     function onBridgeStdout(data) {
         const line = String(data).trim()
         if (!line)
             return
-        const parts = line.split(/\s+/)
-        if (parts.length >= 2 && parts[0] === "PREVIEW") {
-            const serial = Number(parts[1])
-            const path = parts.length >= 3 && parts[2] !== "-" ? parts[2] : ""
-            root.previewReply(serial, path)
+        const reply = TasksModel.parsePreviewReply(line)
+        if (reply !== null) {
+            root.previewReply(reply.serial, reply.path)
             return
         }
-        if (line)
-            console.log("QuickXP tasks:", line)
+        console.log("QuickXP tasks:", line)
     }
 
     Process {

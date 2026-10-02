@@ -19,7 +19,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 - [x] Epic 3 — Vista/7 Start search (jump-list stubs optional later — #82)
 - [x] Epic 4 — Quick Launch, Show Desktop, and taskbar toolbars
 - [ ] Epic 5 — Taskband (grouping + icon-only landed; height/multi-row/auto-hide/chrome menu remain)
-- [ ] Epic C — Tray system controls (volume mixer, BT, brightness, network, drives, battery)
+- [x] Epic C — Tray system controls (volume mixer, BT, brightness, network, drives, battery)
 - [ ] Epic A — Alt+Tab switcher (adapt quickshell-overview UI; KWin/Hypr backends)
 - [ ] Epic 6 — Desktop wallpaper, icons, special objects, Recycle Bin
 - [ ] Epic 8 — Tray notification queue (view/dismiss) plus balloons and attention flash
@@ -387,46 +387,36 @@ Settings → Taskbar exposes the two booleans plus optional **presets**: “Wind
 
 ## Epic C — Tray system controls
 
-Hardware and session status live in the notification area beside SNI icons / clock. Prefer Quickshell services where they exist; fall back to DBus/`brightnessctl`/NetworkManager/UDisks2 as needed.
+Hardware and session status live in the notification area beside SNI icons / clock ([TraySystemControls.qml](../QuickXP/tray/TraySystemControls.qml)).
 
 ### Volume (Windows 7–style mixer) — first priority
 
-**Starting point:** adapt the official Quickshell example [quickshell-examples/mixer](https://github.com/quickshell-mirror/quickshell-examples/tree/master/mixer) into a tray popup (not a floating demo window).
-
-That example already shows the right PipeWire pattern:
-
-- Master row on `Pipewire.defaultAudioSink`
-- `PwNodeLinkTracker { node: Pipewire.defaultAudioSink }` + `linkGroups` → per-app sources currently linked to the default sink
-- `MixerEntry`-style rows with `PwObjectTracker`, app icon (`application.icon-name`), name/media label, mute, volume slider
-
-Build on it:
-
-- **Tray speaker icon** — Click opens mixer popup (restyle `shell.qml` / `MixerEntry.qml` into [QuickXP/tray/Tray.qml](QuickXP/tray/Tray.qml) chrome); scroll wheel adjusts default sink volume; middle-click mute.
-- **Device volume** — Keep example’s master slider; add easy **switch default output** (list sinks → set `preferredDefaultAudioSink`).
-- **Per-application volume** — Keep link-tracker list; Win7-style chrome (collapse/expand app list).
-- **Per-app output routing** — Beyond the example: move an app stream to a different sink (Win7 “move to device”); “set as default for all” via default sink switch.
-- **Mic** (optional same popup or section) — Default source volume/mute.
+- [x] **Tray speaker icon** — Wheel/middle-click; click opens mixer ([VolumeMixer.qml](../QuickXP/tray/VolumeMixer.qml)).
+- [x] **Device volume + default sink** — Master slider; sink list sets `Pipewire.preferredDefaultAudioSink`.
+- [x] **Per-application volume** — `PwNodeLinkTracker` rows; collapse/expand Applications.
+- [x] **Per-app output routing** — Move to sink via `pactl move-sink-input`.
+- [x] **Mic** — Default source section in the same popup.
 
 ### Other tray controls
 
-- **Network / internet** — Connection status icon; popup for Wi‑Fi/Ethernet list, connect/disconnect (NetworkManager).
-- **Bluetooth** — Adapter on/off, paired devices connect/disconnect (BlueZ / portal).
-- **Brightness** — Backlight slider (e.g. `brightnessctl` or logind); show only when a backlight device exists.
-- **Battery / power** — Icon reflects charge/AC state when hardware exposes it; hide on desktops without a battery (TRY-15).
-- **Removable drives** — UDisks2 volumes; open / safely remove.
-- **Visibility** — Settings → Notification Area toggles which of these icons appear.
+- [x] **Network** — `Quickshell.Networking` popup (Wi‑Fi toggle + connect/disconnect).
+- [x] **Bluetooth** — Adapter on/off; device connect/disconnect.
+- [x] **Brightness** — `BrightnessService` + `brightnessctl`; hidden when unavailable.
+- [x] **Battery / power** — UPower display device icon/tip/popup; hidden without battery.
+- [x] **Removable drives** — `DrivesBridge.py` (lsblk + udisksctl) open/eject.
+- [x] **Visibility** — Settings → Notification Area toggles (`trayShow*`).
 
 ### Clock
 
-- **Show Clock** — Independent of other tray icons (TRY-23).
-- **Hover date** — Locale day/date on hover (TRY-20); not a substitute for double-click Properties.
-- **Double-click** — Date and Time Properties (or system equivalent); for `generation: xp` do **not** substitute the Vista/7 calendar flyout (TRY-21).
-- **Tall/wide bar** — Extra date/day in the clock cell when height/width allows (TRY-24).
+- [x] **Show Clock** — `trayShowClock`.
+- [x] **Hover date** — Long locale date tip.
+- [x] **Double-click** — `kcmshell6 kcm_clock` (Vista/7 calendar flyout deferred).
+- [x] **Tall bar** — Extra date line when taskbar height ≥ 40.
 
 ### Notes
 
-- Coexist with third-party SNI icons; avoid duplicating Plasma’s own applets if the user still runs them — document “disable Plasma tray applets when using QuickXP controls.”
-- Generation skin: XP simple popups first; Win7 mixer chrome when `generation` is win7.
+- Coexist with third-party SNI icons; disable Plasma tray applets when using QuickXP controls (see SMOKE).
+- XP popups first; Win7 mixer heading when shell generation is win7.
 
 ---
 

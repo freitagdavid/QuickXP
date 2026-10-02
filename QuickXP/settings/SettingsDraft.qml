@@ -14,6 +14,13 @@ QtObject {
   property bool taskbarLocked: false
   property bool autoHide: false
   property bool showQuickLaunch: true
+  property bool trayShowVolume: true
+  property bool trayShowNetwork: true
+  property bool trayShowBluetooth: true
+  property bool trayShowBrightness: true
+  property bool trayShowBattery: true
+  property bool trayShowDrives: true
+  property bool trayShowClock: true
   property bool matchWindowBorders: true
   property string startProgramsSource: "xdgMenu"
   property bool startHighlightNew: true
@@ -47,6 +54,13 @@ QtObject {
       || draft.taskbarLocked !== o.taskbarLocked
       || draft.autoHide !== o.autoHide
       || draft.showQuickLaunch !== o.showQuickLaunch
+      || draft.trayShowVolume !== o.trayShowVolume
+      || draft.trayShowNetwork !== o.trayShowNetwork
+      || draft.trayShowBluetooth !== o.trayShowBluetooth
+      || draft.trayShowBrightness !== o.trayShowBrightness
+      || draft.trayShowBattery !== o.trayShowBattery
+      || draft.trayShowDrives !== o.trayShowDrives
+      || draft.trayShowClock !== o.trayShowClock
       || draft.matchWindowBorders !== o.matchWindowBorders
       || draft.startProgramsSource !== o.startProgramsSource
       || draft.startHighlightNew !== o.startHighlightNew
@@ -80,6 +94,13 @@ QtObject {
     draft.taskbarLocked = o.taskbarLocked
     draft.autoHide = o.autoHide
     draft.showQuickLaunch = o.showQuickLaunch
+    draft.trayShowVolume = o.trayShowVolume !== false
+    draft.trayShowNetwork = o.trayShowNetwork !== false
+    draft.trayShowBluetooth = o.trayShowBluetooth !== false
+    draft.trayShowBrightness = o.trayShowBrightness !== false
+    draft.trayShowBattery = o.trayShowBattery !== false
+    draft.trayShowDrives = o.trayShowDrives !== false
+    draft.trayShowClock = o.trayShowClock !== false
     draft.matchWindowBorders = o.matchWindowBorders
     draft.startProgramsSource = o.startProgramsSource || "xdgMenu"
     draft.startHighlightNew = o.startHighlightNew !== false
@@ -114,6 +135,13 @@ QtObject {
     o.taskbarLocked = draft.taskbarLocked
     o.autoHide = draft.autoHide
     o.showQuickLaunch = draft.showQuickLaunch
+    o.trayShowVolume = draft.trayShowVolume
+    o.trayShowNetwork = draft.trayShowNetwork
+    o.trayShowBluetooth = draft.trayShowBluetooth
+    o.trayShowBrightness = draft.trayShowBrightness
+    o.trayShowBattery = draft.trayShowBattery
+    o.trayShowDrives = draft.trayShowDrives
+    o.trayShowClock = draft.trayShowClock
     o.matchWindowBorders = draft.matchWindowBorders
     o.startProgramsSource = draft.startProgramsSource || "xdgMenu"
     o.startHighlightNew = draft.startHighlightNew

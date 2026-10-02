@@ -58,11 +58,23 @@ Item {
     }
 
     function hideTip(item) {
-        if (tooltip.hoverItem !== item)
+        if (item !== undefined && item !== null && tooltip.hoverItem !== item)
             return
         tooltip.hoverItem = null
         tooltipTimer.stop()
         tooltip.visible = false
+    }
+
+    // Close tray tips + sibling control popups before opening another (Wayland
+    // dislikes a new grabbing popup under a different ProxiedWindow parent).
+    function dismissControlPopups() {
+        hideTip(null)
+    }
+
+    function closeTrayPopups(except) {
+        hideTip(null)
+        if (systemControls && typeof systemControls.closeAllPopups === "function")
+            systemControls.closeAllPopups(except)
     }
 
     SystemClock {
@@ -190,6 +202,12 @@ Item {
             }
         }
 
+        TraySystemControls {
+            id: systemControls
+            trayRoot: root
+            height: row.height
+        }
+
         Repeater {
             // Delegates are parented to the row. Keep the repeater itself out of the layout.
             visible: false
@@ -295,17 +313,42 @@ Item {
             }
         }
 
-        Text {
-            id: clockLabel
-
+        Item {
+            id: clockCell
+            visible: Config.options.trayShowClock
+            width: visible ? clockCol.implicitWidth + 10 : 0
             height: row.height
-            verticalAlignment: Text.AlignVCenter
-            leftPadding: 4
-            rightPadding: 6
-            text: Qt.formatTime(clock.date, "h:mm AP")
-            color: Theme.color("taskbarText", "white")
-            font.family: Theme.value("fonts", "ui", "Tahoma")
-            font.pixelSize: Theme.size("fontSize", 11)
+
+            readonly property bool tall: {
+                const h = Config.options.taskbarHeight > 0
+                    ? Config.options.taskbarHeight
+                    : Theme.size("taskbarHeight", 30)
+                return h >= 40
+            }
+
+            Column {
+                id: clockCol
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                anchors.leftMargin: 4
+                spacing: 0
+
+                Text {
+                    id: clockLabel
+                    text: Qt.formatTime(clock.date, "h:mm AP")
+                    color: Theme.color("taskbarText", "white")
+                    font.family: Theme.value("fonts", "ui", "Tahoma")
+                    font.pixelSize: Theme.size("fontSize", 11)
+                }
+
+                Text {
+                    visible: clockCell.tall
+                    text: Qt.formatDate(clock.date, "ddd M/d")
+                    color: Theme.color("taskbarText", "white")
+                    font.family: Theme.value("fonts", "ui", "Tahoma")
+                    font.pixelSize: Math.max(9, Theme.size("fontSize", 11) - 2)
+                }
+            }
 
             MouseArea {
                 anchors.fill: parent
@@ -313,14 +356,21 @@ Item {
                 onContainsMouseChanged: {
                     if (containsMouse) {
                         root.showTip(
-                            clockLabel,
+                            clockCell,
                             Qt.formatDate(clock.date, Qt.locale().dateFormat(Locale.LongFormat)),
                             "")
                     } else {
-                        root.hideTip(clockLabel)
+                        root.hideTip(clockCell)
                     }
                 }
+                onDoubleClicked: root.openClockProperties()
             }
         }
+    }
+
+    function openClockProperties() {
+        // Vista/7 calendar flyout deferred (GenerationPolicy clockFlyout). XP and
+        // fallback: Date and Time Properties via KDE clock KCM.
+        Quickshell.execDetached(["kcmshell6", "kcm_clock"])
     }
 }

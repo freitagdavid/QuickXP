@@ -35,6 +35,9 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Run dialog (Epic R) — Win+R / Start → Run when implemented
 - [ ] Shell hotkeys (Epic H) — Win, Win+R/E/D/L, etc. when implemented
 - [ ] Match window borders / Aurorae: Apply with toggle on → KWin titlebar updates to `quickxp-<slug>`; toggle off → KWin unchanged; Theme Sample shows titlebar preview; Regenerate borders works for Luna
+- [ ] Tray system controls: volume icon wheel/mute/mixer; switch default sink; app volume + Move to; mic section; network/BT/brightness/battery/drives when hardware present — disable Plasma’s duplicate applets if both show
+- [ ] Settings → Notification Area: toggles hide/show system icons + Show Clock; Apply persists
+- [ ] Clock: hover long date; double-click opens Date/Time KCM; tall taskbar shows date under time
 - [ ] Quick Launch: strip between Start and tasks when Settings → Show Quick Launch is on; Show Desktop icon minimizes/restores; launch an app icon; overflow » when many pins; Win7 generation shows thin tray-edge Show Desktop
 - [ ] Taskbar Toolbars menu (right-click band): toggle Quick Launch; enable Desktop folder band; unlocked gripper resizes band width
 - [ ] Settings → Taskbar → Icons only: Apply → task buttons shrink to icons (no titles); Quick Launch icons scale with height

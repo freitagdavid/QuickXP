@@ -220,57 +220,57 @@
     "[Epic C] Clock Show/hover/double-click": {
       "number": 115,
       "url": "https://github.com/freitagdavid/QuickXP/issues/115",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic C] Removable drives": {
       "number": 114,
       "url": "https://github.com/freitagdavid/QuickXP/issues/114",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic C] Battery / power tray icon": {
       "number": 113,
       "url": "https://github.com/freitagdavid/QuickXP/issues/113",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic C] Brightness tray control": {
       "number": 112,
       "url": "https://github.com/freitagdavid/QuickXP/issues/112",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic C] Bluetooth tray control": {
       "number": 111,
       "url": "https://github.com/freitagdavid/QuickXP/issues/111",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic C] Network tray control": {
       "number": 110,
       "url": "https://github.com/freitagdavid/QuickXP/issues/110",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic C] Mic volume/mute (optional)": {
       "number": 109,
       "url": "https://github.com/freitagdavid/QuickXP/issues/109",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic C] Per-app output routing": {
       "number": 108,
       "url": "https://github.com/freitagdavid/QuickXP/issues/108",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic C] Default output device switch": {
       "number": 107,
       "url": "https://github.com/freitagdavid/QuickXP/issues/107",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic C] Tray volume mixer (first priority)": {
       "number": 106,
       "url": "https://github.com/freitagdavid/QuickXP/issues/106",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "Epic C \u2014 Tray system controls": {
       "number": 105,
       "url": "https://github.com/freitagdavid/QuickXP/issues/105",
-      "state": "OPEN"
+      "state": "CLOSED"
     },
     "[Epic 5] Attention flash on task button": {
       "number": 104,

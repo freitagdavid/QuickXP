@@ -57,6 +57,14 @@ Singleton {
       property bool taskbarLocked: false
       property bool autoHide: false
       property bool showQuickLaunch: true
+      // Notification Area system control icons (Epic C).
+      property bool trayShowVolume: true
+      property bool trayShowNetwork: true
+      property bool trayShowBluetooth: true
+      property bool trayShowBrightness: true
+      property bool trayShowBattery: true
+      property bool trayShowDrives: true
+      property bool trayShowClock: true
       // Quick Launch items: JSON string array of desktop ids + "quickxp:show-desktop".
       property string quickLaunchIds: "[]"
       property bool quickLaunchSeeded: false

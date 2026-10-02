@@ -23,6 +23,8 @@ ShellRoot {
   readonly property var startService: StartService
   // Single TasksBridge (not per-screen TaskList) for activate/preview IPC.
   readonly property var tasksService: TasksService
+  readonly property var brightnessService: BrightnessService
+  readonly property var drivesService: DrivesService
   // Keep dropdown exclusivity gate alive.
   readonly property var dropdownGate: DropdownGate
 

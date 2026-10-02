@@ -118,7 +118,7 @@ FloatingWindow {
     { id: "taskbar", title: "Taskbar", enabled: true },
     { id: "start", title: "Start Menu", enabled: true },
     { id: "desktop", title: "Desktop", enabled: false },
-    { id: "notify", title: "Notification Area", enabled: false },
+    { id: "notify", title: "Notification Area", enabled: true },
     { id: "about", title: "About", enabled: false },
     { id: "debug", title: "Debugging", enabled: true }
   ]
@@ -264,8 +264,8 @@ FloatingWindow {
               message: "Desktop wallpaper and icon options will appear here with the Desktop epic."
             }
 
-            PlaceholderTab {
-              message: "Notification Area options will appear here with tray controls and the notification queue."
+            NotificationAreaTab {
+              draft: window.draft
             }
 
             PlaceholderTab {

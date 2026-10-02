@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs.QuickXP
 import "../StartMenuModel.js" as StartMenuModel
 
@@ -8,7 +9,8 @@ Item {
 
   property var host: null
   property var programsNode: null
-  property string bannerText: "Windows XP Professional"
+  property string bannerText: distroName || "Linux"
+  property string distroName: ""
   property string userName: {
     const full = String(Quickshell.env("LOGNAME") || Quickshell.env("USER") || "").trim()
     return full || "User"
@@ -16,6 +18,7 @@ Item {
 
   readonly property int bannerWidth: 28
   readonly property int contentWidth: 190
+  readonly property int itemRowHeight: 18
 
   width: bannerWidth + contentWidth
   implicitHeight: Math.max(banner.height, rowsCol.implicitHeight + 4)
@@ -42,6 +45,11 @@ Item {
   property int openIndex: -1
   property int focusIndex: -1
   readonly property bool submenuOpen: submenu.visible
+
+  function pokeSuppress() {
+    if (host && typeof host.pokeSuppress === "function")
+      host.pokeSuppress()
+  }
 
   function activateNode(node) {
     if (!host || !node)
@@ -73,17 +81,35 @@ Item {
     if (index < 0 || index >= rootRows.length)
       return
     const node = rootRows[index]
-    if (!node || node.kind !== "folder")
+    if (!node || node.kind !== "folder") {
+      closeOpenSubmenu()
       return
+    }
+    pokeSuppress()
+    // Only one root flyout at a time.
+    if (submenu.visible && openIndex !== index)
+      submenu.close()
     focusIndex = index
     openIndex = index
     hoverOpen.stop()
+    hoverOpen.pending = -1
     const delegate = rowList.itemAt(index)
     if (!delegate)
       return
+    submenu.cascadeDepth = 0
+    submenu.alignBottom = true
     submenu.nodes = node.children || []
     submenu.host = root
     submenu.openAt(delegate)
+  }
+
+  function closeOpenSubmenu() {
+    pokeSuppress()
+    openIndex = -1
+    hoverOpen.stop()
+    hoverOpen.pending = -1
+    if (submenu.visible)
+      submenu.close()
   }
 
   function activateFocused() {
@@ -104,10 +130,7 @@ Item {
       hoverOpen.pending = focusIndex
       hoverOpen.restart()
     } else {
-      openIndex = -1
-      hoverOpen.stop()
-      if (submenu.visible)
-        submenu.close()
+      closeOpenSubmenu()
     }
   }
 
@@ -116,8 +139,7 @@ Item {
       return false
     if (event.key === Qt.Key_Escape) {
       if (submenu.visible) {
-        submenu.close()
-        openIndex = -1
+        closeOpenSubmenu()
         event.accepted = true
         return true
       }
@@ -142,10 +164,8 @@ Item {
       return true
     }
     if (event.key === Qt.Key_Left) {
-      if (submenu.visible) {
-        submenu.close()
-        openIndex = -1
-      }
+      if (submenu.visible)
+        closeOpenSubmenu()
       event.accepted = true
       return true
     }
@@ -172,31 +192,39 @@ Item {
     interval: 300
     property int pending: -1
     onTriggered: {
-      if (pending < 0)
+      const idx = pending
+      pending = -1
+      if (idx < 0)
         return
-      root.focusIndex = pending
-      root.openIndex = pending
-      const node = root.rootRows[pending]
+      root.focusIndex = idx
+      const node = root.rootRows[idx]
       if (!node || node.kind !== "folder") {
-        if (submenu.visible)
-          submenu.close()
+        root.closeOpenSubmenu()
         return
       }
-      const delegate = rowList.itemAt(pending)
-      if (!delegate)
-        return
-      submenu.nodes = node.children || []
-      submenu.host = root
-      submenu.openAt(delegate)
+      root.openFolderAt(idx)
     }
   }
 
   function closeSubmenus() {
-    openIndex = -1
     focusIndex = -1
-    hoverOpen.stop()
-    if (submenu.visible)
-      submenu.close()
+    closeOpenSubmenu()
+  }
+
+  Process {
+    id: distroProc
+    running: true
+    command: [
+      "sh", "-c",
+      ". /etc/os-release 2>/dev/null; printf '%s' \"${PRETTY_NAME:-${NAME:-Linux}}\""
+    ]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        const text = this.text.trim()
+        if (text)
+          root.distroName = text
+      }
+    }
   }
 
   Row {
@@ -228,16 +256,17 @@ Item {
           required property int index
 
           width: rowsCol.width
-          rowHeight: 22
+          rowHeight: root.itemRowHeight
           node: modelData
-          selected: root.focusIndex === index || (root.openIndex === index && modelData && modelData.kind === "folder")
+          selected: root.focusIndex === index || root.openIndex === index
           onActivated: {
             root.focusIndex = index
-            if (modelData && modelData.kind === "folder") {
+            if (modelData && modelData.kind === "folder")
               root.openFolderAt(index)
-            } else if (modelData && modelData.kind === "separator") {
-              // no-op
-            } else {
+            else if (modelData && modelData.kind === "separator")
+              { /* no-op */ }
+            else {
+              root.closeOpenSubmenu()
               root.activateNode(modelData)
             }
           }
@@ -245,8 +274,12 @@ Item {
             if (modelData && modelData.kind === "separator")
               return
             root.focusIndex = index
-            hoverOpen.pending = index
-            hoverOpen.restart()
+            if (modelData && modelData.kind === "folder") {
+              hoverOpen.pending = index
+              hoverOpen.restart()
+            } else {
+              root.closeOpenSubmenu()
+            }
           }
         }
       }
@@ -256,5 +289,7 @@ Item {
   StartSubmenu {
     id: submenu
     host: root
+    alignBottom: true
+    cascadeDepth: 0
   }
 }

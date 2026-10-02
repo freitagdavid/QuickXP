@@ -16,14 +16,21 @@ PopupWindow {
   grabFocus: true
 
   property bool armed: false
+  property bool suppressDismiss: false
   property string pendingSessionAction: ""
 
   readonly property int menuMinHeight: 120
+
+  function pokeSuppress() {
+    suppressDismiss = true
+    suppressTimer.restart()
+  }
 
   function open() {
     if (anchorItem === null)
       return
     armed = false
+    suppressDismiss = false
     classicMenu.closeSubmenus()
     Qt.callLater(() => {
       visible = true
@@ -126,6 +133,12 @@ PopupWindow {
     onTriggered: host.armed = true
   }
 
+  Timer {
+    id: suppressTimer
+    interval: 120
+    onTriggered: host.suppressDismiss = false
+  }
+
   Process {
     id: docsProc
     running: false
@@ -184,7 +197,7 @@ PopupWindow {
 
     HoverHandler {
       onHoveredChanged: {
-        if (!host.armed || hovered)
+        if (!host.armed || hovered || host.suppressDismiss)
           return
         if (classicMenu.submenuOpen)
           return
@@ -205,14 +218,6 @@ PopupWindow {
         anchors.top: parent.top
         host: host
         programsNode: ProgramsCatalog.programsNode
-        bannerText: {
-          const g = GenerationPolicy.forItem("startMenu")
-          if (g === "classic")
-            return "Microsoft Windows"
-          if (g === "vista" || g === "win7")
-            return "Windows"
-          return "Windows XP Professional"
-        }
       }
     }
   }

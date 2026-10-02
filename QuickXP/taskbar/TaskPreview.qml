@@ -123,7 +123,7 @@ PopupWindow {
 
                 width: preview.imageWidth
                 height: preview.imageHeight
-                cache: false
+                cache: true
                 fillMode: Image.PreserveAspectFit
                 source: preview.imagePath === ""
                     ? ""

@@ -20,6 +20,8 @@ ShellRoot {
   readonly property var startMfuStore: StartMfuStore
   // Start menu registry + Meta/Windows key bridge.
   readonly property var startService: StartService
+  // Single TasksBridge (not per-screen TaskList) for activate/preview IPC.
+  readonly property var tasksService: TasksService
   // Keep dropdown exclusivity gate alive.
   readonly property var dropdownGate: DropdownGate
 

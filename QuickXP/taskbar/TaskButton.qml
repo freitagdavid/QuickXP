@@ -398,9 +398,7 @@ Item {
     }
 
     function sendCommand(windowId: string, action: string) {
-        Quickshell.execDetached([
-            "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
-            "org.quickxp.Tasks.Command", windowId, action
-        ])
+        if (taskList !== null)
+            taskList.sendCommand(windowId, action)
     }
 }

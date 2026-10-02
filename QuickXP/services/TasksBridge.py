@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import queue
 import re
 import signal
 import subprocess
@@ -73,6 +74,11 @@ def stale_bridge_pids(proc_root: Path | None = None, self_pid: int | None = None
     return found
 
 
+# Owned by the QuickXP TasksService singleton (one Process for all screens).
+# Per-screen TaskList Processes used to spawn competing bridges that reaped
+# each other and left taskbar stdin COMMAND/PREVIEW dead.
+
+
 def reap_stale_bridges() -> int:
     """SIGTERM/SIGKILL other TasksBridge instances so we can own the DBus name."""
     pids = stale_bridge_pids()
@@ -127,6 +133,50 @@ def build_apply_script_text(helper_text: str, commands: list) -> str:
     )
 
 
+def parse_stdin_line(line: str) -> dict | None:
+    """Parse shell → bridge IPC. Returns {op, ...} or None if ignored."""
+    text = str(line or "").strip()
+    if not text or text.startswith("#"):
+        return None
+    parts = text.split()
+    op = parts[0].upper()
+    if op == "COMMAND" and len(parts) >= 3:
+        return {"op": "command", "window_id": parts[1], "action": parts[2]}
+    if op == "PREVIEW" and len(parts) >= 3:
+        return {"op": "preview", "serial": parts[1], "window_id": parts[2]}
+    return None
+
+
+def live_window_ids(rows: list) -> set[str]:
+    ids: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        wid = str(row.get("id") or "").strip()
+        if wid:
+            ids.add(wid)
+    return ids
+
+
+def prune_stale_preview_files(preview_dir: Path, live_ids: set[str]) -> list[Path]:
+    """Delete orphan quickxp-preview-w-*.png files. Returns removed paths."""
+    removed: list[Path] = []
+    if not preview_dir.is_dir():
+        return removed
+    for path in preview_dir.glob("quickxp-preview-w-*.png"):
+        token = path.name[len("quickxp-preview-w-") : -len(".png")]
+        if not any(safe_window_token(wid) == token for wid in live_ids):
+            path.unlink(missing_ok=True)
+            removed.append(path)
+    return removed
+
+
+def format_preview_reply(serial: str, path: str | None) -> str:
+    """Stdout line for a PREVIEW reply (`-` means miss/failure)."""
+    body = path if path else "-"
+    return f"PREVIEW {serial} {body}"
+
+
 if _HAS_DBUS:
 
     class Tasks(dbus.service.Object):
@@ -137,7 +187,9 @@ if _HAS_DBUS:
             self._last_windows_text: str | None = None
             self._apply_scheduled = False
             self._refreshing: set[str] = set()
+            self._refresh_waiters: dict[str, list] = {}
             self._refresh_lock = threading.Lock()
+            self._stdout_lock = threading.Lock()
             # replace_existing: survive quickshell reloads when an old bridge still holds the name.
             bus_name = dbus.service.BusName(
                 SERVICE,
@@ -159,6 +211,8 @@ if _HAS_DBUS:
                     self._last_windows_text = None
             self._purge_legacy_previews()
             self.ensure_preview_helper()
+            self._stdin_queue: queue.Queue[str] = queue.Queue()
+            self._stdin_started = False
 
         def built_helper(self) -> Path:
             return (Path(__file__).resolve().parent / "preview" / "quickxp-preview").resolve()
@@ -267,41 +321,52 @@ if _HAS_DBUS:
             tmp.replace(out)
             return True
 
-        def _schedule_refresh(self, window_id: str, *, force: bool = False) -> None:
+        def _emit_stdout(self, line: str) -> None:
+            with self._stdout_lock:
+                print(line, flush=True)
+
+        def _schedule_refresh(
+            self,
+            window_id: str,
+            *,
+            force: bool = False,
+            on_done=None,
+        ) -> None:
             out = self.preview_path(window_id)
             if not force and self._cache_fresh(out, WARM_MAX_AGE_SECS):
+                if on_done is not None:
+                    on_done(str(out) if out.is_file() and out.stat().st_size > 0 else None)
                 return
             with self._refresh_lock:
+                if on_done is not None:
+                    self._refresh_waiters.setdefault(window_id, []).append(on_done)
                 if window_id in self._refreshing:
                     return
                 self._refreshing.add(window_id)
 
             def work() -> None:
+                ok = False
                 try:
-                    self._capture(window_id, out)
+                    ok = self._capture(window_id, out)
                 finally:
                     with self._refresh_lock:
                         self._refreshing.discard(window_id)
+                        waiters = self._refresh_waiters.pop(window_id, [])
+                path = None
+                if out.is_file() and out.stat().st_size > 0:
+                    path = str(out)
+                elif ok:
+                    path = str(out) if out.is_file() else None
+                for cb in waiters:
+                    try:
+                        cb(path)
+                    except Exception as error:  # pragma: no cover
+                        print("quickxp tasks: preview callback failed:", error, file=sys.stderr)
 
             threading.Thread(target=work, daemon=True, name=f"quickxp-preview-{window_id}").start()
 
-        def _prune_and_warm(self, rows: list) -> None:
-            ids: set[str] = set()
-            for row in rows:
-                if not isinstance(row, dict):
-                    continue
-                wid = str(row.get("id") or "").strip()
-                if wid:
-                    ids.add(wid)
-
-            for path in self.preview_dir().glob("quickxp-preview-w-*.png"):
-                token = path.name[len("quickxp-preview-w-") : -len(".png")]
-                # Keep files whose token still matches a live id's safe form.
-                if not any(safe_window_token(wid) == token for wid in ids):
-                    path.unlink(missing_ok=True)
-
-            for wid in ids:
-                self._schedule_refresh(wid, force=False)
+        def _prune_stale_previews(self, rows: list) -> None:
+            prune_stale_preview_files(self.preview_dir(), live_window_ids(rows))
 
         def write_windows_if_changed(self, payload) -> bool:
             """Write state file when payload text changes. Returns True if written."""
@@ -315,9 +380,73 @@ if _HAS_DBUS:
             except json.JSONDecodeError:
                 rows = []
             if isinstance(rows, list):
-                # Defer warm so the KWin script is not blocked on screenshot work.
-                GLib.idle_add(lambda: self._prune_and_warm(rows) or False)
+                # Prune orphans only — no background warm of every window.
+                GLib.idle_add(lambda: self._prune_stale_previews(rows) or False)
             return True
+
+        def start_stdin_reader(self) -> bool:
+            """Start after the GLib main loop is running (called from main())."""
+            if self._stdin_started:
+                return False
+            self._stdin_started = True
+
+            def loop() -> None:
+                while True:
+                    try:
+                        raw = sys.stdin.readline()
+                    except Exception as error:
+                        print("quickxp tasks: stdin read failed:", error, file=sys.stderr)
+                        break
+                    if raw == "":
+                        # Real EOF (shell exiting). Do not spin.
+                        break
+                    self._stdin_queue.put(raw.rstrip("\n"))
+
+            threading.Thread(target=loop, daemon=True, name="quickxp-tasks-stdin").start()
+            GLib.timeout_add(25, self._drain_stdin_queue)
+            return False
+
+        def _drain_stdin_queue(self) -> bool:
+            while True:
+                try:
+                    line = self._stdin_queue.get_nowait()
+                except queue.Empty:
+                    break
+                self._handle_stdin_line(line)
+            return True
+
+        def _handle_stdin_line(self, line: str) -> None:
+            msg = parse_stdin_line(line)
+            if msg is None:
+                return
+            if msg["op"] == "command":
+                self.Command(msg["window_id"], msg["action"])
+                return
+            if msg["op"] == "preview":
+                self._preview_via_stdin(msg["serial"], msg["window_id"])
+                return
+
+        def _preview_via_stdin(self, serial: str, window_id: str) -> None:
+            window_id = str(window_id).strip()
+            serial = str(serial).strip()
+            if not window_id or not serial:
+                self._emit_stdout(format_preview_reply(serial or "0", None))
+                return
+            out = self.preview_path(window_id)
+            if out.is_file() and out.stat().st_size > 0:
+                self._emit_stdout(format_preview_reply(serial, str(out)))
+                if not self._cache_fresh(out, CACHE_REFRESH_SECS):
+                    def after(path: str | None, s=serial) -> None:
+                        if path:
+                            self._emit_stdout(format_preview_reply(s, path))
+
+                    self._schedule_refresh(window_id, force=True, on_done=after)
+                return
+
+            def after_cold(path: str | None, s=serial) -> None:
+                self._emit_stdout(format_preview_reply(s, path))
+
+            self._schedule_refresh(window_id, force=True, on_done=after_cold)
 
         @dbus.service.method(IFACE, in_signature="s", out_signature="")
         def SetWindows(self, payload):
@@ -436,22 +565,26 @@ if _HAS_DBUS:
 
         @dbus.service.method(IFACE, in_signature="ss", out_signature="")
         def Command(self, window_id, action):
-            self.commands.append({"id": str(window_id), "action": str(action)})
+            window_id = str(window_id)
+            action = str(action)
+            # Fast path: activate does not need a KWin one-shot script.
+            if action == "activate" and self._activate_via_windows_runner(window_id):
+                return
+            self.commands.append({"id": window_id, "action": action})
             self.schedule_apply()
 
         @dbus.service.method(IFACE, in_signature="s", out_signature="s")
         def Preview(self, window_id):
+            # Non-blocking: never sync-capture on the DBus path (up to 8s).
             window_id = str(window_id).strip()
             if not window_id:
                 return ""
             out = self.preview_path(window_id)
-            # Serve cache immediately; refresh in the background so hover is snappy.
             if out.is_file() and out.stat().st_size > 0:
                 if not self._cache_fresh(out, CACHE_REFRESH_SECS):
                     self._schedule_refresh(window_id, force=True)
                 return str(out)
-            if self._capture(window_id, out):
-                return str(out)
+            self._schedule_refresh(window_id, force=True)
             return ""
 
         def load_script(self):
@@ -502,6 +635,8 @@ def main():
     state_path = Path(sys.argv[1])
     tasks = Tasks(bus, state_path, Path(sys.argv[2]))
     GLib.idle_add(tasks.load_script)
+    # Start stdin after the loop is up so the pipe from Quickshell is ready.
+    GLib.idle_add(tasks.start_stdin_reader)
     GLib.MainLoop().run()
     return 0
 

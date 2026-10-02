@@ -82,3 +82,40 @@ def test_stale_bridge_pids(tmp_path):
     write_proc(12, ["zsh", "-c", "echo TasksBridge.py"])
     assert tb.stale_bridge_pids(tmp_path, self_pid=99) == [10]
     assert tb.stale_bridge_pids(tmp_path, self_pid=10) == []
+
+
+def test_parse_stdin_line():
+    assert tb.parse_stdin_line("") is None
+    assert tb.parse_stdin_line("# comment") is None
+    assert tb.parse_stdin_line("COMMAND {abc} activate") == {
+        "op": "command",
+        "window_id": "{abc}",
+        "action": "activate",
+    }
+    assert tb.parse_stdin_line("PREVIEW 12 {abc}") == {
+        "op": "preview",
+        "serial": "12",
+        "window_id": "{abc}",
+    }
+    assert tb.parse_stdin_line("NOPE") is None
+
+
+def test_format_preview_reply():
+    assert tb.format_preview_reply("3", "/tmp/x.png") == "PREVIEW 3 /tmp/x.png"
+    assert tb.format_preview_reply("3", None) == "PREVIEW 3 -"
+
+
+def test_prune_stale_preview_files(tmp_path):
+    live = {"{aaaa-bbbb}"}
+    keep = tmp_path / f"quickxp-preview-w-{tb.safe_window_token('{aaaa-bbbb}')}.png"
+    drop = tmp_path / "quickxp-preview-w-_dead-id_.png"
+    keep.write_bytes(b"ok")
+    drop.write_bytes(b"gone")
+    removed = tb.prune_stale_preview_files(tmp_path, live)
+    assert keep.is_file()
+    assert not drop.is_file()
+    assert drop in removed
+
+
+def test_live_window_ids():
+    assert tb.live_window_ids([{"id": "1"}, {"id": ""}, "x", {"id": "2"}]) == {"1", "2"}

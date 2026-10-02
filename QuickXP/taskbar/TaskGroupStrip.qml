@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import qs.QuickXP
 
 PopupWindow {
@@ -8,6 +7,7 @@ PopupWindow {
 
   property Item anchorItem: null
   property var windows: []
+  property Item taskList: null
 
   signal activated(var toplevel)
   signal closeClicked(var toplevel)
@@ -25,7 +25,7 @@ PopupWindow {
   property bool armed: false
   property bool hovered: false
   property var previews: ({})
-  property int captureIndex: -1
+  property var previewSerials: ({})
   property int serial: 0
 
   readonly property int pad: 4
@@ -58,9 +58,6 @@ PopupWindow {
     previews = seedFromCache()
     if (next.length === 0)
       dismiss()
-    else if (next.length === 1) {
-      // One left — keep strip; captures already seeded from cache.
-    }
   }
   readonly property int stripWidth: {
     const n = windows && windows.length ? windows.length : 0
@@ -100,14 +97,13 @@ PopupWindow {
       return
     armed = false
     hovered = false
-    // Paint cached peeks immediately; capture loop refreshes each slot.
+    // Paint cached peeks only; refresh the card under the pointer on hover.
     previews = seedFromCache()
-    captureIndex = -1
+    previewSerials = ({})
     serial += 1
     Qt.callLater(() => {
       visible = true
       armTimer.restart()
-      startCaptures()
     })
   }
 
@@ -116,69 +112,41 @@ PopupWindow {
     armed = false
     hovered = false
     armTimer.stop()
-    capture.running = false
-    captureIndex = -1
     previews = ({})
+    previewSerials = ({})
   }
 
-  function startCaptures() {
-    captureIndex = 0
-    captureNext()
+  function requestCardPreview(index, windowId) {
+    if (!visible || taskList === null || !windowId)
+      return
+    // Global serials so multi-monitor TaskLists do not collide on PREVIEW replies.
+    const sid = TasksService.nextPreviewSerial()
+    serial = sid
+    const bag = Object.assign({}, previewSerials)
+    bag[String(sid)] = index
+    previewSerials = bag
+    taskList.requestBridgePreview(sid, windowId)
   }
 
-  function captureNext() {
-    if (!visible || !windows || captureIndex < 0 || captureIndex >= windows.length) {
-      captureIndex = -1
+  function previewReady(sid, path) {
+    if (!visible)
       return
-    }
-    const target = windows[captureIndex]
-    if (!target || !target.kwin || !target.windowId) {
-      captureIndex += 1
-      Qt.callLater(captureNext)
+    const index = previewSerials[String(sid)]
+    if (index === undefined || index === null)
       return
-    }
-    const sid = serial
-    capture.pendingSerial = sid
-    capture.pendingIndex = captureIndex
-    capture.command = [
-      "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
-      "org.quickxp.Tasks.Preview", String(target.windowId)
-    ]
-    capture.running = true
-  }
-
-  function previewReady(sid, index, path) {
-    if (sid !== serial)
+    if (!path || path === "-")
       return
-    if (path) {
-      const next = Object.assign({}, previews)
-      // Append nonce so Image reloads when the stable cache file is rewritten.
-      next[String(index)] = path + "#" + Date.now()
-      previews = next
-    }
-    captureIndex = index + 1
-    Qt.callLater(captureNext)
+    const key = String(index)
+    const next = Object.assign({}, previews)
+    // Bridge reply means the PNG may have been rewritten in place.
+    next[key] = path + "#" + Date.now()
+    previews = next
   }
 
   Timer {
     id: armTimer
     interval: 200
     onTriggered: strip.armed = true
-  }
-
-  Process {
-    id: capture
-
-    property int pendingSerial: 0
-    property int pendingIndex: -1
-
-    stdout: SplitParser {
-      onRead: data => strip.previewReady(capture.pendingSerial, capture.pendingIndex, data.trim())
-    }
-
-    stderr: SplitParser {
-      onRead: data => console.warn("QuickXP group strip:", data.trim())
-    }
   }
 
   anchor.window: anchorItem !== null ? anchorItem.QsWindow.window : null
@@ -238,7 +206,6 @@ PopupWindow {
             const path = bag[String(card.index)]
             if (!path)
               return ""
-            // Strip optional #nonce used to bust Image cache.
             const text = String(path)
             const hash = text.lastIndexOf("#")
             return hash >= 0 ? text.substring(0, hash) : text
@@ -272,7 +239,7 @@ PopupWindow {
             anchors.margins: 4
             height: parent.height - 28
             fillMode: Image.PreserveAspectFit
-            cache: false
+            cache: true
             source: card.previewSource
           }
 
@@ -297,6 +264,13 @@ PopupWindow {
             anchors.fill: parent
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onContainsMouseChanged: {
+              if (!containsMouse)
+                return
+              const win = card.modelData
+              if (win && win.kwin && win.windowId)
+                strip.requestCardPreview(card.index, win.windowId)
+            }
             onClicked: (mouse) => {
               if (mouse.button !== Qt.LeftButton)
                 return

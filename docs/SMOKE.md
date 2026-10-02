@@ -38,6 +38,7 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Settings → Taskbar → Group similar (labels): many windows of one app combine only when the band is full; click group → title list
 - [ ] Settings → Taskbar → Icon taskbar preset: always-combined icons; click group → thumbnail strip
 - [ ] Taskband stability: switch focus or let a browser change its title — task buttons should not flicker or reload chrome; labels/focus frame update in place
-- [ ] Taskband clicks: activate / minimize / close still work (one-shot KWin apply; no idle 200 ms `TakeCommands` poll)
+- [ ] Taskband clicks (every monitor): activate / minimize / close via single `TasksService` bridge stdin (not per-screen Processes)
+- [ ] Task peeks: hover one button → one peek; idle with many windows does not spawn `quickxp-preview` for all; clicks do not fork `qdbus6` for Command/Preview
 
 Mark items N/A until the matching epic lands. Prefer a short note of failures over silent skips.

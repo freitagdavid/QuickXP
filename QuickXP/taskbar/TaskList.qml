@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland
 import qs.QuickXP
 import "../TaskbandModel.js" as TaskbandModel
@@ -11,16 +10,10 @@ Item {
     clip: true
 
     // KWin does not export zwlr-foreign-toplevel to clients other than
-    // Plasma, so on KDE the window list comes from a KWin script.
-    readonly property bool useKwin: {
-        const desktop = String(Quickshell.env("XDG_CURRENT_DESKTOP") || "")
-        const session = String(Quickshell.env("KDE_FULL_SESSION") || "")
-        return desktop.toUpperCase().indexOf("KDE") !== -1 || session === "true"
-    }
-    readonly property string stateFile: Quickshell.statePath("quickxp-tasks.json")
-    readonly property string scriptFile: Quickshell.shellPath("QuickXP/services/kwin/tasks.js")
+    // Plasma, so on KDE the window list comes from a KWin script (TasksService).
+    readonly property bool useKwin: TasksService.useKwin
+    readonly property var kwinTasks: TasksService.kwinTasks
 
-    property var kwinTasks: []
     // Stamped entry list for paging math; Repeater uses pageModel (stable keys).
     property var entries: []
     // Full entry objects live here — ListModel cannot hold nested JS maps/lists
@@ -40,15 +33,16 @@ Item {
         return hit !== undefined ? hit : null
     }
 
-    function applyTasks(text) {
-        // Ignore empty reads from a non-atomic truncate/write race.
-        if (!text || !String(text).trim())
-            return
-        try {
-            const parsed = JSON.parse(text)
-            root.kwinTasks = Array.isArray(parsed) ? parsed : []
-        } catch (error) {
-            console.warn("QuickXP tasks:", error)
+    Connections {
+        target: TasksService
+        function onKwinTasksChanged() {
+            if (root.useKwin)
+                root.rebuildBand()
+        }
+        function onPreviewReply(serial, path) {
+            // Bridge replies follow a capture/refresh — bust Image cache.
+            root.previewReady(serial, path, true)
+            groupStrip.previewReady(serial, path)
         }
     }
 
@@ -203,8 +197,6 @@ Item {
         root.syncListModel(pageModel, slice)
     }
 
-    onKwinTasksChanged: if (root.useKwin)
-        root.rebuildBand()
     onToplevelSnapshotChanged: if (!root.useKwin)
         root.rebuildBand()
     onGroupButtonsChanged: root.rebuildBand()
@@ -215,30 +207,14 @@ Item {
     onPagingChanged: root.syncPageModel()
     Component.onCompleted: root.rebuildBand()
 
-    Process {
-        id: bridge
-
-        running: root.useKwin
-        command: ["/usr/bin/python3", Quickshell.shellPath("QuickXP/services/TasksBridge.py"), root.stateFile, root.scriptFile]
-
-        stderr: SplitParser {
-            onRead: data => console.warn("QuickXP tasks:", data.trim())
-        }
-
-        onStarted: taskFile.reload()
+    function sendCommand(windowId, action) {
+        TasksService.sendCommand(windowId, action)
     }
 
-    FileView {
-        id: taskFile
-
-        watchChanges: true
-        printErrors: false
-        blockLoading: false
-        path: root.useKwin ? root.stateFile : ""
-
-        onFileChanged: reload()
-        onLoaded: root.applyTasks(text())
+    function requestBridgePreview(serial, windowId) {
+        TasksService.requestPreview(serial, windowId)
     }
+
     readonly property real pagerWidth: height / 2
     readonly property bool paging: {
         const list = entries
@@ -406,9 +382,7 @@ Item {
         previewCloseTimer.stop()
         if (previewButton !== button) {
             previewPopup.dismiss()
-            previewSerial += 1
-            if (capture.running)
-                capture.running = false
+            previewSerial = TasksService.nextPreviewSerial()
         } else if (previewPopup.visible || previewTimer.running) {
             // Keep showing / waiting; refresh target after entryStore sync.
             previewToplevel = toplevel
@@ -428,9 +402,7 @@ Item {
         previewOnButton = false
         previewTimer.stop()
         previewCloseTimer.stop()
-        previewSerial += 1
-        if (capture.running)
-            capture.running = false
+        previewSerial = TasksService.nextPreviewSerial()
         previewPopup.dismiss()
     }
 
@@ -494,7 +466,7 @@ Item {
 
     function previewCachePath(windowId: string): string {
         const safe = String(windowId).replace(/[^A-Za-z0-9._-]+/g, "_") || "unknown"
-        const state = String(root.stateFile)
+        const state = String(TasksService.stateFile)
         const slash = state.lastIndexOf("/")
         if (slash < 0)
             return ""
@@ -509,32 +481,23 @@ Item {
                 previewButton.showFallbackTip()
             return
         }
-        const serial = ++previewSerial
+        const serial = TasksService.nextPreviewSerial()
+        previewSerial = serial
         const windowId = previewToplevel.windowId
-        // Show disk cache immediately while DBus refreshes the peek.
+        // Show disk cache immediately; bridge refreshes that one window async.
         const cached = root.previewCachePath(windowId)
         if (cached !== "")
-            root.previewReady(serial, cached)
-        capture.pendingSerial = serial
-        capture.running = false
-        Qt.callLater(() => {
-            if (serial !== previewSerial || !previewOnButton)
-                return
-            capture.command = [
-                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
-                "org.quickxp.Tasks.Preview", windowId
-            ]
-            capture.running = true
-        })
+            root.previewReady(serial, cached, false)
+        root.requestBridgePreview(serial, windowId)
     }
 
-    function previewReady(serial, path) {
+    function previewReady(serial, path, bustCache) {
         if (serial !== previewSerial)
             return
         if (!previewOnButton && !previewPopup.hovered)
             return
-        if (path === "") {
-            if (previewButton !== null)
+        if (!path || path === "-") {
+            if (previewButton !== null && !previewPopup.visible)
                 previewButton.showFallbackTip()
             return
         }
@@ -542,9 +505,10 @@ Item {
             previewButton.hideTip()
         previewPopup.title = previewToplevel !== null ? (previewToplevel.title || "") : ""
         previewPopup.closeEnabled = previewToplevel === null || previewToplevel.closeable !== false
-        // Nonce busts Image cache when the stable path is overwritten in place.
+        const samePath = previewPopup.imagePath === path
         previewPopup.imagePath = path
-        previewPopup.imageNonce = Date.now()
+        if (bustCache === true || !samePath)
+            previewPopup.imageNonce = Date.now()
         previewPopup.anchorItem = previewButton
         previewPopup.open()
     }
@@ -569,10 +533,7 @@ Item {
         if (target === null || target === undefined)
             return
         if (target.kwin) {
-            Quickshell.execDetached([
-                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
-                "org.quickxp.Tasks.Command", target.windowId, "close"
-            ])
+            root.sendCommand(target.windowId, "close")
             return
         }
         if (typeof target.close === "function")
@@ -593,10 +554,7 @@ Item {
         if (target === null || target === undefined)
             return
         if (target.kwin) {
-            Quickshell.execDetached([
-                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
-                "org.quickxp.Tasks.Command", target.windowId, "activate"
-            ])
+            root.sendCommand(target.windowId, "activate")
             return
         }
         target.minimized = false
@@ -670,10 +628,7 @@ Item {
         if (target === null)
             return
         if (target.kwin) {
-            Quickshell.execDetached([
-                "qdbus6", "org.quickxp.Tasks", "/org/quickxp/Tasks",
-                "org.quickxp.Tasks.Command", target.windowId, action
-            ])
+            root.sendCommand(target.windowId, action)
             return
         }
         if (action === "close" && typeof target.close === "function")
@@ -705,6 +660,7 @@ Item {
 
     TaskGroupStrip {
         id: groupStrip
+        taskList: root
         onActivated: toplevel => {
             root.cancelGroupPreviewImmediate()
             root.activateWindow(toplevel)
@@ -747,20 +703,6 @@ Item {
         id: groupStripCloseTimer
         interval: 250
         onTriggered: root.closeGroupStripIfIdle()
-    }
-
-    Process {
-        id: capture
-
-        property int pendingSerial: 0
-
-        stdout: SplitParser {
-            onRead: data => root.previewReady(capture.pendingSerial, data.trim())
-        }
-
-        stderr: SplitParser {
-            onRead: data => console.warn("QuickXP preview:", data.trim())
-        }
     }
 
     TaskPreview {

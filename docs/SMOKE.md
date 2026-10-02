@@ -16,7 +16,7 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Classic Start flyouts: first level bottom-anchored, nested levels alternate; only one open per level; reopen after close works
 - [ ] Start button flush to taskbar bottom with a tiny top drag-bar inset
 - [ ] Classic Start: Documents/Settings/Search open submenus; Help/Run stubs; Log Off / Turn Off Computer confirm (Cancel safe)
-- [ ] Settings → Start Menu: Programs source, highlight-new, personalized menus; Clear highlight / Clear recent
+- [ ] Settings → Start Menu: Programs source, MFU count, Clear List, place visibility cycle, highlight-new, personalized menus; Clear highlight / Clear recent
 - [ ] Settings → Start Menu still toggles Programs source after session rows land
 - [ ] XP Start: dual-column Luna chrome (user bar + tile/name, white left / places right); tile click opens User Accounts stub; `~/.face` shows when present
 - [ ] XP Start right column: special folders open (docs/pictures/music/computer); Recent Documents / Admin Tools show flyout chevrons

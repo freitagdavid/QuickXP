@@ -15,7 +15,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 - [ ] Epic H — Shell hotkeys (Win/Ctrl+Esc, Win+R/E/F/D/M/L, Alt+Esc, Win+Tab taskbar cycle, …)
 - [ ] Epic R — Run dialog (Win+R + Start → Run)
 - [x] Epic 1 — Classic Start menu (single-column)
-- [ ] Epic 2 — XP dual-column Start menu
+- [x] Epic 2 — XP dual-column Start menu
 - [ ] Epic 3 — Vista/7 Start search
 - [ ] Epic 4 — Quick Launch, Show Desktop, and taskbar toolbars
 - [ ] Epic 5 — Taskband (grouping + icon-only landed; height/multi-row/auto-hide/chrome menu remain)
@@ -123,7 +123,7 @@ One tabbed configuration UI for the shell (XP-styled dialog chrome). This is the
 
 - [x] **Theme** — Installed list + color-scheme dropdown + taskbar/Start/titlebar preview + “Match window borders” (Aurorae sync on Apply) + shell generation / per-feature generation overrides. Import… installs one pack (all schemes + aurorae/); Delete removes user-data themes; Regenerate borders for installed themes.
 - [x] **Taskbar** — Lock, auto-hide, group, icons-only, height slider (24–72), Quick Launch, XP / icon-preview presets. **Icons only** and **Group similar** apply on Apply (compact buttons; crowding vs always-combine by `iconsOnly`; XP list / thumbnail group popups). Height applies on Apply. Later: auto-hide behavior, keep-on-top, multi-row, Quick Launch.
-- [x] **Start Menu** — Classic Customize surface (Programs source, highlight-new, personalized menus, clear recent/highlight). XP dual-column / SMS depth remains Epic 2.
+- [x] **Start Menu** — Classic + XP Customize (Programs source, MFU count, Clear List, place link/menu/hidden, highlight-new, personalized menus).
 - [x] **Debugging** — Dev aids (keep Start open by default / skip grab-hover dismiss; survives hot reload).
 - [ ] **Desktop** — Wallpaper path/fit, icon arrange/align defaults, special-icon visibility, Show Desktop Icons (when Epic 6 exists).
 - [ ] **Notification Area** — Hide inactive icons; per-icon Always show / Always hide / Hide when inactive + Customize list + Restore Defaults; which system control icons to show (volume, network, Bluetooth, brightness, drives, battery); Show Clock; notification queue retention (generation-gated); balloon on/off (Epic 8 / Epic C).
@@ -298,7 +298,7 @@ Builds on the classic app catalog and session hooks. Default Luna Start when `ge
 - [x] **Right: Help / Search / Run** — XP right-column rows; Search/Help stubs; Run → Epic R stub; not the Vista search box.
 - [x] **Bottom bar** — Log Off + Turn Off Computer buttons (Luna LOGOFF art; SessionBridge confirm).
 - [x] **Layout switch** — `GenerationPolicy.forItem("startMenu")` selects Classic single-column vs XP dual-column stub (Settings → Theme overrides). Vista/7 keep XP chrome until Epic 3.
-- **Start Customize** — Large/small icons, program count, clear list, Internet/E-mail show/hide + handler pick, link/menu/hidden per special folder, hover-open, highlight new, Scroll Programs, Favorites, Recent Documents (SMS-01–17) via Settings → Start Menu.
+- [x] **Start Customize** — Settings → Start Menu: MFU count, Clear List, place link/menu/hidden, Programs source, highlight-new, personalized menus, clear recent/highlight (SMS core). Large/small icons + Internet/E-mail handler pick can deepen later.
 
 ---
 

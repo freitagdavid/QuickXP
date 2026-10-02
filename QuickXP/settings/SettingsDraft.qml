@@ -19,6 +19,17 @@ QtObject {
   property bool startHighlightNew: true
   property bool startPersonalizedMenus: false
   property bool debugKeepStartMenuOpen: false
+  property int startMfuCount: 6
+  property string startPlaceDocuments: "link"
+  property string startPlaceRecentDocuments: "menu"
+  property string startPlacePictures: "link"
+  property string startPlaceMusic: "link"
+  property string startPlaceComputer: "link"
+  property string startPlaceNetwork: "link"
+  property string startPlaceControlPanel: "link"
+  property string startPlaceConnectTo: "link"
+  property string startPlacePrinters: "link"
+  property string startPlaceAdminTools: "menu"
   property string activeTab: "theme"
 
   readonly property bool dirty: {
@@ -38,6 +49,17 @@ QtObject {
       || draft.startHighlightNew !== o.startHighlightNew
       || draft.startPersonalizedMenus !== o.startPersonalizedMenus
       || draft.debugKeepStartMenuOpen !== o.debugKeepStartMenuOpen
+      || draft.startMfuCount !== o.startMfuCount
+      || draft.startPlaceDocuments !== o.startPlaceDocuments
+      || draft.startPlaceRecentDocuments !== o.startPlaceRecentDocuments
+      || draft.startPlacePictures !== o.startPlacePictures
+      || draft.startPlaceMusic !== o.startPlaceMusic
+      || draft.startPlaceComputer !== o.startPlaceComputer
+      || draft.startPlaceNetwork !== o.startPlaceNetwork
+      || draft.startPlaceControlPanel !== o.startPlaceControlPanel
+      || draft.startPlaceConnectTo !== o.startPlaceConnectTo
+      || draft.startPlacePrinters !== o.startPlacePrinters
+      || draft.startPlaceAdminTools !== o.startPlaceAdminTools
   }
 
   function loadFromConfig() {
@@ -57,6 +79,17 @@ QtObject {
     draft.startHighlightNew = o.startHighlightNew !== false
     draft.startPersonalizedMenus = !!o.startPersonalizedMenus
     draft.debugKeepStartMenuOpen = !!o.debugKeepStartMenuOpen
+    draft.startMfuCount = Number(o.startMfuCount) || 6
+    draft.startPlaceDocuments = o.startPlaceDocuments || "link"
+    draft.startPlaceRecentDocuments = o.startPlaceRecentDocuments || "menu"
+    draft.startPlacePictures = o.startPlacePictures || "link"
+    draft.startPlaceMusic = o.startPlaceMusic || "link"
+    draft.startPlaceComputer = o.startPlaceComputer || "link"
+    draft.startPlaceNetwork = o.startPlaceNetwork || "link"
+    draft.startPlaceControlPanel = o.startPlaceControlPanel || "link"
+    draft.startPlaceConnectTo = o.startPlaceConnectTo || "link"
+    draft.startPlacePrinters = o.startPlacePrinters || "link"
+    draft.startPlaceAdminTools = o.startPlaceAdminTools || "menu"
     draft.activeTab = o.lastSettingsTab || "theme"
   }
 
@@ -77,6 +110,17 @@ QtObject {
     o.startHighlightNew = draft.startHighlightNew
     o.startPersonalizedMenus = draft.startPersonalizedMenus
     o.debugKeepStartMenuOpen = draft.debugKeepStartMenuOpen
+    o.startMfuCount = Math.max(0, Math.min(30, Number(draft.startMfuCount) || 6))
+    o.startPlaceDocuments = draft.startPlaceDocuments || "link"
+    o.startPlaceRecentDocuments = draft.startPlaceRecentDocuments || "menu"
+    o.startPlacePictures = draft.startPlacePictures || "link"
+    o.startPlaceMusic = draft.startPlaceMusic || "link"
+    o.startPlaceComputer = draft.startPlaceComputer || "link"
+    o.startPlaceNetwork = draft.startPlaceNetwork || "link"
+    o.startPlaceControlPanel = draft.startPlaceControlPanel || "link"
+    o.startPlaceConnectTo = draft.startPlaceConnectTo || "link"
+    o.startPlacePrinters = draft.startPlacePrinters || "link"
+    o.startPlaceAdminTools = draft.startPlaceAdminTools || "menu"
     o.lastSettingsTab = draft.activeTab
     Theme.name = draft.theme
     Theme.scheme = draft.themeScheme || ""

@@ -310,9 +310,13 @@ PanelWindow {
         StartPopupHost {
             id: startPopup
             anchorItem: startButton
+            screen: taskbarWindow.screen
             persistKey: String(taskbarWindow.modelData && taskbarWindow.modelData.name
                                ? taskbarWindow.modelData.name
                                : "default")
+
+            Component.onCompleted: StartService.register(startPopup)
+            Component.onDestruction: StartService.unregister(startPopup)
         }
     }
 

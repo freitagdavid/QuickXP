@@ -23,6 +23,8 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Settings → Debugging → Keep Start menu open: Apply keeps Start visible across reload / click-away
 - [ ] XP Start footer: Log Off / Turn Off Computer confirm (Cancel safe); Luna icon strip
 - [ ] XP Start right column: Help / Search / Run stubs at bottom (not a Vista search box)
+- [ ] Vista/7 Start search (`generation` vista/win7 or `startSearch` enabled): search field in the left column, directly under All Programs, focuses on open; typing filters that column (Programs / Documents / Settings); right column stays beside it; menu stays open
+- [ ] Vista/7 Start search keyboard: Down/Up highlight results; Enter launches; Esc clears query then closes
 - [ ] XP Start All Programs: flyout from left footer with Programs tree; nested cascades align; reopen works
 - [ ] XP Start pins: defaults seed browser/mail; launch works; right-click unpins; drag reorders
 - [ ] XP Start MFU: launches populate list below pins; right-click removes from list without unpinning

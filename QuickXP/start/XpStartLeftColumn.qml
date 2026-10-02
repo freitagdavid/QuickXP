@@ -1,8 +1,11 @@
 import QtQuick
 import qs.QuickXP
+import qs.QuickXP.controls
 import "../StartMenuModel.js" as StartMenuModel
 
 // Left column pins/MFU + All Programs — fills/borders/text from Theme.startPanel.
+// Vista/7 search sits under All Programs in this column. While a query is active,
+// pins/MFU/All Programs are replaced by ranked search results.
 Item {
   id: root
 
@@ -10,6 +13,17 @@ Item {
   property var programsNode: null
   property alias contentItem: content
   property alias allProgramsRow: allProgramsRow
+
+  property bool searchEnabled: false
+  property bool searchActive: false
+  property var searchResults: []
+  property int resultsFocusIndex: -1
+  property alias searchField: searchField
+
+  signal resultActivated(var node)
+  signal resultHovered(int index)
+  signal searchEdited(string text)
+  signal searchKeyPressed(var event)
 
   readonly property int columnWidth: Number(Theme.value("startPanel", "leftColumnWidth", 190))
   readonly property int moreProgHeight: Number(Theme.value("startPanel", "moreProgHeight", 30))
@@ -53,9 +67,21 @@ Item {
       programsSubmenu.close()
   }
 
+  onSearchActiveChanged: {
+    if (searchActive)
+      closeSubmenus()
+  }
+
   function activateNode(node) {
     if (!host || !node)
       return
+    if (node.kind === "header")
+      return
+    if (node.kind === "setting") {
+      if (typeof host.openSetting === "function")
+        host.openSetting(node.tab)
+      return
+    }
     if (node.kind === "app") {
       const entry = AppCatalog.byId(node.entryId || node.id)
       if (entry && AppCatalog.launch(entry)) {
@@ -155,6 +181,7 @@ Item {
       anchors.top: parent.top
       anchors.bottom: allProgramsBar.top
       clip: true
+      visible: !root.searchActive
 
       Flickable {
         id: scroller
@@ -242,12 +269,87 @@ Item {
       }
     }
 
+    Flickable {
+      id: resultsScroller
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.top: parent.top
+      anchors.bottom: searchBar.top
+      visible: root.searchActive
+      clip: true
+      contentWidth: width
+      contentHeight: resultsCol.height
+      boundsBehavior: Flickable.StopAtBounds
+      flickableDirection: Flickable.VerticalFlick
+
+      Column {
+        id: resultsCol
+        width: resultsScroller.width
+        spacing: 0
+
+        Repeater {
+          model: root.searchResults
+
+          Item {
+            id: resultDelegate
+            required property var modelData
+            required property int index
+            width: resultsCol.width
+            height: modelData && modelData.kind === "header"
+              ? 22
+              : Number(Theme.value("startPanel", "rowHeight", 32))
+
+            Text {
+              anchors.fill: parent
+              anchors.leftMargin: 6
+              anchors.rightMargin: 4
+              visible: modelData && modelData.kind === "header"
+              verticalAlignment: Text.AlignVCenter
+              text: modelData ? String(modelData.label || "") : ""
+              color: root.mfuText
+              font.family: Theme.value("fonts", "ui", "Tahoma")
+              font.pixelSize: Theme.size("fontSize", 11)
+              font.bold: true
+            }
+
+            XpStartAppItem {
+              anchors.fill: parent
+              visible: modelData && modelData.kind !== "header"
+              node: modelData
+              selected: root.resultsFocusIndex === resultDelegate.index
+              draggable: false
+              onActivated: root.resultActivated(modelData)
+              onHovered: {
+                root.resultHovered(resultDelegate.index)
+                if (root.submenuOpen)
+                  root.closeSubmenus()
+              }
+            }
+          }
+        }
+      }
+
+      Text {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 10
+        visible: root.searchActive && root.searchResults.length === 0
+        text: "No items match your search."
+        wrapMode: Text.WordWrap
+        color: root.mfuText
+        font.family: Theme.value("fonts", "ui", "Tahoma")
+        font.pixelSize: Theme.size("fontSize", 11)
+      }
+    }
+
     Item {
       id: allProgramsBar
       anchors.left: parent.left
       anchors.right: parent.right
-      anchors.bottom: parent.bottom
-      height: root.moreProgHeight
+      anchors.bottom: searchBar.top
+      height: root.searchActive ? 0 : root.moreProgHeight
+      visible: !root.searchActive
 
       // Same solid face as the MFU column (theme mfuFill). MoreProgramsBackground
       // is a 4×2 glyph whose left/bottom blue pixels stretch into false chrome.
@@ -300,6 +402,29 @@ Item {
           onEntered: root.openAllPrograms()
           onClicked: root.openAllPrograms()
         }
+      }
+    }
+
+    // Vista/7 search lives in this column, directly under All Programs.
+    Item {
+      id: searchBar
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      height: root.searchEnabled ? 30 : 0
+      visible: root.searchEnabled
+      clip: true
+
+      XpEdit {
+        id: searchField
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 4
+        height: 22
+        placeholderText: "Search programs and files"
+        onTextEdited: root.searchEdited(text)
+        onKeyPressed: (event) => root.searchKeyPressed(event)
       }
     }
   }

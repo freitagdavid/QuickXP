@@ -145,6 +145,10 @@ workspace.windowAdded.connect(window => {
 })
 workspace.windowRemoved.connect(() => { dirty = true })
 
+// Meta/Windows → Start is owned by ShellBridge + kglobalaccel (org.quickxp.start.desktop).
+// Do not registerShortcut("Meta") here: on Plasma 6.1+ it steals the binding for
+// invokeShortcut but often does not fire on a real modifier-only keypress.
+
 const timer = new QTimer()
 timer.interval = 200
 timer.timeout.connect(() => {

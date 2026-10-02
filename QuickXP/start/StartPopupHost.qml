@@ -12,6 +12,8 @@ PopupWindow {
   id: host
 
   property Item anchorItem: null
+  // Screen this popup belongs to (for StartService Meta / IPC targeting).
+  property var screen: null
   // Disambiguate multi-monitor + PersistentProperties across hot reload.
   property string persistKey: "default"
 
@@ -19,18 +21,23 @@ PopupWindow {
 
   visible: false
   color: "transparent"
-  // grabFocus dismisses by setting visible=false (bypasses close()). Off while debugging.
-  grabFocus: StartPopupPolicy.wantGrabFocus(host.keepOpen)
+  // grabFocus dismisses by setting visible=false (bypasses close()). Off while debugging
+  // or for Meta/hotkey opens (see StartPopupPolicy.wantGrabFocus).
+  grabFocus: StartPopupPolicy.wantGrabFocus(host.keepOpen, host.openedByHotkey)
 
   property bool armed: false
   property bool suppressDismiss: false
+  // Set by StartService for Meta/hotkey opens (no grab + longer suppress / arm).
+  property bool openedByHotkey: false
+  // True after the pointer has entered Start chrome this open session.
+  property bool everHovered: false
   property bool chromeHovered: false
   property string pendingSessionAction: ""
 
   readonly property int menuMinHeight: 120
 
-  // Classic only when startMenu override/shell is classic; XP dual-column otherwise
-  // (vista/win7 keep XP chrome until Epic 3 search Start).
+  // Classic only when startMenu override/shell is classic; XP dual-column otherwise.
+  // Vista/7 Start search is a separate GenerationPolicy.startSearch toggle on the XP chrome.
   readonly property bool useClassicStart: StartMenuLayout.useClassic(GenerationPolicy.forItem("startMenu"))
   readonly property Item activeMenu: useClassicStart ? classicMenu : xpMenu
   readonly property bool keepOpen: StartPopupPolicy.keepOpenEnabled(Config.options.debugKeepStartMenuOpen)
@@ -60,7 +67,13 @@ PopupWindow {
       return
     persist.wantOpen = true
     armed = false
-    suppressDismiss = false
+    everHovered = false
+    // Hotkey path: keep suppress so leave-region timers do not race Meta release.
+    // Click path: clear so a fresh open is not stuck suppressed.
+    if (host.openedByHotkey)
+      pokeSuppress()
+    else
+      suppressDismiss = false
     activeMenu.closeSubmenus()
     Qt.callLater(() => {
       // grabFocus changes only apply after hide→show.
@@ -79,9 +92,12 @@ PopupWindow {
     visible = true
     activeMenu.resetFocus()
     armTimer.restart()
-    if (host.useClassicStart)
+    if (host.useClassicStart) {
       classicFocus.forceActiveFocus()
-    else
+      return
+    }
+    // Search field focuses itself in XpStartMenu.resetFocus when startSearch is on.
+    if (!(xpMenu.searchEnabled))
       xpFocus.forceActiveFocus()
   }
 
@@ -94,6 +110,8 @@ PopupWindow {
     activeMenu.closeSubmenus()
     visible = false
     armed = false
+    openedByHotkey = false
+    everHovered = false
     armTimer.stop()
   }
 
@@ -196,13 +214,11 @@ PopupWindow {
       return
     }
     if (id === "control-panel") {
-      close()
-      Settings.open("theme")
+      openSetting("theme")
       return
     }
     if (id === "settings") {
-      close()
-      Settings.open("start")
+      openSetting("start")
       return
     }
     if (id === "connect-to") {
@@ -269,6 +285,11 @@ PopupWindow {
     console.warn("QuickXP Start: action not implemented:", id)
   }
 
+  function openSetting(tab) {
+    close()
+    Settings.open(tab)
+  }
+
   function openUri(uri) {
     const target = String(uri || "").trim()
     if (!target)
@@ -303,13 +324,14 @@ PopupWindow {
 
   Timer {
     id: armTimer
-    interval: 250
+    interval: host.openedByHotkey ? 450 : 250
     onTriggered: host.armed = true
   }
 
   Timer {
     id: suppressTimer
-    interval: 120
+    // Longer when Meta opened us — release / focus churn lasts past 120ms.
+    interval: host.openedByHotkey ? 500 : 120
     onTriggered: host.suppressDismiss = false
   }
 
@@ -402,10 +424,11 @@ PopupWindow {
       onHoveredChanged: {
         host.chromeHovered = hovered
         if (hovered) {
+          host.everHovered = true
           leaveRegionClose.stop()
           return
         }
-        if (!host.armed || host.suppressDismiss)
+        if (!StartPopupPolicy.allowLeaveClose(host.everHovered, host.armed, host.suppressDismiss))
           return
         leaveRegionClose.restart()
       }
@@ -448,10 +471,11 @@ PopupWindow {
       onHoveredChanged: {
         host.chromeHovered = hovered
         if (hovered) {
+          host.everHovered = true
           leaveRegionClose.stop()
           return
         }
-        if (!host.armed || host.suppressDismiss)
+        if (!StartPopupPolicy.allowLeaveClose(host.everHovered, host.armed, host.suppressDismiss))
           return
         leaveRegionClose.restart()
       }

@@ -5,6 +5,8 @@ import Quickshell
 import "AppCatalogFilter.js" as AppCatalogFilter
 
 // Thin adapter over Quickshell DesktopEntries for Start / pins / search.
+// Launchable apps are materialized to plain records in QML — DesktopEntry
+// properties are not reliably readable inside .pragma library helpers.
 Singleton {
   id: root
 
@@ -17,25 +19,70 @@ Singleton {
     }
   }
 
-  readonly property var applications: {
-    const _ = root._revision
-    return AppCatalogFilter.sortByName(
-      AppCatalogFilter.filterLaunchable(DesktopEntries.applications)
-    )
+  function _categoriesOf(entry): var {
+    if (!entry || entry.categories === undefined || entry.categories === null)
+      return []
+    try {
+      return Array.from(entry.categories)
+    } catch (error) {
+      return []
+    }
   }
 
-  function byId(id: string) {
+  function _recordOf(entry): var {
+    if (entry === undefined || entry === null)
+      return null
+    if (entry.noDisplay === true)
+      return null
+    const name = entry.name
+    if (name === undefined || name === null || String(name).trim() === "")
+      return null
+    const id = String(entry.id || "").trim()
+    if (!id)
+      return null
+    return {
+      id: id,
+      name: String(name),
+      genericName: (entry.genericName !== undefined && entry.genericName !== null)
+        ? String(entry.genericName) : "",
+      icon: (entry.icon !== undefined && entry.icon !== null) ? String(entry.icon) : "",
+      categories: root._categoriesOf(entry),
+      noDisplay: false
+    }
+  }
+
+  readonly property var applications: {
+    const _ = root._revision
+    // ObjectModel: use .values (same as Tray / TaskList). Indexing the model
+    // directly / assuming ListModel.get() yields empty or stale entries.
+    const src = DesktopEntries.applications
+    const list = src && src.values !== undefined ? src.values : src
+    const out = []
+    if (!list)
+      return out
+    const count = list.length !== undefined ? list.length
+      : (list.count !== undefined ? list.count : 0)
+    for (let i = 0; i < count; ++i) {
+      const entry = list.get !== undefined ? list.get(i) : list[i]
+      const rec = root._recordOf(entry)
+      if (rec)
+        out.push(rec)
+    }
+    return AppCatalogFilter.sortByName(out)
+  }
+
+  function byId(id: string): var {
     return DesktopEntries.byId(id)
   }
 
-  function lookup(name: string) {
+  function lookup(name: string): var {
     return DesktopEntries.heuristicLookup(name)
   }
 
   function filter(query: string): var {
     const _ = root._revision
     return AppCatalogFilter.sortByName(
-      AppCatalogFilter.filterByQuery(DesktopEntries.applications, query)
+      AppCatalogFilter.filterByQuery(root.applications, query)
     )
   }
 

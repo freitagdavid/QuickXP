@@ -28,6 +28,16 @@ TestCase {
   function test_wantGrabFocus() {
     compare(StartPopupPolicy.wantGrabFocus(false), true)
     compare(StartPopupPolicy.wantGrabFocus(true), false)
+    compare(StartPopupPolicy.wantGrabFocus(false, false), true)
+    compare(StartPopupPolicy.wantGrabFocus(false, true), false)
+    compare(StartPopupPolicy.wantGrabFocus(true, true), false)
+  }
+
+  function test_allowLeaveClose() {
+    compare(StartPopupPolicy.allowLeaveClose(false, true, false), false)
+    compare(StartPopupPolicy.allowLeaveClose(true, false, false), false)
+    compare(StartPopupPolicy.allowLeaveClose(true, true, true), false)
+    compare(StartPopupPolicy.allowLeaveClose(true, true, false), true)
   }
 
   function test_shouldReclaim() {

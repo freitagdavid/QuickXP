@@ -18,6 +18,8 @@ ShellRoot {
   readonly property var startPersonalizeStore: StartPersonalizeStore
   readonly property var startPinStore: StartPinStore
   readonly property var startMfuStore: StartMfuStore
+  // Start menu registry + Meta/Windows key bridge.
+  readonly property var startService: StartService
   // Keep dropdown exclusivity gate alive.
   readonly property var dropdownGate: DropdownGate
 

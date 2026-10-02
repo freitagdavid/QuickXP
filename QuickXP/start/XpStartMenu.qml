@@ -1,13 +1,44 @@
 import QtQuick
 import Quickshell
 import qs.QuickXP
+import "../StartSearchModel.js" as StartSearchModel
+import "StartMenuLayout.js" as StartMenuLayout
 
 // XP dual-column Start — sizes/colors/images from Theme.startPanel.
+// Vista/7: search field under All Programs in the left column when GenerationPolicy.startSearch is on.
 Item {
   id: root
 
   property var host: null
   property var programsNode: null
+
+  property string searchQuery: ""
+  property int resultsFocusIndex: -1
+
+  // Search chrome when the startSearch toggle is on (default for shell vista/win7),
+  // or when Start menu layout override is Vista/7 ("Search Start" choices).
+  readonly property bool searchEnabled: StartMenuLayout.useStartSearch(
+    GenerationPolicy.featureEnabled("startSearch")
+      || GenerationPolicy.isVistaOrLater("startMenu"))
+  readonly property bool searchActive: searchEnabled && searchQuery.trim() !== ""
+
+  readonly property var searchResults: {
+    if (!root.searchActive)
+      return []
+    const __apps = AppCatalog._revision
+    const __recent = RecentCatalog._revision
+    const __pins = StartPinStore._revision
+    const __mfu = StartMfuStore._revision
+    const __cfg = Config.options.startMfuScores
+    // AppCatalog.applications is plain records (id/name/icon); safe for StartSearchModel.
+    return StartSearchModel.buildResults(root.searchQuery, {
+      apps: AppCatalog.applications,
+      recentItems: RecentCatalog.recentItems,
+      pinIds: StartPinStore.pinIds,
+      rawMfuScores: Config.options.startMfuScores,
+      settings: StartSearchModel.defaultSettingsIndex()
+    })
+  }
 
   readonly property int leftW: Number(Theme.value("startPanel", "leftColumnWidth", 190))
   readonly property int rightW: Number(Theme.value("startPanel", "rightColumnWidth", 190))
@@ -26,13 +57,105 @@ Item {
     rightCol.closeSubmenus()
   }
 
+  function clearSearch() {
+    root.searchQuery = ""
+    root.resultsFocusIndex = -1
+    if (leftCol.searchField)
+      leftCol.searchField.text = ""
+  }
+
   function resetFocus() {
     rightCol.focusIndex = -1
+    root.resultsFocusIndex = -1
+    root.clearSearch()
+    if (root.searchEnabled && leftCol.searchField)
+      Qt.callLater(() => leftCol.searchField.forceActiveFocus())
+  }
+
+  function activateSearchResult(node) {
+    if (!node || !host)
+      return
+    if (node.kind === "header")
+      return
+    if (node.kind === "app") {
+      leftCol.activateNode(node)
+      return
+    }
+    if (node.kind === "setting") {
+      if (typeof host.openSetting === "function")
+        host.openSetting(node.tab)
+      return
+    }
+    if (node.kind === "action") {
+      leftCol.activateNode(node)
+    }
+  }
+
+  function activateHighlightedResult() {
+    const rows = root.searchResults
+    if (!rows.length)
+      return false
+    let idx = root.resultsFocusIndex
+    if (idx < 0 || idx >= rows.length || !StartSearchModel.isSelectable(rows[idx]))
+      idx = StartSearchModel.firstSelectableIndex(rows)
+    if (idx < 0)
+      return false
+    root.activateSearchResult(rows[idx])
+    return true
+  }
+
+  function handleSearchKey(event) {
+    if (!event || !root.searchEnabled)
+      return
+    if (event.key === Qt.Key_Escape) {
+      if (StartSearchModel.escClearsQuery(root.searchQuery)) {
+        root.clearSearch()
+        if (leftCol.searchField)
+          leftCol.searchField.forceActiveFocus()
+      } else if (host && typeof host.close === "function") {
+        host.close()
+      }
+      event.accepted = true
+      return
+    }
+    if (!root.searchActive) {
+      event.accepted = false
+      return
+    }
+    if (event.key === Qt.Key_Down) {
+      root.resultsFocusIndex = StartSearchModel.moveFocus(
+        root.searchResults, root.resultsFocusIndex, 1)
+      if (root.resultsFocusIndex < 0)
+        root.resultsFocusIndex = StartSearchModel.firstSelectableIndex(root.searchResults)
+      event.accepted = true
+      return
+    }
+    if (event.key === Qt.Key_Up) {
+      const next = StartSearchModel.moveFocus(
+        root.searchResults, root.resultsFocusIndex, -1)
+      root.resultsFocusIndex = next
+      event.accepted = true
+      return
+    }
+    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+      if (root.activateHighlightedResult())
+        event.accepted = true
+      else
+        event.accepted = false
+      return
+    }
+    event.accepted = false
   }
 
   function handleKey(event) {
     if (!event)
       return
+    // When the search field has focus it handles keys via keyPressed.
+    // Fallback path if xpFocus receives arrows/Esc while search is enabled.
+    if (root.searchEnabled) {
+      root.handleSearchKey(event)
+      return
+    }
     event.accepted = false
   }
 
@@ -78,7 +201,20 @@ Item {
         height: parent.height
         host: root.host
         programsNode: root.programsNode
+        searchEnabled: root.searchEnabled
+        searchActive: root.searchActive
+        searchResults: root.searchResults
+        resultsFocusIndex: root.resultsFocusIndex
         onAllProgramsOpened: rightCol.closeSubmenus()
+        onResultActivated: (node) => root.activateSearchResult(node)
+        onResultHovered: (index) => root.resultsFocusIndex = index
+        onSearchEdited: (text) => {
+          root.searchQuery = text
+          root.resultsFocusIndex = -1
+          if (leftCol.submenuOpen)
+            leftCol.closeSubmenus()
+        }
+        onSearchKeyPressed: (event) => root.handleSearchKey(event)
       }
 
       XpStartRightColumn {

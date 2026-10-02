@@ -22,4 +22,11 @@ TestCase {
     compare(StartMenuLayout.useXpDualColumn("vista"), true)
     compare(StartMenuLayout.useXpDualColumn("win7"), true)
   }
+
+  function test_useStartSearch() {
+    compare(StartMenuLayout.useStartSearch(true), true)
+    compare(StartMenuLayout.useStartSearch(false), false)
+    compare(StartMenuLayout.useStartSearch(undefined), false)
+    compare(StartMenuLayout.useStartSearch(1), false)
+  }
 }

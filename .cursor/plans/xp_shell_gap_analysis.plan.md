@@ -31,7 +31,7 @@ todos:
     status: pending
   - id: epic-start-search
     content: "Epic: Vista/7 Start search"
-    status: pending
+    status: completed
   - id: epic-quick-launch
     content: "Epic: Quick Launch, Show Desktop, and taskbar toolbars"
     status: pending
@@ -76,7 +76,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 - [ ] Epic R — Run dialog (Win+R + Start → Run)
 - [ ] Epic 1 — Classic Start menu (single-column)
 - [ ] Epic 2 — XP dual-column Start menu
-- [ ] Epic 3 — Vista/7 Start search
+- [x] Epic 3 — Vista/7 Start search (jump-list stubs optional later — #82)
 - [ ] Epic 4 — Quick Launch, Show Desktop, and taskbar toolbars
 - [ ] Epic 5 — Taskband (grouping policy, icon-only, height/multi-row, chrome menu)
 - [ ] Epic C — Tray system controls (volume mixer, BT, brightness, network, drives, battery)
@@ -368,10 +368,10 @@ Builds on the classic app catalog and session hooks. Default Luna Start when `ge
 
 Only after dual-column exists. Same Start host; add search as a first-class mode.
 
-- **Search box UI** — Focused field at bottom (Vista/7); type-to-filter without closing menu.
-- **App / document / setting results** — Ranked list replacing or overlaying the left column while typing.
-- **Keyboard-first results** — Arrow keys + Enter to launch; Esc clears or closes.
-- **Jump-list stubs (Win7)** — Optional later slice inside pinned/recent rows; not required for first search ship. Stock XP parity excludes jump lists.
+- [x] **Search box UI** — Focused `XpEdit` in the left column, directly under All Programs, when `GenerationPolicy.featureEnabled("startSearch")` (default on for `vista`/`win7`); type-to-filter without closing menu.
+- [x] **App / document / setting results** — Ranked list via `StartSearchModel.js` replaces the left column while typing (apps + recent docs + Settings tabs).
+- [x] **Keyboard-first results** — Arrow keys + Enter to launch; Esc clears query or closes Start.
+- [ ] **Jump-list stubs (Win7)** — Optional later slice inside pinned/recent rows (#82); not required for first search ship. Stock XP parity excludes jump lists.
 
 ---
 

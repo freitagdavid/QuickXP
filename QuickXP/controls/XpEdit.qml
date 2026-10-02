@@ -14,6 +14,8 @@ Item {
   property bool enabled: true
   signal accepted()
   signal textEdited()
+  // Fired from the inner TextInput before default key handling; set event.accepted to consume.
+  signal keyPressed(var event)
 
   implicitWidth: 120
   implicitHeight: 21
@@ -62,6 +64,7 @@ Item {
     selectByMouse: true
     onAccepted: root.accepted()
     onTextEdited: root.textEdited()
+    Keys.onPressed: (event) => root.keyPressed(event)
   }
 
   MouseArea {

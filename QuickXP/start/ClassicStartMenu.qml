@@ -96,8 +96,9 @@ Item {
     const delegate = rowList.itemAt(index)
     if (!delegate)
       return
+    // First cascade: top-aligned with the row (XP Classic); nested levels flip.
     submenu.cascadeDepth = 0
-    submenu.alignBottom = true
+    submenu.alignBottom = false
     submenu.nodes = node.children || []
     submenu.host = root
     submenu.openAt(delegate)
@@ -289,7 +290,7 @@ Item {
   StartSubmenu {
     id: submenu
     host: root
-    alignBottom: true
+    alignBottom: false
     cascadeDepth: 0
   }
 }

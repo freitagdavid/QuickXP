@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import qs.QuickXP
 
-// XP dual-column Start — Luna STARTPANEL chrome; right places (#73).
+// XP dual-column Start — Luna STARTPANEL chrome; places + logoff footer.
 Item {
   id: root
 
@@ -15,7 +15,7 @@ Item {
   readonly property color outerBorder: String(Theme.value("startPanel", "outerBorder", "#003C74"))
 
   width: leftW + rightW + 4
-  implicitHeight: userBar.height + bodyH + 2
+  implicitHeight: userBar.height + bodyH + footer.height + 2
 
   readonly property bool submenuOpen: rightCol.submenuOpen
 
@@ -33,7 +33,6 @@ Item {
     event.accepted = false
   }
 
-  // Forward activateNode for StartSubmenu hosts nested under places.
   function activateNode(node) {
     rightCol.activateNode(node)
   }
@@ -73,6 +72,12 @@ Item {
         height: parent.height
         host: root.host
       }
+    }
+
+    XpStartFooter {
+      id: footer
+      width: parent.width
+      host: root.host
     }
   }
 }

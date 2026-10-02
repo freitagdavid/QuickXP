@@ -94,6 +94,7 @@
     "leftColumnWidth": 190,
     "rightColumnWidth": 186,
     "bodyHeight": 340,
+    "footerHeight": 39,
     "tileSize": 42,
     "outerBorder": "#003C74",
     "userNameColor": "#FFFFFF",

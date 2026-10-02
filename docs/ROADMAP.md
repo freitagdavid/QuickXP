@@ -296,7 +296,7 @@ Builds on the classic app catalog and session hooks. Default Luna Start when `ge
 - **Left: All Programs** — Reuse classic Programs cascade as flyout (in-place expand later for Vista).
 - [x] **Right: special folders** — My Documents / Recent / Pictures / Music / Computer / Network / Control Panel / Connect To / Printers / Admin Tools; link|menu|hidden via Config (STA-24–29).
 - **Right: Help / Search / Run** — XP “Search” launches a search UI (Search Companion later); Run → Epic R; not the Vista search box.
-- **Bottom bar** — Log Off + Turn Off Computer buttons (Luna art).
+- [x] **Bottom bar** — Log Off + Turn Off Computer buttons (Luna LOGOFF art; SessionBridge confirm).
 - [x] **Layout switch** — `GenerationPolicy.forItem("startMenu")` selects Classic single-column vs XP dual-column stub (Settings → Theme overrides). Vista/7 keep XP chrome until Epic 3.
 - **Start Customize** — Large/small icons, program count, clear list, Internet/E-mail show/hide + handler pick, link/menu/hidden per special folder, hover-open, highlight new, Scroll Programs, Favorites, Recent Documents (SMS-01–17) via Settings → Start Menu.
 

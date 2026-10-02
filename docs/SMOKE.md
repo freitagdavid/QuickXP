@@ -21,6 +21,7 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] XP Start: dual-column Luna chrome (user bar + tile/name, white left / places right); tile click opens User Accounts stub; `~/.face` shows when present
 - [ ] XP Start right column: special folders open (docs/pictures/music/computer); Recent Documents / Admin Tools show flyout chevrons
 - [ ] Settings → Debugging → Keep Start menu open: Apply keeps Start visible across reload / click-away
+- [ ] XP Start footer: Log Off / Turn Off Computer confirm (Cancel safe); Luna icon strip
 - [ ] Switch theme via Settings → Theme (or `Theme.name`) and confirm live reload
 - [ ] Settings → Theme → Import… an XP `.msstyles` → one theme with schemes → Color scheme dropdown → Apply reloads chrome; Delete removes user-data themes only
 - [ ] Post a freedesktop notification; tray / balloon / queue behaves as expected for the generation

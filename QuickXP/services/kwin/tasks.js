@@ -1,7 +1,9 @@
 // Runs inside KWin. KWin does not offer the foreign-toplevel protocol to
-// Quickshell, so this publishes the taskbar windows and applies clicks.
+// Quickshell, so this publishes the taskbar windows. Clicks are applied by
+// tasks-apply.js (one-shot, kicked from TasksBridge.Command).
 const seen = new Set()
 let dirty = true
+let publishTimer = null
 
 function shown(window) {
     if (!window || window.deleted || window.skipTaskbar)
@@ -9,21 +11,6 @@ function shown(window) {
     if (window.dock || window.desktopWindow || window.popupWindow || window.tooltip || window.notification || window.splash)
         return false
     return window.normalWindow || window.dialog
-}
-
-function sameId(window, id) {
-    const raw = String(window.internalId)
-    const wanted = String(id)
-    return raw === wanted || raw.replace(/[{}]/g, "") === wanted.replace(/[{}]/g, "")
-}
-
-function findWindow(id) {
-    let found = null
-    workspace.windowList().forEach(window => {
-        if (found === null && sameId(window, id))
-            found = window
-    })
-    return found
 }
 
 function flag(window, name, fallback) {
@@ -51,52 +38,6 @@ function isMaximized(window) {
     }
 }
 
-function activate(window) {
-    window.minimized = false
-    // WindowsRunner ids are "0_" plus the window uuid. Activating that way
-    // restores a minimized window and gives it focus.
-    callDBus("org.kde.KWin", "/WindowsRunner", "org.kde.krunner1", "Run", "0_" + String(window.internalId), "")
-}
-
-function applyCommand(command) {
-    const window = findWindow(command.id)
-    if (!window)
-        return
-    const action = command.action
-    if (action === "minimize") {
-        window.minimized = true
-        return
-    }
-    if (action === "close") {
-        window.closeWindow()
-        return
-    }
-    if (action === "maximize") {
-        window.minimized = false
-        window.setMaximize(true, true)
-        return
-    }
-    if (action === "restore") {
-        window.minimized = false
-        window.setMaximize(false, false)
-        return
-    }
-    if (action === "move" || action === "resize") {
-        window.minimized = false
-        try { workspace.activeWindow = window } catch (error) {}
-        try {
-            if (action === "move")
-                workspace.slotWindowMove()
-            else
-                workspace.slotWindowResize()
-        } catch (error) {
-            console.warn("quickxp-tasks: " + action + " failed: " + error)
-        }
-        return
-    }
-    activate(window)
-}
-
 function publish() {
     const windows = []
     workspace.windowList().forEach(window => {
@@ -120,11 +61,29 @@ function publish() {
     callDBus("org.quickxp.Tasks", "/org/quickxp/Tasks", "org.quickxp.Tasks", "SetWindows", JSON.stringify(windows))
 }
 
+function schedulePublish() {
+    dirty = true
+    if (publishTimer === null) {
+        publishTimer = new QTimer()
+        publishTimer.interval = 200
+        publishTimer.timeout.connect(() => {
+            publishTimer.stop()
+            if (!dirty)
+                return
+            dirty = false
+            publish()
+        })
+    }
+    // Restart so bursts of caption/active changes coalesce.
+    publishTimer.stop()
+    publishTimer.start()
+}
+
 function watch(window) {
     if (!window || seen.has(window))
         return
     seen.add(window)
-    const bump = () => { dirty = true }
+    const bump = () => { schedulePublish() }
     try { window.captionChanged.connect(bump) } catch (error) {}
     try { window.minimizedChanged.connect(bump) } catch (error) {}
     try { window.maximizedChanged.connect(bump) } catch (error) {}
@@ -133,7 +92,7 @@ function watch(window) {
     try {
         window.closed.connect(() => {
             seen.delete(window)
-            dirty = true
+            schedulePublish()
         })
     } catch (error) {}
 }
@@ -141,30 +100,12 @@ function watch(window) {
 workspace.windowList().forEach(watch)
 workspace.windowAdded.connect(window => {
     watch(window)
-    dirty = true
+    schedulePublish()
 })
-workspace.windowRemoved.connect(() => { dirty = true })
+workspace.windowRemoved.connect(() => { schedulePublish() })
 
 // Meta/Windows → Start is owned by ShellBridge + kglobalaccel (org.quickxp.start.desktop).
 // Do not registerShortcut("Meta") here: on Plasma 6.1+ it steals the binding for
 // invokeShortcut but often does not fire on a real modifier-only keypress.
 
-const timer = new QTimer()
-timer.interval = 200
-timer.timeout.connect(() => {
-    if (dirty) {
-        dirty = false
-        publish()
-    }
-    callDBus("org.quickxp.Tasks", "/org/quickxp/Tasks", "org.quickxp.Tasks", "TakeCommands", payload => {
-        if (!payload || payload === "[]")
-            return
-        try {
-            JSON.parse(payload).forEach(applyCommand)
-        } catch (error) {
-            console.warn("quickxp-tasks: commands failed: " + error)
-        }
-        dirty = true
-    })
-})
-timer.start()
+schedulePublish()

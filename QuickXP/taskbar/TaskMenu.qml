@@ -60,7 +60,8 @@ PopupWindow {
     readonly property var appActions: {
         if (toplevel === null || !toplevel.appId)
             return []
-        const entry = DesktopEntries.heuristicLookup(toplevel.appId)
+        // Actions need the live DesktopEntry; resolveApp only caches name/icon.
+        const entry = AppCatalog.lookup(toplevel.appId)
         if (entry === null || entry.actions === undefined || entry.actions === null)
             return []
         const shown = []

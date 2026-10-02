@@ -120,4 +120,73 @@ TestCase {
     })
     compare(entries[0].representative.title, "A2")
   }
+
+  function test_entryKey_stable_across_title_change() {
+    const a = TaskbandModel.entryFromWindows([
+      win("app.a", "Old", { windowId: "1" })
+    ])
+    const b = TaskbandModel.entryFromWindows([
+      win("app.a", "New", { windowId: "1" })
+    ])
+    compare(TaskbandModel.entryKey(a), TaskbandModel.entryKey(b))
+    compare(a.key, "k:1")
+  }
+
+  function test_entryKey_flat_same_app_unique() {
+    const a = TaskbandModel.entryFromWindows([win("app.a", "A1", { windowId: "1" })])
+    const b = TaskbandModel.entryFromWindows([win("app.a", "A2", { windowId: "2" })])
+    verify(TaskbandModel.entryKey(a) !== TaskbandModel.entryKey(b))
+  }
+
+  function test_entryKey_group_by_app() {
+    const g = TaskbandModel.entryFromWindows([
+      win("app.a", "A1", { windowId: "1" }),
+      win("app.a", "A2", { windowId: "2" })
+    ])
+    compare(g.kind, "group")
+    compare(TaskbandModel.entryKey(g), "a:app.a")
+  }
+
+  function test_diffEntries_title_only_is_update() {
+    const prev = TaskbandModel.stampEntries([
+      TaskbandModel.entryFromWindows([win("app.a", "Old", { windowId: "1" })])
+    ])
+    const next = TaskbandModel.stampEntries([
+      TaskbandModel.entryFromWindows([win("app.a", "New", { windowId: "1", activated: true })])
+    ])
+    const diff = TaskbandModel.diffEntries(prev, next)
+    compare(diff.removes.length, 0)
+    compare(diff.inserts.length, 0)
+    compare(diff.updates.length, 1)
+    compare(diff.updates[0].entry.title, "New")
+    verify(diff.sameLength)
+  }
+
+  function test_diffEntries_insert_remove() {
+    const prev = TaskbandModel.stampEntries([
+      TaskbandModel.entryFromWindows([win("app.a", "A", { windowId: "1" })])
+    ])
+    const next = TaskbandModel.stampEntries([
+      TaskbandModel.entryFromWindows([win("app.b", "B", { windowId: "2" })])
+    ])
+    const diff = TaskbandModel.diffEntries(prev, next)
+    compare(diff.removes.length, 1)
+    compare(diff.inserts.length, 1)
+    compare(diff.updates.length, 0)
+  }
+
+  function test_pageSlice() {
+    const all = TaskbandModel.stampEntries([
+      TaskbandModel.entryFromWindows([win("a", "1", { windowId: "1" })]),
+      TaskbandModel.entryFromWindows([win("b", "2", { windowId: "2" })]),
+      TaskbandModel.entryFromWindows([win("c", "3", { windowId: "3" })])
+    ])
+    compare(TaskbandModel.pageSlice(all, 0, 2, false).length, 3)
+    const page0 = TaskbandModel.pageSlice(all, 0, 2, true)
+    compare(page0.length, 2)
+    compare(page0[0].title, "1")
+    const page1 = TaskbandModel.pageSlice(all, 1, 2, true)
+    compare(page1.length, 1)
+    compare(page1[0].title, "3")
+  }
 }

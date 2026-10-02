@@ -80,10 +80,11 @@ Item {
     readonly property string iconSource: {
         let name = ""
         const target = toplevel
-        if (target !== null && target.appId !== "") {
-            const desk = DesktopEntries.heuristicLookup(target.appId)
-            if (desk !== null && desk.icon)
-                name = desk.icon
+        if (target !== null) {
+            if (target.iconName)
+                name = String(target.iconName)
+            else if (target.appId !== "")
+                name = AppCatalog.resolveApp(target.appId).icon
         }
         const path = name !== ""
             ? Quickshell.iconPath(name, "application-x-executable")

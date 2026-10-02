@@ -11,11 +11,13 @@ Singleton {
   id: root
 
   property int _revision: 0
+  property var _lookupCache: ({})
 
   Connections {
     target: DesktopEntries
     function onApplicationsChanged() {
       root._revision++
+      root._lookupCache = ({})
     }
   }
 
@@ -77,6 +79,25 @@ Singleton {
 
   function lookup(name: string): var {
     return DesktopEntries.heuristicLookup(name)
+  }
+
+  // Cached appId → { name, icon } for taskband / menus (avoids repeated heuristicLookup).
+  function resolveApp(appId: string): var {
+    const key = String(appId || "").trim()
+    if (!key)
+      return { name: "", icon: "" }
+    const hit = root._lookupCache[key]
+    if (hit !== undefined && hit !== null)
+      return hit
+    const entry = DesktopEntries.heuristicLookup(key)
+    const rec = {
+      name: (entry !== null && entry !== undefined && entry.name)
+        ? String(entry.name) : "",
+      icon: (entry !== null && entry !== undefined && entry.icon)
+        ? String(entry.icon) : ""
+    }
+    root._lookupCache[key] = rec
+    return rec
   }
 
   function filter(query: string): var {

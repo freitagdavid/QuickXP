@@ -30,11 +30,12 @@ PopupWindow {
 
   function iconFor(toplevel: var): string {
     let name = ""
-    if (toplevel !== null && toplevel !== undefined && toplevel.appId)
-      name = (() => {
-        const entry = DesktopEntries.heuristicLookup(toplevel.appId)
-        return entry !== null && entry.icon ? entry.icon : ""
-      })()
+    if (toplevel !== null && toplevel !== undefined) {
+      if (toplevel.iconName)
+        name = String(toplevel.iconName)
+      else if (toplevel.appId)
+        name = AppCatalog.resolveApp(toplevel.appId).icon
+    }
     const path = name !== ""
       ? Quickshell.iconPath(name, "application-x-executable")
       : Quickshell.iconPath("application-x-executable")

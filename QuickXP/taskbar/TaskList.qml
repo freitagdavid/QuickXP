@@ -21,6 +21,24 @@ Item {
     readonly property string scriptFile: Quickshell.shellPath("QuickXP/services/kwin/tasks.js")
 
     property var kwinTasks: []
+    // Stamped entry list for paging math; Repeater uses pageModel (stable keys).
+    property var entries: []
+    // Full entry objects live here — ListModel cannot hold nested JS maps/lists
+    // as a role without type poisoning (List ↔ VariantMap).
+    property var entryStore: ({})
+    property int entryStoreRev: 0
+
+    ListModel {
+        id: pageModel
+    }
+
+    function entryForKey(key: string): var {
+        const _ = root.entryStoreRev
+        if (!key)
+            return null
+        const hit = root.entryStore[key]
+        return hit !== undefined ? hit : null
+    }
 
     function applyTasks(text) {
         // Ignore empty reads from a non-atomic truncate/write race.
@@ -48,18 +66,14 @@ Item {
     property string trackedFocusKey: ""
 
     function enrichWindow(row) {
-        let appName = ""
         const appId = row.appId || ""
-        if (appId !== "") {
-            const entry = DesktopEntries.heuristicLookup(appId)
-            if (entry !== null && entry.name)
-                appName = entry.name
-        }
-        row.appName = appName
+        const resolved = appId !== "" ? AppCatalog.resolveApp(appId) : { name: "", icon: "" }
+        row.appName = resolved.name || ""
+        row.iconName = resolved.icon || ""
         return row
     }
 
-    readonly property var windows: {
+    function collectWindows() {
         if (root.useKwin) {
             const shown = []
             const rows = root.kwinTasks
@@ -95,16 +109,111 @@ Item {
         return shown
     }
 
-    readonly property var entries: {
-        const built = TaskbandModel.buildEntries(root.windows || [], {
+    // Binding trigger for the foreign-toplevel backend (ObjectModel identity).
+    readonly property var toplevelSnapshot: {
+        if (root.useKwin)
+            return null
+        return root.collectWindows()
+    }
+
+    function syncListModel(model, nextEntries) {
+        const next = TaskbandModel.stampEntries(nextEntries)
+        const store = ({})
+        const keys = []
+        for (let j = 0; j < next.length; ++j) {
+            const entry = next[j]
+            const key = TaskbandModel.entryKey(entry)
+            if (!key)
+                continue
+            store[key] = entry
+            keys.push(key)
+        }
+        root.entryStore = store
+        root.entryStoreRev++
+
+        // Drop a poisoned model from older builds that stored nested `entry` roles.
+        if (model.count > 0) {
+            const row0 = model.get(0)
+            if (row0.key === undefined || row0.key === null) {
+                model.clear()
+            }
+        }
+
+        let sameOrder = model.count === keys.length
+        if (sameOrder) {
+            for (let i = 0; i < keys.length; ++i) {
+                if (String(model.get(i).key) !== keys[i]) {
+                    sameOrder = false
+                    break
+                }
+            }
+        }
+        // Title/active-only updates: keep Repeater delegates; refresh via entryStore.
+        if (sameOrder)
+            return
+
+        for (let i = model.count - 1; i >= 0; --i) {
+            const key = String(model.get(i).key || "")
+            let keep = false
+            for (let j = 0; j < keys.length; ++j) {
+                if (keys[j] === key) {
+                    keep = true
+                    break
+                }
+            }
+            if (!keep)
+                model.remove(i)
+        }
+        for (let n = 0; n < keys.length; ++n) {
+            const key = keys[n]
+            let found = -1
+            for (let i = 0; i < model.count; ++i) {
+                if (String(model.get(i).key) === key) {
+                    found = i
+                    break
+                }
+            }
+            if (found === -1) {
+                model.insert(n, { key: key })
+            } else if (found !== n) {
+                model.move(found, n, 1)
+            }
+        }
+        while (model.count > keys.length)
+            model.remove(model.count - 1)
+    }
+
+    function rebuildBand() {
+        const wins = root.collectWindows()
+        const built = TaskbandModel.buildEntries(wins, {
             groupButtons: root.groupButtons,
             iconsOnly: root.iconsOnly,
             bandWidth: root.width,
             minButtonWidth: root.slotWidth,
             spacing: root.spacing
         })
-        return Array.isArray(built) ? built : []
+        root.entries = TaskbandModel.stampEntries(Array.isArray(built) ? built : [])
+        root.syncPageModel()
+        root.syncPage()
     }
+
+    function syncPageModel() {
+        const slice = TaskbandModel.pageSlice(
+            root.entries, root.page, root.perPage, root.paging)
+        root.syncListModel(pageModel, slice)
+    }
+
+    onKwinTasksChanged: if (root.useKwin)
+        root.rebuildBand()
+    onToplevelSnapshotChanged: if (!root.useKwin)
+        root.rebuildBand()
+    onGroupButtonsChanged: root.rebuildBand()
+    onIconsOnlyChanged: root.rebuildBand()
+    onWidthChanged: root.rebuildBand()
+    onSlotWidthChanged: root.rebuildBand()
+    onPerPageChanged: root.syncPageModel()
+    onPagingChanged: root.syncPageModel()
+    Component.onCompleted: root.rebuildBand()
 
     Process {
         id: bridge
@@ -169,20 +278,6 @@ Item {
         const share = (width - gaps) / count
         return Math.max(minButtonWidth, Math.min(maxButtonWidth, Math.floor(share)))
     }
-    readonly property var pageEntries: {
-        const all = entries
-        if (!all || !all.length)
-            return []
-        if (!paging)
-            return all
-        const start = page * perPage
-        const shown = []
-        const end = Math.min(all.length, start + perPage)
-        for (let i = start; i < end; ++i)
-            shown.push(all[i])
-        return shown
-    }
-
     function windowKey(win) {
         if (win === null || win === undefined)
             return ""
@@ -242,20 +337,14 @@ Item {
             page = next
     }
 
-    onWindowsChanged: syncPage()
-    onEntriesChanged: syncPage()
-    onPagingChanged: syncPage()
-    onPerPageChanged: syncPage()
     onPageCountChanged: syncPage()
-    onGroupButtonsChanged: syncPage()
-    onIconsOnlyChanged: syncPage()
     onPageChanged: {
         taskMenu.dismiss()
         groupMenu.dismiss()
         root.cancelGroupPreviewImmediate()
         dismissPreview()
+        root.syncPageModel()
     }
-    Component.onCompleted: syncPage()
 
     TaskPager {
         id: pager
@@ -282,14 +371,16 @@ Item {
         spacing: root.spacing
 
         Repeater {
-            model: root.pageEntries
+            model: pageModel
 
             delegate: TaskButton {
-                required property var modelData
+                required property string key
+
+                readonly property var resolved: root.entryForKey(key)
 
                 taskList: root
-                entry: modelData
-                toplevel: modelData && modelData.representative ? modelData.representative : null
+                entry: resolved
+                toplevel: resolved && resolved.representative ? resolved.representative : null
                 iconsOnly: root.iconsOnly
                 width: root.buttonWidth
                 height: row.height

@@ -57,6 +57,17 @@ function pickRepresentative(windows) {
     return windows[0]
 }
 
+function windowIdentity(win) {
+    if (win === null || win === undefined)
+        return ""
+    if (win.kwin && win.windowId !== undefined && win.windowId !== null)
+        return "k:" + String(win.windowId)
+    if (win.__key !== undefined && win.__key !== null)
+        return "u:" + String(win.__key)
+    // Live toplevel: object string is stable for the same instance.
+    return "w:" + String(win)
+}
+
 function entryFromWindows(windows) {
     var list = windows && windows.length ? windows.slice() : []
     var rep = pickRepresentative(list)
@@ -68,7 +79,7 @@ function entryFromWindows(windows) {
     } else if (rep) {
         title = rep.title ? String(rep.title) : appLabel(rep)
     }
-    return {
+    var entry = {
         kind: count > 1 ? "group" : "window",
         appId: rep && rep.appId ? String(rep.appId) : "",
         title: title,
@@ -76,6 +87,12 @@ function entryFromWindows(windows) {
         windows: list,
         representative: rep
     }
+    // Single buttons must stay unique even when appId matches; groups key by app.
+    if (count > 1)
+        entry.key = groupKey(rep)
+    else
+        entry.key = windowIdentity(rep) || groupKey(rep) || ("t:" + title)
+    return entry
 }
 
 function flatEntries(windows) {
@@ -123,4 +140,91 @@ function buildEntries(windows, options) {
     if (iconsOnly || needsPaging(list.length, bandWidth, minButtonWidth, spacing))
         return combineByApp(list)
     return flatEntries(list)
+}
+
+function entryKey(entry) {
+    if (!entry)
+        return ""
+    if (entry.key !== undefined && entry.key !== null && String(entry.key) !== "")
+        return String(entry.key)
+    var rep = entry.representative
+    if (entry.kind === "group" || (entry.count !== undefined && Number(entry.count) > 1))
+        return groupKey(rep) || ("a:" + String(entry.appId || ""))
+    if (rep)
+        return windowIdentity(rep) || groupKey(rep)
+    if (entry.appId)
+        return "a:" + String(entry.appId)
+    return "t:" + String(entry.title || "")
+}
+
+function stampEntry(entry) {
+    if (!entry)
+        return entry
+    entry.key = entryKey(entry)
+    return entry
+}
+
+function stampEntries(entries) {
+    var out = []
+    var list = Array.isArray(entries) ? entries : []
+    for (var i = 0; i < list.length; ++i)
+        out.push(stampEntry(list[i]))
+    return out
+}
+
+// Diff stamped entry lists into ListModel ops. update = same key, mutate props;
+// remove/insert/reorder cover membership changes without full model reset.
+function diffEntries(prev, next) {
+    var oldList = Array.isArray(prev) ? prev : []
+    var newList = Array.isArray(next) ? next : []
+    var oldIndex = {}
+    for (var i = 0; i < oldList.length; ++i) {
+        var ok = entryKey(oldList[i])
+        if (ok)
+            oldIndex[ok] = i
+    }
+    var newIndex = {}
+    for (var j = 0; j < newList.length; ++j) {
+        var nk = entryKey(newList[j])
+        if (nk)
+            newIndex[nk] = j
+    }
+
+    var removes = []
+    for (var r = oldList.length - 1; r >= 0; --r) {
+        var rk = entryKey(oldList[r])
+        if (!rk || newIndex[rk] === undefined)
+            removes.push({ index: r, key: rk })
+    }
+
+    var inserts = []
+    var updates = []
+    for (var n = 0; n < newList.length; ++n) {
+        var entry = newList[n]
+        var key = entryKey(entry)
+        if (!key)
+            continue
+        if (oldIndex[key] === undefined)
+            inserts.push({ index: n, key: key, entry: entry })
+        else
+            updates.push({ key: key, entry: entry, from: oldIndex[key], to: n })
+    }
+
+    return {
+        removes: removes,
+        inserts: inserts,
+        updates: updates,
+        sameLength: oldList.length === newList.length && removes.length === 0 && inserts.length === 0
+    }
+}
+
+function pageSlice(entries, page, perPage, paging) {
+    var all = Array.isArray(entries) ? entries : []
+    if (!all.length)
+        return []
+    if (!paging)
+        return all.slice()
+    var start = Math.max(0, (Number(page) || 0) * (Number(perPage) || 1))
+    var end = Math.min(all.length, start + Math.max(1, Number(perPage) || 1))
+    return all.slice(start, end)
 }

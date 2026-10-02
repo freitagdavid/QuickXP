@@ -8,8 +8,8 @@ Item {
   property bool selected: false
   property bool hasSubmenu: node && node.kind === "folder"
   property bool separator: node && node.kind === "separator"
-  // Classic Start root uses slightly taller rows; flyouts can stay compact.
-  property int rowHeight: 22
+  // Classic Start / Win2k menu row (~SM_CYMENU); 16px icon + padding.
+  property int rowHeight: 18
 
   signal activated()
   signal hovered()

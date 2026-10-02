@@ -59,9 +59,12 @@ PanelWindow {
     Item {
         id: startButton
 
+        // Tiny top inset = taskbar drag/grip strip; flush to the bottom edge (XP Classic).
         anchors.left: parent.left
         anchors.top: parent.top
         anchors.bottom: parent.bottom
+        anchors.topMargin: Math.max(0, Number(Theme.value("startButton", "contentTop", 2)))
+        anchors.bottomMargin: 0
         clip: true
 
         readonly property int frames: Math.max(1, Number(Theme.value("startButton", "frames", 3)))

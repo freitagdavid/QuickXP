@@ -8,6 +8,9 @@ PopupWindow {
   property var nodes: []
   property Item anchorItem: null
   property var host: null
+  // First cascade from Start is bottom-aligned; each nested level flips.
+  property bool alignBottom: false
+  property int cascadeDepth: 0
 
   visible: false
   color: "transparent"
@@ -18,11 +21,16 @@ PopupWindow {
   property var childMenu: null
 
   readonly property int menuWidth: 200
+  readonly property int itemRowHeight: 18
 
   function openAt(item) {
+    if (childMenu)
+      childMenu.close()
+    openIndex = -1
+    hoverOpen.stop()
+    hoverOpen.pending = -1
     anchorItem = item
     armed = false
-    openIndex = -1
     Qt.callLater(() => {
       visible = true
       armTimer.restart()
@@ -35,6 +43,7 @@ PopupWindow {
     openIndex = -1
     armTimer.stop()
     hoverOpen.stop()
+    hoverOpen.pending = -1
     if (childMenu)
       childMenu.close()
   }
@@ -68,17 +77,37 @@ PopupWindow {
     if (!node || node.kind !== "folder") {
       if (childMenu)
         childMenu.close()
+      openIndex = -1
       return
     }
+    // Only one open flyout at this level.
+    if (childMenu && childMenu.visible && openIndex !== index)
+      childMenu.close()
     const delegate = list.itemAt(index)
     if (!delegate)
       return
     const child = ensureChildMenu()
     if (!child)
       return
+    openIndex = index
+    child.cascadeDepth = popup.cascadeDepth + 1
+    child.alignBottom = !popup.alignBottom
     child.nodes = node.children || []
     child.host = popup.host
     child.openAt(delegate)
+  }
+
+  function requestOpen(index) {
+    if (index < 0)
+      return
+    hoverOpen.pending = index
+    hoverOpen.restart()
+  }
+
+  function requestOpenNow(index) {
+    hoverOpen.stop()
+    hoverOpen.pending = -1
+    openChildFor(index)
   }
 
   Timer {
@@ -92,16 +121,18 @@ PopupWindow {
     interval: 300
     property int pending: -1
     onTriggered: {
-      if (pending < 0)
+      const idx = pending
+      pending = -1
+      if (idx < 0)
         return
-      popup.openIndex = pending
-      popup.openChildFor(pending)
+      popup.openChildFor(idx)
     }
   }
 
+  // Rebind when alignBottom changes between opens.
   anchor.item: anchorItem
-  anchor.edges: Edges.Top | Edges.Right
-  anchor.gravity: Edges.Top | Edges.Right
+  anchor.edges: popup.alignBottom ? (Edges.Bottom | Edges.Right) : (Edges.Top | Edges.Right)
+  anchor.gravity: popup.alignBottom ? (Edges.Bottom | Edges.Right) : (Edges.Top | Edges.Right)
   anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
 
   implicitWidth: menuWidth
@@ -111,6 +142,14 @@ PopupWindow {
     id: frame
     anchors.fill: parent
     implicitHeight: column.implicitHeight + 8
+
+    HoverHandler {
+      // Keep parent Start from dismissing while the pointer is in this flyout.
+      onHoveredChanged: {
+        if (hovered && popup.host && typeof popup.host.pokeSuppress === "function")
+          popup.host.pokeSuppress()
+      }
+    }
 
     Column {
       id: column
@@ -130,23 +169,26 @@ PopupWindow {
           required property int index
 
           node: modelData
-          rowHeight: 22
+          rowHeight: popup.itemRowHeight
           selected: popup.openIndex === index
           onActivated: {
-            if (modelData && modelData.kind === "folder") {
-              hoverOpen.pending = index
-              hoverOpen.interval = 0
-              hoverOpen.restart()
-              hoverOpen.interval = 300
-            } else {
+            if (modelData && modelData.kind === "folder")
+              popup.requestOpenNow(index)
+            else
               popup.activateNode(modelData)
-            }
           }
           onHovered: {
-            hoverOpen.pending = index
-            hoverOpen.restart()
-            if (modelData && modelData.kind !== "folder" && popup.childMenu)
-              popup.childMenu.close()
+            if (!modelData || modelData.kind === "separator")
+              return
+            if (modelData.kind === "folder") {
+              popup.requestOpen(index)
+            } else {
+              hoverOpen.stop()
+              hoverOpen.pending = -1
+              popup.openIndex = -1
+              if (popup.childMenu)
+                popup.childMenu.close()
+            }
           }
         }
       }

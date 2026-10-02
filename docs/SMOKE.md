@@ -11,7 +11,9 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Shell starts (`quickshell`) without QML errors for the active theme
 - [ ] Taskbar paints (Start button, plate, task buttons, tray, clock)
 - [ ] Left-click Start opens classic single-column popup above the button; Esc / click-away dismisses; right-click still opens Properties
-- [ ] Classic Start: blue left banner + beveled gray face; no search box; Programs flyouts cascade
+- [ ] Classic Start: black→blue banner with distro name; beveled gray face; ~18px rows; no search box
+- [ ] Classic Start flyouts: first level bottom-anchored, nested levels alternate; only one open per level; reopen after close works
+- [ ] Start button flush to taskbar bottom with a tiny top drag-bar inset
 - [ ] Classic Start: Documents/Settings/Search open submenus; Help/Run stubs; Log Off / Turn Off Computer confirm (Cancel safe)
 - [ ] Settings → Start Menu: Programs source, highlight-new, personalized menus; Clear highlight / Clear recent
 - [ ] Settings → Start Menu still toggles Programs source after session rows land

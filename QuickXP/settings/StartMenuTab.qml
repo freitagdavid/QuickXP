@@ -70,13 +70,13 @@ Item {
 
           XpCheckBox {
             text: "Highlight newly installed programs"
-            checked: root.draft.startHighlightNew
+            checked: root.draft.startHighlightNew === true
             onToggled: root.draft.startHighlightNew = !root.draft.startHighlightNew
           }
 
           XpCheckBox {
             text: "Use personalized menus (hide rarely used)"
-            checked: root.draft.startPersonalizedMenus
+            checked: root.draft.startPersonalizedMenus === true
             onToggled: root.draft.startPersonalizedMenus = !root.draft.startPersonalizedMenus
           }
 

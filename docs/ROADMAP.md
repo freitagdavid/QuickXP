@@ -17,7 +17,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 - [x] Epic 1 — Classic Start menu (single-column)
 - [x] Epic 2 — XP dual-column Start menu
 - [x] Epic 3 — Vista/7 Start search (jump-list stubs optional later — #82)
-- [ ] Epic 4 — Quick Launch, Show Desktop, and taskbar toolbars
+- [x] Epic 4 — Quick Launch, Show Desktop, and taskbar toolbars
 - [ ] Epic 5 — Taskband (grouping + icon-only landed; height/multi-row/auto-hide/chrome menu remain)
 - [ ] Epic C — Tray system controls (volume mixer, BT, brightness, network, drives, battery)
 - [ ] Epic A — Alt+Tab switcher (adapt quickshell-overview UI; KWin/Hypr backends)
@@ -317,14 +317,14 @@ Only after dual-column exists. Same Start host; add search as a first-class mode
 
 XP-style Quick Launch between Start and the task band, plus other desk-band toolbars.
 
-- **Quick Launch strip** — Small icons; left-click launches; drag-drop to add shortcuts; reorder; remove via context menu. Persist list in config (paths / `.desktop` ids).
-- **Show Desktop** — First (or pinned) Quick Launch item; minimize all / restore (XP/Vista placement); restore prior window states including dialogs where possible (TSK-27).
-- **Settings toggle** — Taskbar tab: show/hide Quick Launch.
-- **Win7 far-right Show Desktop** — Thin tray-edge button when `generation` is win7; desktop peek later (Quick Launch may hide in that mode).
-- **Overflow chevron** — Launchers that do not fit the visible band (BAR-08).
-- **Toolbars beyond Quick Launch** — Desktop, Links, New Toolbar (folder-backed band); Show Text / Show Title; unlocked grippers for resize/relocate within rows (BAR-09–15). Language Bar hook when input subsystem exposes it (BAR-19).
-- **Toolbar enable/disable** — Taskbar Toolbars submenu persists band visibility, order, widths, icon/text/title settings (BAR-20).
-- **Height scaling** — Icons scale with taskbar height unit (Epic 5) while keeping aspect ratio.
+- [x] **Quick Launch strip** — Small icons; left-click launches; drag-drop to add shortcuts; remove via context menu. Persist list in `quickLaunchIds` ([QuickLaunch.qml](../QuickXP/taskbar/QuickLaunch.qml)).
+- [x] **Show Desktop** — QL sentinel + `TasksService.toggleShowDesktop` / bridge snapshot restore (TSK-27).
+- [x] **Settings toggle** — Taskbar tab `showQuickLaunch` drives strip visibility.
+- [x] **Win7 far-right Show Desktop** — Thin tray-edge button when `GenerationPolicy` showDesktop is win7.
+- [x] **Overflow chevron** — Launchers that do not fit open a popup menu (BAR-08).
+- [x] **Toolbars beyond Quick Launch** — Desktop / Links / New Toolbar folder bands; Show Title; unlocked grippers (BAR-09–15). Language Bar stub until input subsystem (BAR-19).
+- [x] **Toolbar enable/disable** — Toolbars context menu toggles Quick Launch + Desktop/Links; New Toolbar folder picker; widths in `taskbarToolbars` (BAR-20).
+- [x] **Height scaling** — QL icon size from taskbar height unit (`QuickLaunchModel.iconSizeForHeight`).
 - **SP3 note** — Stock SP3 has no Address toolbar; do not list it as a default band.
 
 ---

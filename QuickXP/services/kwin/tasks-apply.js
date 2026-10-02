@@ -41,6 +41,10 @@ function applyCommand(command) {
         window.minimized = true
         return
     }
+    if (action === "unminimize") {
+        window.minimized = false
+        return
+    }
     if (action === "close") {
         window.closeWindow()
         return

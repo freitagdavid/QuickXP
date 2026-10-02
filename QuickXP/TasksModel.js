@@ -31,6 +31,10 @@ function formatPreviewRequest(serial, windowId) {
     return "PREVIEW " + String(serial) + " " + id + "\n"
 }
 
+function formatShowDesktop() {
+    return "SHOWDESKTOP\n"
+}
+
 function parsePreviewReply(line) {
     var text = String(line || "").trim()
     if (!text)

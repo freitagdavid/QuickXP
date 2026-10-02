@@ -144,7 +144,46 @@ def parse_stdin_line(line: str) -> dict | None:
         return {"op": "command", "window_id": parts[1], "action": parts[2]}
     if op == "PREVIEW" and len(parts) >= 3:
         return {"op": "preview", "serial": parts[1], "window_id": parts[2]}
+    if op == "SHOWDESKTOP":
+        return {"op": "showdesktop"}
     return None
+
+
+def plan_show_desktop(
+    rows: list, snapshot: list | None
+) -> tuple[list[dict], list[dict] | None]:
+    """Toggle Show Desktop. Returns (apply commands, new_snapshot).
+
+    When snapshot is None: minimize eligible windows and return a snapshot.
+    When snapshot is set: restore prior minimized flags and clear snapshot.
+    """
+    if snapshot is not None:
+        commands: list[dict] = []
+        for item in snapshot:
+            if not isinstance(item, dict):
+                continue
+            wid = str(item.get("id") or "").strip()
+            if not wid:
+                continue
+            was_min = bool(item.get("minimized"))
+            if not was_min:
+                commands.append({"id": wid, "action": "unminimize"})
+        return commands, None
+
+    live = rows if isinstance(rows, list) else []
+    new_snap: list[dict] = []
+    commands = []
+    for row in live:
+        if not isinstance(row, dict):
+            continue
+        wid = str(row.get("id") or "").strip()
+        if not wid:
+            continue
+        minimized = bool(row.get("minimized"))
+        new_snap.append({"id": wid, "minimized": minimized})
+        if not minimized and row.get("minimizable", True) is not False:
+            commands.append({"id": wid, "action": "minimize"})
+    return commands, new_snap
 
 
 def windows_runner_token(window_id: str) -> str:
@@ -160,6 +199,7 @@ def dispatch_stdin_message(
     *,
     on_command=None,
     on_preview=None,
+    on_showdesktop=None,
 ) -> str | None:
     """Route a parsed stdin message. Returns the op name handled, or None."""
     if not isinstance(msg, dict):
@@ -173,6 +213,10 @@ def dispatch_stdin_message(
         if on_preview is not None:
             on_preview(msg.get("serial"), msg.get("window_id"))
         return "preview"
+    if op == "showdesktop":
+        if on_showdesktop is not None:
+            on_showdesktop()
+        return "showdesktop"
     return None
 
 
@@ -214,6 +258,8 @@ if _HAS_DBUS:
             self.script_path = script_path
             self.commands = []
             self._last_windows_text: str | None = None
+            self._last_windows_rows: list = []
+            self._desktop_snapshot: list | None = None
             self._apply_scheduled = False
             self._refreshing: set[str] = set()
             self._refresh_waiters: dict[str, list] = {}
@@ -233,9 +279,15 @@ if _HAS_DBUS:
             if not state_path.exists():
                 atomic_write(state_path, "[]")
                 self._last_windows_text = "[]"
+                self._last_windows_rows = []
             else:
                 try:
                     self._last_windows_text = state_path.read_text()
+                    try:
+                        parsed = json.loads(self._last_windows_text)
+                        self._last_windows_rows = parsed if isinstance(parsed, list) else []
+                    except json.JSONDecodeError:
+                        self._last_windows_rows = []
                 except OSError:
                     self._last_windows_text = None
             self._purge_legacy_previews()
@@ -409,8 +461,11 @@ if _HAS_DBUS:
             except json.JSONDecodeError:
                 rows = []
             if isinstance(rows, list):
+                self._last_windows_rows = rows
                 # Prune orphans only — no background warm of every window.
                 GLib.idle_add(lambda: self._prune_stale_previews(rows) or False)
+            else:
+                self._last_windows_rows = []
             return True
 
         def start_stdin_reader(self) -> bool:
@@ -449,7 +504,19 @@ if _HAS_DBUS:
                 parse_stdin_line(line),
                 on_command=self.Command,
                 on_preview=self._preview_via_stdin,
+                on_showdesktop=self.toggle_show_desktop,
             )
+
+        def toggle_show_desktop(self) -> None:
+            """Minimize all taskbar windows, or restore the prior snapshot."""
+            commands, new_snap = plan_show_desktop(
+                self._last_windows_rows, self._desktop_snapshot
+            )
+            self._desktop_snapshot = new_snap
+            if not commands:
+                return
+            self.commands.extend(commands)
+            self.schedule_apply()
 
         def _preview_via_stdin(self, serial: str, window_id: str) -> None:
             window_id = str(window_id).strip()

@@ -97,12 +97,41 @@ def test_parse_stdin_line():
         "serial": "12",
         "window_id": "{abc}",
     }
+    assert tb.parse_stdin_line("SHOWDESKTOP") == {"op": "showdesktop"}
     assert tb.parse_stdin_line("NOPE") is None
     assert tb.parse_stdin_line("  COMMAND  {abc}  activate  ") == {
         "op": "command",
         "window_id": "{abc}",
         "action": "activate",
     }
+
+
+def test_plan_show_desktop_minimize_and_restore():
+    rows = [
+        {"id": "a", "minimized": False, "minimizable": True},
+        {"id": "b", "minimized": True, "minimizable": True},
+    ]
+    cmds, snap = tb.plan_show_desktop(rows, None)
+    assert snap is not None
+    assert len(snap) == 2
+    assert {"id": "a", "action": "minimize"} in cmds
+    assert all(c["id"] != "b" for c in cmds)
+    restore, cleared = tb.plan_show_desktop(rows, snap)
+    assert cleared is None
+    assert {"id": "a", "action": "unminimize"} in restore
+    assert all(c["id"] != "b" for c in restore)
+
+
+def test_dispatch_showdesktop():
+    hits = []
+    assert (
+        tb.dispatch_stdin_message(
+            tb.parse_stdin_line("SHOWDESKTOP"),
+            on_showdesktop=lambda: hits.append(True),
+        )
+        == "showdesktop"
+    )
+    assert hits == [True]
 
 
 def test_windows_runner_token():
@@ -151,6 +180,7 @@ def test_tasks_apply_js_sync_activate_contract():
     assert "workspace.activeWindow = window" in helper
     assert "function applyCommand" in helper
     assert 'action === "minimize"' in helper
+    assert 'action === "unminimize"' in helper
     assert 'action === "close"' in helper
     # Default branch calls activate(window) for activate and unknown actions.
     assert "activate(window)" in helper

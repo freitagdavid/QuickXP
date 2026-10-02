@@ -1,9 +1,11 @@
 import Quickshell // for PanelWindow
 import QtQuick // for Text
+import QtQuick.Dialogs
 import qs.QuickXP
 import qs.QuickXP.tray
 import qs.QuickXP.settings
 import qs.QuickXP.start
+import "../ToolbarModel.js" as ToolbarModel
 
 PanelWindow {
     id: taskbarWindow
@@ -320,8 +322,25 @@ PanelWindow {
         }
     }
 
-    TaskList {
+    QuickLaunch {
+        id: quickLaunch
         anchors.left: startButton.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: visible ? 2 : 0
+        width: visible ? implicitWidth : 0
+    }
+
+    TaskbarToolbars {
+        id: extraToolbars
+        anchors.left: quickLaunch.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: visible && width > 0 ? 2 : 0
+    }
+
+    TaskList {
+        anchors.left: extraToolbars.right
         anchors.right: tray.left
         anchors.top: parent.top
         anchors.bottom: parent.bottom
@@ -333,9 +352,158 @@ PanelWindow {
 
     Tray {
         id: tray
+        anchors.right: showDesktopEdge.visible ? showDesktopEdge.left : parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: showDesktopEdge.visible ? 0 : 0
+    }
+
+    // Win7 far-right Show Desktop (GenerationPolicy showDesktop === win7).
+    Rectangle {
+        id: showDesktopEdge
+        readonly property bool active: String(GenerationPolicy.forItem("showDesktop") || "") === "win7"
+        visible: active
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
+        width: visible ? 6 : 0
+        color: Qt.rgba(1, 1, 1, area.containsMouse ? 0.35 : 0.15)
+
+        MouseArea {
+            id: area
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: TasksService.toggleShowDesktop()
+        }
+    }
+
+    // Empty-band Toolbars context menu (Epic 4 / BAR-20 stub).
+    MouseArea {
+        anchors.fill: parent
+        z: -1
+        acceptedButtons: Qt.RightButton
+        onClicked: (mouse) => {
+            if (mouse.button === Qt.RightButton)
+                toolbarsMenu.open()
+        }
+    }
+
+    function homePath(leaf: string): string {
+        const home = String(Quickshell.env("HOME") || "")
+        if (!home)
+            return leaf
+        return home + "/" + leaf
+    }
+
+    function toolbarChecked(id: string): bool {
+        return ToolbarModel.isVisible(Config.options.taskbarToolbars, id)
+    }
+
+    function toggleFolderToolbar(id: string, path: string) {
+        Config.options.taskbarToolbars = ToolbarModel.toggleFolder(
+            Config.options.taskbarToolbars, id, path, 120)
+    }
+
+    FileDialog {
+        id: newToolbarDialog
+        title: "New Toolbar — Choose Folder"
+        fileMode: FileDialog.OpenDirectory
+        onAccepted: {
+            const url = String(selectedFile || "")
+            let path = url
+            if (path.startsWith("file://"))
+                path = path.slice(7)
+            if (!path)
+                return
+            const parts = path.split("/")
+            const name = parts[parts.length - 1] || "Toolbar"
+            Config.options.taskbarToolbars = ToolbarModel.upsertFolder(
+                Config.options.taskbarToolbars, name, path, 140)
+        }
+    }
+
+    PopupWindow {
+        id: toolbarsMenu
+        visible: false
+        color: Theme.color("menu", "white")
+        grabFocus: true
+        implicitWidth: 200
+        implicitHeight: 148
+
+        function open() {
+            toolbarsMenu.anchor.item = startButton
+            visible = true
+        }
+
+        anchor.item: startButton
+        anchor.edges: Edges.Top | Edges.Left
+        anchor.gravity: Edges.Bottom | Edges.Right
+
+        Column {
+            anchors.fill: parent
+            anchors.margins: 6
+            spacing: 4
+            Text {
+                text: "Toolbars"
+                font.bold: true
+                font.pixelSize: 11
+                font.family: Theme.value("fonts", "ui", "Tahoma")
+            }
+            Text {
+                text: (Config.options.showQuickLaunch ? "✓ " : "  ") + "Quick Launch"
+                font.pixelSize: 11
+                font.family: Theme.value("fonts", "ui", "Tahoma")
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        Config.options.showQuickLaunch = !Config.options.showQuickLaunch
+                        toolbarsMenu.visible = false
+                    }
+                }
+            }
+            Text {
+                text: (taskbarWindow.toolbarChecked("Desktop") ? "✓ " : "  ") + "Desktop"
+                font.pixelSize: 11
+                font.family: Theme.value("fonts", "ui", "Tahoma")
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        taskbarWindow.toggleFolderToolbar("Desktop", taskbarWindow.homePath("Desktop"))
+                        toolbarsMenu.visible = false
+                    }
+                }
+            }
+            Text {
+                text: (taskbarWindow.toolbarChecked("Links") ? "✓ " : "  ") + "Links"
+                font.pixelSize: 11
+                font.family: Theme.value("fonts", "ui", "Tahoma")
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        taskbarWindow.toggleFolderToolbar("Links", taskbarWindow.homePath("Links"))
+                        toolbarsMenu.visible = false
+                    }
+                }
+            }
+            Text {
+                text: "  New Toolbar..."
+                font.pixelSize: 11
+                font.family: Theme.value("fonts", "ui", "Tahoma")
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        toolbarsMenu.visible = false
+                        newToolbarDialog.open()
+                    }
+                }
+            }
+            Text {
+                text: "  Language Bar"
+                color: "#808080"
+                font.pixelSize: 11
+                font.family: Theme.value("fonts", "ui", "Tahoma")
+            }
+        }
     }
 
     implicitHeight: Config.options.taskbarHeight > 0

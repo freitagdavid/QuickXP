@@ -31,6 +31,10 @@ TestCase {
     compare(TasksModel.formatPreviewRequest(1, ""), "")
   }
 
+  function test_formatShowDesktop() {
+    compare(TasksModel.formatShowDesktop(), "SHOWDESKTOP\n")
+  }
+
   function test_parsePreviewReply() {
     const hit = TasksModel.parsePreviewReply("PREVIEW 3 /tmp/x.png")
     compare(hit.serial, 3)

@@ -18,6 +18,7 @@ ShellRoot {
   readonly property var startPersonalizeStore: StartPersonalizeStore
   readonly property var startPinStore: StartPinStore
   readonly property var startMfuStore: StartMfuStore
+  readonly property var quickLaunchStore: QuickLaunchStore
   // Start menu registry + Meta/Windows key bridge.
   readonly property var startService: StartService
   // Single TasksBridge (not per-screen TaskList) for activate/preview IPC.

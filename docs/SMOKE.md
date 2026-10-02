@@ -35,7 +35,9 @@ Not run in CI yet (see GitHub #44). Print this list: `./scripts/smoke-notes.sh`.
 - [ ] Run dialog (Epic R) — Win+R / Start → Run when implemented
 - [ ] Shell hotkeys (Epic H) — Win, Win+R/E/D/L, etc. when implemented
 - [ ] Match window borders / Aurorae: Apply with toggle on → KWin titlebar updates to `quickxp-<slug>`; toggle off → KWin unchanged; Theme Sample shows titlebar preview; Regenerate borders works for Luna
-- [ ] Settings → Taskbar → Icons only: Apply → task buttons shrink to icons (no titles)
+- [ ] Quick Launch: strip between Start and tasks when Settings → Show Quick Launch is on; Show Desktop icon minimizes/restores; launch an app icon; overflow » when many pins; Win7 generation shows thin tray-edge Show Desktop
+- [ ] Taskbar Toolbars menu (right-click band): toggle Quick Launch; enable Desktop folder band; unlocked gripper resizes band width
+- [ ] Settings → Taskbar → Icons only: Apply → task buttons shrink to icons (no titles); Quick Launch icons scale with height
 - [ ] Settings → Taskbar → Group similar (labels): many windows of one app combine only when the band is full; click group → title list
 - [ ] Settings → Taskbar → Icon taskbar preset: always-combined icons; click group → thumbnail strip
 - [ ] Taskband stability: switch focus or let a browser change its title — task buttons should not flicker or reload chrome; labels/focus frame update in place

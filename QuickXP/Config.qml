@@ -57,6 +57,11 @@ Singleton {
       property bool taskbarLocked: false
       property bool autoHide: false
       property bool showQuickLaunch: true
+      // Quick Launch items: JSON string array of desktop ids + "quickxp:show-desktop".
+      property string quickLaunchIds: "[]"
+      property bool quickLaunchSeeded: false
+      // Extra taskbar toolbars (JSON): [{id, kind, path, showText, showTitle, width, visible}]
+      property string taskbarToolbars: "[]"
       property bool matchWindowBorders: true
       property string lastSettingsTab: "theme"
       // Classic Start Programs tree: xdgMenu | categories

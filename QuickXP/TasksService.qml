@@ -53,6 +53,12 @@ Singleton {
         bridge.write(line)
     }
 
+    function toggleShowDesktop() {
+        if (!bridge.running)
+            return
+        bridge.write(TasksModel.formatShowDesktop())
+    }
+
     function onBridgeStdout(data) {
         const line = String(data).trim()
         if (!line)

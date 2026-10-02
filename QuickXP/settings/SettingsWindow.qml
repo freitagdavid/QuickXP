@@ -119,7 +119,8 @@ FloatingWindow {
     { id: "start", title: "Start Menu", enabled: true },
     { id: "desktop", title: "Desktop", enabled: false },
     { id: "notify", title: "Notification Area", enabled: false },
-    { id: "about", title: "About", enabled: false }
+    { id: "about", title: "About", enabled: false },
+    { id: "debug", title: "Debugging", enabled: true }
   ]
 
   function selectTab(tabId: string) {
@@ -269,6 +270,10 @@ FloatingWindow {
 
             PlaceholderTab {
               message: "QuickXP Settings\nTheme folder: " + Quickshell.shellPath("QuickXP/themes")
+            }
+
+            DebuggingTab {
+              draft: window.draft
             }
           }
         }

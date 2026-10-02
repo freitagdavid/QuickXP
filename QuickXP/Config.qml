@@ -71,6 +71,19 @@ Singleton {
       property int startPersonalizedThreshold: 1
       // JSON object map desktopId -> launch count
       property string startAppUsage: "{}"
+      // Debugging: open Start on load and skip hover/grab dismiss.
+      property bool debugKeepStartMenuOpen: false
+      // XP Start right-column place visibility: link | menu | hidden
+      property string startPlaceDocuments: "link"
+      property string startPlaceRecentDocuments: "menu"
+      property string startPlacePictures: "link"
+      property string startPlaceMusic: "link"
+      property string startPlaceComputer: "link"
+      property string startPlaceNetwork: "link"
+      property string startPlaceControlPanel: "link"
+      property string startPlaceConnectTo: "link"
+      property string startPlacePrinters: "link"
+      property string startPlaceAdminTools: "menu"
 
       // Per-feature generation overrides. Empty string = use shell generation.
       property JsonObject generationOverrides: JsonObject {

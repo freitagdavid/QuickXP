@@ -149,6 +149,70 @@ function classicSessionItems(userName) {
   ]
 }
 
+// XP dual-column right-column places. visibility: "link" | "menu" | "hidden".
+function xpPlaceVisibility(value, fallback) {
+  const raw = String(value === undefined || value === null ? "" : value).trim().toLowerCase()
+  if (raw === "link" || raw === "menu" || raw === "hidden")
+    return raw
+  return fallback === undefined ? "link" : fallback
+}
+
+function xpPlaceNode(id, label, icon, mnemonic, visibility, children, bold) {
+  const mode = xpPlaceVisibility(visibility, "link")
+  if (mode === "hidden")
+    return null
+  if (mode === "menu") {
+    const node = folderNode(id, label, icon, children || [], mnemonic)
+    node.bold = !!bold
+    node.placeMode = "menu"
+    return node
+  }
+  const node = actionNode(id, label, icon, mnemonic)
+  node.bold = !!bold
+  node.placeMode = "link"
+  return node
+}
+
+// opts: { documents, recentDocuments, pictures, music, computer, network,
+//         controlPanel, connectTo, printers, adminTools, recentNodes, adminChildren }
+function xpPlacesItems(opts) {
+  const o = opts && typeof opts === "object" ? opts : {}
+  const recent = Array.isArray(o.recentNodes) ? o.recentNodes : []
+  const adminKids = Array.isArray(o.adminChildren) ? o.adminChildren : []
+  const rows = []
+
+  function push(node) {
+    if (node)
+      rows.push(node)
+  }
+
+  push(xpPlaceNode("documents", "My Documents", "folder-documents", "d",
+    o.documents, [], true))
+  push(xpPlaceNode("recent-documents", "My Recent Documents", "document-open-recent", "e",
+    o.recentDocuments !== undefined ? o.recentDocuments : "menu", recent, false))
+  push(xpPlaceNode("pictures", "My Pictures", "folder-pictures", "p",
+    o.pictures, [], false))
+  push(xpPlaceNode("music", "My Music", "folder-music", "m",
+    o.music, [], false))
+  push(xpPlaceNode("computer", "My Computer", "computer", "c",
+    o.computer, [], true))
+  push(xpPlaceNode("network", "My Network Places", "network-workgroup", "o",
+    o.network !== undefined ? o.network : "link", [], false))
+
+  rows.push(separatorNode("sep-places"))
+
+  push(xpPlaceNode("control-panel", "Control Panel", "preferences-system", "t",
+    o.controlPanel, [], false))
+  push(xpPlaceNode("connect-to", "Connect To", "network-wired", "n",
+    o.connectTo !== undefined ? o.connectTo : "link", [], false))
+  push(xpPlaceNode("printers", "Printers and Faxes", "printer", "f",
+    o.printers !== undefined ? o.printers : "link", [], false))
+  push(xpPlaceNode("admin-tools", "Administrative Tools", "applications-system", "a",
+    o.adminTools !== undefined ? o.adminTools : "menu", adminKids, false))
+
+  return rows
+}
+
 function isFolder(node) {
   return node && node.kind === "folder"
 }

@@ -5,16 +5,22 @@ import qs.QuickXP
 import qs.QuickXP.controls
 import qs.QuickXP.settings
 import "StartMenuLayout.js" as StartMenuLayout
+import "StartPopupPolicy.js" as StartPopupPolicy
 
 // Start popup host — Classic single-column or XP dual-column via GenerationPolicy.
 PopupWindow {
   id: host
 
   property Item anchorItem: null
+  // Disambiguate multi-monitor + PersistentProperties across hot reload.
+  property string persistKey: "default"
+
+  reloadableId: "quickxp-start-popup-" + persistKey
 
   visible: false
   color: "transparent"
-  grabFocus: true
+  // grabFocus dismisses by setting visible=false (bypasses close()). Off while debugging.
+  grabFocus: StartPopupPolicy.wantGrabFocus(host.keepOpen)
 
   property bool armed: false
   property bool suppressDismiss: false
@@ -26,6 +32,14 @@ PopupWindow {
   // (vista/win7 keep XP chrome until Epic 3 search Start).
   readonly property bool useClassicStart: StartMenuLayout.useClassic(GenerationPolicy.forItem("startMenu"))
   readonly property Item activeMenu: useClassicStart ? classicMenu : xpMenu
+  readonly property bool keepOpen: StartPopupPolicy.keepOpenEnabled(Config.options.debugKeepStartMenuOpen)
+
+  PersistentProperties {
+    id: persist
+    reloadableId: "quickxp-start-popup-state-" + host.persistKey
+    property bool wantOpen: false
+    onLoaded: host.syncDebugOpen()
+  }
 
   function pokeSuppress() {
     suppressDismiss = true
@@ -35,21 +49,39 @@ PopupWindow {
   function open() {
     if (anchorItem === null)
       return
+    persist.wantOpen = true
     armed = false
     suppressDismiss = false
     activeMenu.closeSubmenus()
     Qt.callLater(() => {
-      visible = true
-      activeMenu.resetFocus()
-      armTimer.restart()
-      if (host.useClassicStart)
-        classicFocus.forceActiveFocus()
-      else
-        xpFocus.forceActiveFocus()
+      // grabFocus changes only apply after hide→show.
+      if (host.visible && host.keepOpen && host.grabFocus) {
+        host.visible = false
+        Qt.callLater(host._showNow)
+        return
+      }
+      host._showNow()
     })
   }
 
-  function close() {
+  function _showNow() {
+    if (anchorItem === null)
+      return
+    visible = true
+    activeMenu.resetFocus()
+    armTimer.restart()
+    if (host.useClassicStart)
+      classicFocus.forceActiveFocus()
+    else
+      xpFocus.forceActiveFocus()
+  }
+
+  // force=true bypasses the Debugging "keep open" latch (Start button toggle).
+  function close(force) {
+    if (!StartPopupPolicy.allowClose(host.keepOpen, force))
+      return
+    if (force === true)
+      persist.wantOpen = false
     activeMenu.closeSubmenus()
     visible = false
     armed = false
@@ -58,9 +90,67 @@ PopupWindow {
 
   function toggle() {
     if (visible)
-      close()
+      close(true)
     else
       open()
+  }
+
+  function syncDebugOpen() {
+    if (!host.keepOpen)
+      return
+    persist.wantOpen = true
+    if (!visible)
+      open()
+  }
+
+  function reclaimIfStolen() {
+    if (!StartPopupPolicy.shouldReclaim(host.keepOpen, persist.wantOpen, host.visible))
+      return
+    reopenTimer.restart()
+  }
+
+  Component.onCompleted: Qt.callLater(syncDebugOpen)
+
+  onKeepOpenChanged: {
+    if (keepOpen) {
+      persist.wantOpen = true
+      if (visible) {
+        visible = false
+        Qt.callLater(open)
+      } else {
+        open()
+      }
+    }
+  }
+
+  onVisibleChanged: {
+    if (!visible)
+      reclaimIfStolen()
+  }
+
+  Connections {
+    target: Config
+    function onReadyChanged() {
+      if (Config.ready)
+        host.syncDebugOpen()
+    }
+  }
+
+  Connections {
+    target: Config.options
+    function onDebugKeepStartMenuOpenChanged() {
+      if (host.keepOpen)
+        host.syncDebugOpen()
+    }
+  }
+
+  Timer {
+    id: reopenTimer
+    interval: 50
+    onTriggered: {
+      if (host.keepOpen && persist.wantOpen && !host.visible)
+        host.open()
+    }
   }
 
   function runAction(action) {
@@ -74,9 +164,59 @@ PopupWindow {
       docsProc.running = true
       return
     }
+    if (id === "pictures") {
+      close()
+      openUserDir("PICTURES", "Pictures")
+      return
+    }
+    if (id === "music") {
+      close()
+      openUserDir("MUSIC", "Music")
+      return
+    }
+    if (id === "computer") {
+      close()
+      uriProc.command = ["xdg-open", "computer:///"]
+      uriProc.running = true
+      return
+    }
+    if (id === "network") {
+      close()
+      uriProc.command = ["xdg-open", "network:///"]
+      uriProc.running = true
+      return
+    }
+    if (id === "control-panel") {
+      close()
+      Settings.open("theme")
+      return
+    }
     if (id === "settings") {
       close()
       Settings.open("start")
+      return
+    }
+    if (id === "connect-to") {
+      close()
+      stubBox.title = "Connect To"
+      stubBox.open("Network connections UI will expand later.", false)
+      return
+    }
+    if (id === "printers") {
+      close()
+      stubBox.title = "Printers and Faxes"
+      stubBox.open("Printers settings will expand later.", false)
+      return
+    }
+    if (id === "admin-tools") {
+      close()
+      stubBox.title = "Administrative Tools"
+      stubBox.open("Administrative Tools flyout contents will expand later.", false)
+      return
+    }
+    if (id === "recent-documents") {
+      close()
+      openUserDir("DOCUMENTS", "Documents")
       return
     }
     if (id === "user-tile") {
@@ -129,6 +269,16 @@ PopupWindow {
     uriProc.running = true
   }
 
+  function openUserDir(dirName, fallback) {
+    const name = String(dirName || "DOCUMENTS")
+    const fb = String(fallback || "Documents")
+    xdgUserDirProc.command = [
+      "sh", "-c",
+      "xdg-open \"$(xdg-user-dir " + name + " 2>/dev/null || echo \"$HOME/" + fb + "\")\""
+    ]
+    xdgUserDirProc.running = true
+  }
+
   function runSessionAction(action) {
     const act = String(action || "")
     if (!act)
@@ -163,6 +313,15 @@ PopupWindow {
     ]
     stderr: SplitParser {
       onRead: data => console.warn("QuickXP Start Documents:", data.trim())
+    }
+  }
+
+  Process {
+    id: xdgUserDirProc
+    running: false
+    command: ["true"]
+    stderr: SplitParser {
+      onRead: data => console.warn("QuickXP Start user-dir:", data.trim())
     }
   }
 
@@ -218,6 +377,8 @@ PopupWindow {
     HoverHandler {
       enabled: host.useClassicStart
       onHoveredChanged: {
+        if (!StartPopupPolicy.allowAutoClose(host.keepOpen))
+          return
         if (!host.armed || hovered || host.suppressDismiss)
           return
         if (classicMenu.submenuOpen)
@@ -261,6 +422,8 @@ PopupWindow {
     HoverHandler {
       enabled: !host.useClassicStart
       onHoveredChanged: {
+        if (!StartPopupPolicy.allowAutoClose(host.keepOpen))
+          return
         if (!host.armed || hovered || host.suppressDismiss)
           return
         if (xpMenu.submenuOpen)

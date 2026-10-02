@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import qs.QuickXP
 
-// XP dual-column Start — Luna STARTPANEL chrome (#69); content tickets fill columns.
+// XP dual-column Start — Luna STARTPANEL chrome; right places (#73).
 Item {
   id: root
 
@@ -17,14 +17,25 @@ Item {
   width: leftW + rightW + 4
   implicitHeight: userBar.height + bodyH + 2
 
-  readonly property bool submenuOpen: false
+  readonly property bool submenuOpen: rightCol.submenuOpen
 
-  function closeSubmenus() {}
-  function resetFocus() {}
+  function closeSubmenus() {
+    rightCol.closeSubmenus()
+  }
+
+  function resetFocus() {
+    rightCol.focusIndex = -1
+  }
+
   function handleKey(event) {
     if (!event)
       return
     event.accepted = false
+  }
+
+  // Forward activateNode for StartSubmenu hosts nested under places.
+  function activateNode(node) {
+    rightCol.activateNode(node)
   }
 
   Rectangle {
@@ -42,11 +53,6 @@ Item {
       id: userBar
       width: parent.width
       host: root.host
-      onTileActivated: {
-        if (!root.host)
-          return
-        // Host maps user-tile → stub until account UI exists.
-      }
     }
 
     Row {

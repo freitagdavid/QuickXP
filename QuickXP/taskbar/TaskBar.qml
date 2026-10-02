@@ -11,6 +11,7 @@ PanelWindow {
     // Injected by Variants over Quickshell.screens
     required property var modelData
     screen: modelData
+    reloadableId: "quickxp-taskbar-" + String(modelData && modelData.name ? modelData.name : "default")
 
     anchors {
         bottom: true
@@ -309,6 +310,9 @@ PanelWindow {
         StartPopupHost {
             id: startPopup
             anchorItem: startButton
+            persistKey: String(taskbarWindow.modelData && taskbarWindow.modelData.name
+                               ? taskbarWindow.modelData.name
+                               : "default")
         }
     }
 

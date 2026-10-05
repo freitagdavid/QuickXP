@@ -15,11 +15,17 @@ Item {
   readonly property var sink: Pipewire.defaultAudioSink
   readonly property var source: Pipewire.defaultAudioSource
   readonly property bool win7Chrome: String(GenerationPolicy.shell || "") === "win7"
+  // Only bind stream/link/source objects while the mixer is open. Keeping
+  // PwNodeLinkTracker + per-app PwObjectTrackers alive always causes
+  // quickshell "no global N any more" spam as short-lived PW nodes die.
+  readonly property bool mixerOpen: mixer.visible
   implicitWidth: volIcon.width
   width: implicitWidth
   height: parent ? parent.height : 30
 
   readonly property var sinkList: {
+    if (!root.mixerOpen)
+      return []
     const model = Pipewire.nodes
     const out = []
     if (!model || !model.values)
@@ -34,19 +40,22 @@ Item {
   }
 
   readonly property int appCount: {
+    if (!root.mixerOpen)
+      return 0
     const g = linkTracker.linkGroups
     if (!g || !g.values)
       return 0
     return g.values.length
   }
 
+  // Tray icon only needs the default sink's mute/volume.
   PwObjectTracker {
-    objects: root.source ? [root.sink, root.source] : (root.sink ? [root.sink] : [])
+    objects: root.sink ? [root.sink] : []
   }
 
   PwNodeLinkTracker {
     id: linkTracker
-    node: Pipewire.defaultAudioSink
+    node: root.mixerOpen ? Pipewire.defaultAudioSink : null
   }
 
   function iconName(): string {
@@ -148,6 +157,7 @@ Item {
     MixerEntry {
       width: parent.width
       node: root.sink
+      trackNode: root.mixerOpen
       showRoute: false
     }
 
@@ -246,6 +256,7 @@ Item {
       visible: !!root.source
       width: parent.width
       node: root.source
+      trackNode: root.mixerOpen
       showRoute: false
     }
   }

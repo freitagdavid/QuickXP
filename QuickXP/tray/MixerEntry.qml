@@ -10,16 +10,18 @@ Item {
   required property var node
   property var sinkNodes: []
   property bool showRoute: false
+  property bool trackNode: true
   property int rowHeight: 44
 
   width: parent ? parent.width : 240
   height: showRoute ? rowHeight + 22 : rowHeight
 
   PwObjectTracker {
-    objects: root.node ? [root.node] : []
+    // Skip destroyed/unready nodes — binding them triggers Pipewire loop warnings.
+    objects: (root.trackNode && root.node && root.node.ready) ? [root.node] : []
   }
 
-  readonly property bool ready: !!(node && node.audio)
+  readonly property bool ready: !!(node && node.ready && node.audio)
 
   Column {
     anchors.fill: parent

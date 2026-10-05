@@ -78,9 +78,18 @@ PopupWindow {
   }
 
   function seedFromCache() {
-    // Do not invent Image sources for paths that may not exist yet — Qt logs
-    // "Cannot open" for missing PNGs. Cards fill in via PREVIEW replies on hover.
+    // Paths are filled only after bridge PREVIEW replies (file is known to exist).
     return ({})
+  }
+
+  function requestAllPreviews() {
+    if (!visible || !windows || taskList === null)
+      return
+    for (let i = 0; i < windows.length; ++i) {
+      const win = windows[i]
+      if (win && win.kwin && win.windowId)
+        requestCardPreview(i, String(win.windowId))
+    }
   }
 
   function open() {
@@ -94,6 +103,9 @@ PopupWindow {
     Qt.callLater(() => {
       visible = true
       armTimer.restart()
+      // Thumbnails used to seed from disk cache; request every card as soon as
+      // the strip opens so grouped peeks aren't blank until each card is hovered.
+      requestAllPreviews()
     })
   }
 
@@ -104,6 +116,11 @@ PopupWindow {
     armTimer.stop()
     previews = ({})
     previewSerials = ({})
+  }
+
+  onWindowsChanged: {
+    if (visible)
+      Qt.callLater(requestAllPreviews)
   }
 
   function requestCardPreview(index, windowId) {

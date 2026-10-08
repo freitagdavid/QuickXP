@@ -139,12 +139,17 @@ def fit_glyph(glyph: Image.Image, box_w: int, box_h: int) -> Image.Image:
 
 
 def _opacity_unit(value: int) -> float:
-    """DWM opacity records are percentages. Values above 100 are 0–255."""
+    """Colorization opacity is a percentage. Values above 100 are 0–255."""
     if value <= 0:
         return 0.0
     if value <= 100:
         return value / 100.0
     return min(1.0, value / 255.0)
+
+
+def _frame_opacity_unit(value: int) -> float:
+    """TMT_OPACITY (2430) is 0–255, including values that also fit in a percent."""
+    return max(0.0, min(1.0, int(value) / 255.0))
 
 
 def glass_plate_alpha(
@@ -154,6 +159,8 @@ def glass_plate_alpha(
 ) -> int | None:
     """Plate alpha from the loaded colorization alpha and DWM opacities.
 
+    ``opacity`` is the DWMWindow frame property (0–255). ``colorization_opacity``
+    is how much of the colorization color to apply (percent, or 0–255 above 100).
     Returns None when the theme did not supply any of them.
     """
     if color_alpha is None and opacity is None and colorization_opacity is None:
@@ -161,7 +168,7 @@ def glass_plate_alpha(
     base = 255 if color_alpha is None else max(0, min(255, int(color_alpha)))
     factor = 1.0
     if opacity is not None:
-        factor *= _opacity_unit(int(opacity))
+        factor *= _frame_opacity_unit(int(opacity))
     if colorization_opacity is not None:
         factor *= _opacity_unit(int(colorization_opacity))
     return max(0, min(255, int(round(base * factor))))

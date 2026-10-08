@@ -37,6 +37,13 @@ def _part_payload(part: dict, image_name: str) -> dict:
         payload["sizingMargins"] = list(part["sizingMargins"])
     if part.get("contentMargins"):
         payload["contentMargins"] = list(part["contentMargins"])
+    states = part.get("states") if isinstance(part.get("states"), dict) else {}
+    active = states.get("1") or states.get(1) or {}
+    if isinstance(active, dict) and active.get("opacity") not in (None, ""):
+        try:
+            payload["opacity"] = max(0.0, min(1.0, int(active["opacity"]) / 255.0))
+        except (TypeError, ValueError):
+            pass
     return payload
 
 
@@ -131,10 +138,15 @@ def _write_metrics(path: Path, metrics: dict) -> None:
 
 
 def _write_mask(path: Path, metrics: dict) -> None:
-    del metrics
-    # Matches Decoration.cornerRadius in the QML template. Corner tiles are
-    # quarter-discs so KWin clips the window to the same curve as the plate.
-    radius = 8
+    # Corner radius matches the frame thickness so the curve stays in the border.
+    radius = max(
+        1,
+        min(
+            int(metrics.get("borderLeft") or 1),
+            int(metrics.get("borderRight") or 1),
+            int(metrics.get("borderBottom") or 1),
+        ),
+    )
     mid = 40
     span = radius * 2 + mid
     far = radius + mid

@@ -6,8 +6,8 @@ const metrics = {
   "borderBottom": 5,
   "iconSize": 16,
   "plateColor": "#409EFE",
-  "activePlateAlpha": 0.21568627450980393,
-  "inactivePlateAlpha": 0.06666666666666667,
+  "activePlateAlpha": 0.08627450980392157,
+  "inactivePlateAlpha": 0.027450980392156862,
   "titleActiveText": "#000000",
   "titleInactiveText": "#544E43",
   "glowColor": "#FFFFFF",
@@ -465,7 +465,8 @@ const metrics = {
       "width": 228,
       "height": 350,
       "frameWidth": 228,
-      "frameHeight": 175
+      "frameHeight": 175,
+      "opacity": 0.29411764705882354
     },
     "35": {
       "image": "images/35.png",
@@ -549,7 +550,8 @@ const metrics = {
       "width": 802,
       "height": 604,
       "frameWidth": 802,
-      "frameHeight": 604
+      "frameHeight": 604,
+      "opacity": 0.35294117647058826
     },
     "41": {
       "image": "images/41.png",
@@ -571,7 +573,8 @@ const metrics = {
       "width": 228,
       "height": 350,
       "frameWidth": 228,
-      "frameHeight": 175
+      "frameHeight": 175,
+      "opacity": 0.29411764705882354
     },
     "43": {
       "image": "images/43.png",

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56">
-  <path id="mask-topleft" d="M8,0 A8,8 0 0 0 0,8 L8,8 Z" fill="#ffffff"/>
-  <rect id="mask-top" x="8" width="40" height="8" fill="#ffffff"/>
-  <path id="mask-topright" d="M48,0 A8,8 0 0 1 56,8 L48,8 Z" fill="#ffffff"/>
-  <rect id="mask-left" y="8" width="8" height="40" fill="#ffffff"/>
-  <rect id="mask-center" x="8" y="8" width="40" height="40" fill="#ffffff"/>
-  <rect id="mask-right" x="48" y="8" width="8" height="40" fill="#ffffff"/>
-  <path id="mask-bottomleft" d="M0,48 A8,8 0 0 0 8,56 L8,48 Z" fill="#ffffff"/>
-  <rect id="mask-bottom" x="8" y="48" width="40" height="8" fill="#ffffff"/>
-  <path id="mask-bottomright" d="M56,48 A8,8 0 0 0 48,56 L48,48 Z" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+  <path id="mask-topleft" d="M5,0 A5,5 0 0 0 0,5 L5,5 Z" fill="#ffffff"/>
+  <rect id="mask-top" x="5" width="40" height="5" fill="#ffffff"/>
+  <path id="mask-topright" d="M45,0 A5,5 0 0 1 50,5 L45,5 Z" fill="#ffffff"/>
+  <rect id="mask-left" y="5" width="5" height="40" fill="#ffffff"/>
+  <rect id="mask-center" x="5" y="5" width="40" height="40" fill="#ffffff"/>
+  <rect id="mask-right" x="45" y="5" width="5" height="40" fill="#ffffff"/>
+  <path id="mask-bottomleft" d="M0,45 A5,5 0 0 0 5,50 L5,45 Z" fill="#ffffff"/>
+  <rect id="mask-bottom" x="5" y="45" width="40" height="5" fill="#ffffff"/>
+  <path id="mask-bottomright" d="M50,45 A5,5 0 0 0 45,50 L45,45 Z" fill="#ffffff"/>
 </svg>

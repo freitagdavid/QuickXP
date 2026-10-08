@@ -200,8 +200,8 @@ def test_narrow_caption_strips_stretch_to_widest_button(tmp_path: Path):
 
 
 def test_glass_plate_alpha_uses_loaded_opacities():
-    # 69 * 80% * 100% from a loaded colorization dword and DWM opacities.
-    assert aurorae.glass_plate_alpha(69, 80, 100) == 55
+    # 69 * (80/255) * 100% from a loaded colorization dword and DWM opacities.
+    assert aurorae.glass_plate_alpha(69, 80, 100) == 22
     assert aurorae.glass_plate_alpha(None, None, None) is None
 
 

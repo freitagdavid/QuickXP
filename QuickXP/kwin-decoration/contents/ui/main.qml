@@ -15,9 +15,13 @@ Decoration {
     readonly property int captionH: metrics.borderTop
     readonly property color plate: metrics.plateColor || "#409EFE"
     readonly property real plateAlpha: (root.active ? metrics.activePlateAlpha : metrics.inactivePlateAlpha) || 0
-    // Aero's DWM corner. The atlas outline sprites are larger than this and
-    // cover the icon and caption buttons, so the curve is drawn here instead.
-    readonly property int cornerRadius: 8
+    // Keep the curve inside the frame. A larger radius than the border leaves
+    // a gap where the side strip and the bottom cap do not meet.
+    readonly property int cornerRadius: Math.max(1, Math.min(
+        metrics.borderLeft || 1,
+        metrics.borderRight || 1,
+        metrics.borderBottom || 1
+    ))
 
     Component.onCompleted: {
         borders.left = Qt.binding(function() { return Theme.metrics.borderLeft })
@@ -104,6 +108,8 @@ Decoration {
         height: root.captionH
         clip: true
         visible: Theme.roleId("reflection") !== 0
+        readonly property var entry: root.frameOf(Theme.roleId("reflection"))
+        opacity: entry && entry.opacity !== undefined ? entry.opacity : 1
         Image {
             source: root.partUrl(Theme.roleId("reflection"))
             smooth: true
@@ -123,6 +129,7 @@ Decoration {
         imageSource: root.partUrl(highlightId)
         frameCount: entry ? entry.imageCount : 1
         frameIndex: 0
+        opacity: entry && entry.opacity !== undefined ? entry.opacity : 1
     }
 
         Item {
@@ -150,8 +157,9 @@ Decoration {
         Row {
             id: buttons
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
+            // anchors.verticalCenter: parent.verticalCenter
             spacing: 0
+            // anchors.bottomMargin: 10
 
             CaptionButton {
                 buttonType: DecorationOptions.DecorationButtonMinimize

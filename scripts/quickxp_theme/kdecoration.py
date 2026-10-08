@@ -131,25 +131,27 @@ def _write_metrics(path: Path, metrics: dict) -> None:
 
 
 def _write_mask(path: Path, metrics: dict) -> None:
-    left = max(1, int(metrics["borderLeft"]))
-    right = max(1, int(metrics["borderRight"]))
-    top = max(1, int(metrics["borderTop"]))
-    bottom = max(1, int(metrics["borderBottom"]))
-    width = left + right + 40
-    height = top + bottom + 40
+    del metrics
+    # Matches Decoration.cornerRadius in the QML template. Corner tiles are
+    # quarter-discs so KWin clips the window to the same curve as the plate.
+    radius = 8
+    mid = 40
+    span = radius * 2 + mid
+    far = radius + mid
     path.write_text(
         "\n".join(
             [
                 '<?xml version="1.0" encoding="UTF-8"?>',
-                f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">',
-                f'  <rect id="mask-topleft" width="{left}" height="{top}" fill="#ffffff"/>',
-                f'  <rect id="mask-top" x="{left}" width="40" height="{top}" fill="#ffffff"/>',
-                f'  <rect id="mask-topright" x="{left + 40}" width="{right}" height="{top}" fill="#ffffff"/>',
-                f'  <rect id="mask-left" y="{top}" width="{left}" height="40" fill="#ffffff"/>',
-                f'  <rect id="mask-right" x="{left + 40}" y="{top}" width="{right}" height="40" fill="#ffffff"/>',
-                f'  <rect id="mask-bottomleft" y="{top + 40}" width="{left}" height="{bottom}" fill="#ffffff"/>',
-                f'  <rect id="mask-bottom" x="{left}" y="{top + 40}" width="40" height="{bottom}" fill="#ffffff"/>',
-                f'  <rect id="mask-bottomright" x="{left + 40}" y="{top + 40}" width="{right}" height="{bottom}" fill="#ffffff"/>',
+                f'<svg xmlns="http://www.w3.org/2000/svg" width="{span}" height="{span}">',
+                f'  <path id="mask-topleft" d="M{radius},0 A{radius},{radius} 0 0 0 0,{radius} L{radius},{radius} Z" fill="#ffffff"/>',
+                f'  <rect id="mask-top" x="{radius}" width="{mid}" height="{radius}" fill="#ffffff"/>',
+                f'  <path id="mask-topright" d="M{far},0 A{radius},{radius} 0 0 1 {span},{radius} L{far},{radius} Z" fill="#ffffff"/>',
+                f'  <rect id="mask-left" y="{radius}" width="{radius}" height="{mid}" fill="#ffffff"/>',
+                f'  <rect id="mask-center" x="{radius}" y="{radius}" width="{mid}" height="{mid}" fill="#ffffff"/>',
+                f'  <rect id="mask-right" x="{far}" y="{radius}" width="{radius}" height="{mid}" fill="#ffffff"/>',
+                f'  <path id="mask-bottomleft" d="M0,{far} A{radius},{radius} 0 0 0 {radius},{span} L{radius},{far} Z" fill="#ffffff"/>',
+                f'  <rect id="mask-bottom" x="{radius}" y="{far}" width="{mid}" height="{radius}" fill="#ffffff"/>',
+                f'  <path id="mask-bottomright" d="M{span},{far} A{radius},{radius} 0 0 0 {far},{span} L{far},{far} Z" fill="#ffffff"/>',
                 "</svg>",
                 "",
             ]

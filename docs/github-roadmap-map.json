@@ -2,6 +2,101 @@
   "project": "https://github.com/users/freitagdavid/projects/4",
   "project_number": 4,
   "issues": {
+    "[Epic G] Free-floating placement (later)": {
+      "number": 205,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/205",
+      "state": "OPEN"
+    },
+    "[Epic G] Windows Media Center gadget": {
+      "number": 204,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/204",
+      "state": "OPEN"
+    },
+    "[Epic G] Weather gadget": {
+      "number": 203,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/203",
+      "state": "OPEN"
+    },
+    "[Epic G] Stocks gadget": {
+      "number": 202,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/202",
+      "state": "OPEN"
+    },
+    "[Epic G] Slide Show gadget": {
+      "number": 201,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/201",
+      "state": "OPEN"
+    },
+    "[Epic G] Picture Puzzle gadget": {
+      "number": 200,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/200",
+      "state": "OPEN"
+    },
+    "[Epic G] Notes gadget": {
+      "number": 199,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/199",
+      "state": "OPEN"
+    },
+    "[Epic G] Feed Headlines gadget": {
+      "number": 198,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/198",
+      "state": "OPEN"
+    },
+    "[Epic G] Currency gadget": {
+      "number": 197,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/197",
+      "state": "OPEN"
+    },
+    "[Epic G] CPU Meter gadget": {
+      "number": 196,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/196",
+      "state": "OPEN"
+    },
+    "[Epic G] Contacts gadget": {
+      "number": 195,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/195",
+      "state": "OPEN"
+    },
+    "[Epic G] Calendar gadget": {
+      "number": 194,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/194",
+      "state": "OPEN"
+    },
+    "[Epic G] Clock gadget": {
+      "number": 193,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/193",
+      "state": "OPEN"
+    },
+    "[Epic G] Sidebar properties": {
+      "number": 192,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/192",
+      "state": "OPEN"
+    },
+    "[Epic G] Gadget persistence": {
+      "number": 191,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/191",
+      "state": "OPEN"
+    },
+    "[Epic G] Built-in gallery": {
+      "number": 190,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/190",
+      "state": "OPEN"
+    },
+    "[Epic G] Gadget frame": {
+      "number": 189,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/189",
+      "state": "OPEN"
+    },
+    "[Epic G] Sidebar host": {
+      "number": 188,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/188",
+      "state": "OPEN"
+    },
+    "Epic G \u2014 Vista Sidebar gadgets": {
+      "number": 187,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/187",
+      "state": "OPEN"
+    },
     "[Epic 10] Start and Win+E open Computer": {
       "number": 186,
       "url": "https://github.com/freitagdavid/QuickXP/issues/186",
@@ -827,100 +922,10 @@
       "url": "https://github.com/freitagdavid/QuickXP/issues/1",
       "state": "CLOSED"
     },
-    "Epic G \u2014 Vista Sidebar gadgets": {
-      "number": 187,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/187",
-      "state": "open"
-    },
-    "[Epic G] Sidebar host": {
-      "number": 188,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/188",
-      "state": "open"
-    },
-    "[Epic G] Gadget frame": {
-      "number": 189,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/189",
-      "state": "open"
-    },
-    "[Epic G] Built-in gallery": {
-      "number": 190,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/190",
-      "state": "open"
-    },
-    "[Epic G] Gadget persistence": {
-      "number": 191,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/191",
-      "state": "open"
-    },
-    "[Epic G] Sidebar properties": {
-      "number": 192,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/192",
-      "state": "open"
-    },
-    "[Epic G] Clock gadget": {
-      "number": 193,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/193",
-      "state": "open"
-    },
-    "[Epic G] Calendar gadget": {
-      "number": 194,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/194",
-      "state": "open"
-    },
-    "[Epic G] Contacts gadget": {
-      "number": 195,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/195",
-      "state": "open"
-    },
-    "[Epic G] CPU Meter gadget": {
-      "number": 196,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/196",
-      "state": "open"
-    },
-    "[Epic G] Currency gadget": {
-      "number": 197,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/197",
-      "state": "open"
-    },
-    "[Epic G] Feed Headlines gadget": {
-      "number": 198,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/198",
-      "state": "open"
-    },
-    "[Epic G] Notes gadget": {
-      "number": 199,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/199",
-      "state": "open"
-    },
-    "[Epic G] Picture Puzzle gadget": {
-      "number": 200,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/200",
-      "state": "open"
-    },
-    "[Epic G] Slide Show gadget": {
-      "number": 201,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/201",
-      "state": "open"
-    },
-    "[Epic G] Stocks gadget": {
-      "number": 202,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/202",
-      "state": "open"
-    },
-    "[Epic G] Weather gadget": {
-      "number": 203,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/203",
-      "state": "open"
-    },
-    "[Epic G] Windows Media Center gadget": {
-      "number": 204,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/204",
-      "state": "open"
-    },
-    "[Epic G] Free-floating placement (later)": {
-      "number": 205,
-      "url": "https://github.com/freitagdavid/QuickXP/issues/205",
-      "state": "open"
+    "[Epic K] Vista/7 glass decoration (QML)": {
+      "number": 206,
+      "url": "https://github.com/freitagdavid/QuickXP/issues/206",
+      "state": "closed"
     }
   }
 }

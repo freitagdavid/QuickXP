@@ -101,78 +101,9 @@ Decoration {
         frameIndex: 0
     }
 
-    // Outline pieces. Frame 0 is active, frame 1 is inactive when the strip has two.
-    Repeater {
-        model: [
-            { role: "outlineTopLeft", ax: "left", ay: "top" },
-            { role: "outlineTopRight", ax: "right", ay: "top" },
-            { role: "outlineBottomLeft", ax: "left", ay: "bottom" },
-            { role: "outlineBottomRight", ax: "right", ay: "bottom" }
-        ]
-        delegate: FrameImage {
-            required property var modelData
-            readonly property int partId: Theme.roleId(modelData.role)
-            readonly property var entry: root.frameOf(partId)
-            visible: partId !== 0 && entry
-            imageSource: root.partUrl(partId)
-            frameCount: entry ? entry.imageCount : 1
-            frameIndex: root.active ? 0 : 1
-            width: entry ? entry.frameWidth : 0
-            height: entry ? entry.frameHeight : 0
-            x: modelData.ax === "right" ? root.width - width : 0
-            y: modelData.ay === "bottom" ? root.height - height : 0
-        }
-    }
-
-    FrameImage {
-        readonly property int partId: Theme.roleId("outlineTop")
-        readonly property var entry: root.frameOf(partId)
-        visible: partId !== 0 && entry
-        imageSource: root.partUrl(partId)
-        frameCount: entry ? entry.imageCount : 1
-        frameIndex: root.active ? 0 : 1
-        x: Theme.part(Theme.roleId("outlineTopLeft")) ? Theme.part(Theme.roleId("outlineTopLeft")).frameWidth : 0
-        y: 0
-        width: Math.max(0, root.width - x - (Theme.part(Theme.roleId("outlineTopRight")) ? Theme.part(Theme.roleId("outlineTopRight")).frameWidth : 0))
-        height: entry ? entry.frameHeight : 0
-    }
-    FrameImage {
-        readonly property int partId: Theme.roleId("outlineBottom")
-        readonly property var entry: root.frameOf(partId)
-        visible: partId !== 0 && entry
-        imageSource: root.partUrl(partId)
-        frameCount: entry ? entry.imageCount : 1
-        frameIndex: root.active ? 0 : 1
-        x: Theme.part(Theme.roleId("outlineBottomLeft")) ? Theme.part(Theme.roleId("outlineBottomLeft")).frameWidth : 0
-        y: root.height - (entry ? entry.frameHeight : 0)
-        width: Math.max(0, root.width - x - (Theme.part(Theme.roleId("outlineBottomRight")) ? Theme.part(Theme.roleId("outlineBottomRight")).frameWidth : 0))
-        height: entry ? entry.frameHeight : 0
-    }
-    FrameImage {
-        readonly property int partId: Theme.roleId("outlineLeft")
-        readonly property var entry: root.frameOf(partId)
-        visible: partId !== 0 && entry
-        imageSource: root.partUrl(partId)
-        frameCount: entry ? entry.imageCount : 1
-        frameIndex: root.active ? 0 : 1
-        x: 0
-        y: Theme.part(Theme.roleId("outlineTopLeft")) ? Theme.part(Theme.roleId("outlineTopLeft")).frameHeight : root.captionH
-        width: entry ? entry.frameWidth : 0
-        height: Math.max(0, root.height - y - (Theme.part(Theme.roleId("outlineBottomLeft")) ? Theme.part(Theme.roleId("outlineBottomLeft")).frameHeight : 0))
-    }
-    FrameImage {
-        readonly property int partId: Theme.roleId("outlineRight")
-        readonly property var entry: root.frameOf(partId)
-        visible: partId !== 0 && entry
-        imageSource: root.partUrl(partId)
-        frameCount: entry ? entry.imageCount : 1
-        frameIndex: root.active ? 0 : 1
-        x: root.width - (entry ? entry.frameWidth : 0)
-        y: Theme.part(Theme.roleId("outlineTopRight")) ? Theme.part(Theme.roleId("outlineTopRight")).frameHeight : root.captionH
-        width: entry ? entry.frameWidth : 0
-        height: Math.max(0, root.height - y - (Theme.part(Theme.roleId("outlineBottomRight")) ? Theme.part(Theme.roleId("outlineBottomRight")).frameHeight : 0))
-    }
-
+    // Atlas outline parts are glow sprites with their own inner edge. Stamping them
+    // at native size draws a bar beside the icon, a rounded cap over the close
+    // button, and broken bottom corners. The glass edge is the plate plus blur.
     Item {
         id: titleRow
         x: root.borders.left

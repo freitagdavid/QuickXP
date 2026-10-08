@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import org.kde.kwin.decoration
 import org.kde.kirigami as Kirigami
 import org.kde.ksvg as KSvg
@@ -15,6 +16,9 @@ Decoration {
     readonly property int captionH: metrics.borderTop
     readonly property color plate: metrics.plateColor || "#409EFE"
     readonly property real plateAlpha: (root.active ? metrics.activePlateAlpha : metrics.inactivePlateAlpha) || 0
+    // Aero's DWM corner. The atlas outline sprites are larger than this and
+    // cover the icon and caption buttons, so the curve is drawn here instead.
+    readonly property int cornerRadius: 8
 
     Component.onCompleted: {
         borders.left = Qt.binding(function() { return Theme.metrics.borderLeft })
@@ -38,41 +42,69 @@ Decoration {
         return Theme.part(id)
     }
 
-    Rectangle {
-        id: plateTop
-        x: 0
-        y: 0
-        width: parent.width
-        height: root.captionH
-        color: root.plate
-        opacity: root.plateAlpha
-    }
-    Rectangle {
-        x: 0
-        y: root.captionH
-        width: borders.left
-        height: Math.max(0, parent.height - root.captionH - borders.bottom)
-        color: root.plate
-        opacity: root.plateAlpha
-    }
-    Rectangle {
-        x: parent.width - borders.right
-        y: root.captionH
-        width: borders.right
-        height: Math.max(0, parent.height - root.captionH - borders.bottom)
-        color: root.plate
-        opacity: root.plateAlpha
-    }
-    Rectangle {
-        x: 0
-        y: parent.height - borders.bottom
-        width: parent.width
-        height: borders.bottom
-        color: root.plate
-        opacity: root.plateAlpha
-    }
-
     Item {
+        id: shaped
+        anchors.fill: parent
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskSource: cornerMask
+            maskThresholdMin: 0.5
+            maskSpreadAtMin: 1
+        }
+
+        Item {
+            id: topCap
+            width: parent.width
+            height: Math.min(root.cornerRadius, root.captionH)
+            clip: true
+            Rectangle {
+                width: parent.width
+                height: root.cornerRadius * 2
+                radius: root.cornerRadius
+                color: root.plate
+                opacity: root.plateAlpha
+            }
+        }
+        Rectangle {
+            y: topCap.height
+            width: parent.width
+            height: Math.max(0, root.captionH - topCap.height)
+            color: root.plate
+            opacity: root.plateAlpha
+        }
+        Rectangle {
+            x: 0
+            y: root.captionH
+            width: borders.left
+            height: Math.max(0, parent.height - root.captionH - root.cornerRadius)
+            color: root.plate
+            opacity: root.plateAlpha
+        }
+        Rectangle {
+            x: parent.width - borders.right
+            y: root.captionH
+            width: borders.right
+            height: Math.max(0, parent.height - root.captionH - root.cornerRadius)
+            color: root.plate
+            opacity: root.plateAlpha
+        }
+        Item {
+            y: parent.height - root.cornerRadius
+            width: parent.width
+            height: root.cornerRadius
+            clip: true
+            Rectangle {
+                y: -root.cornerRadius
+                width: parent.width
+                height: root.cornerRadius * 2
+                radius: root.cornerRadius
+                color: root.plate
+                opacity: root.plateAlpha
+            }
+        }
+
+        Item {
         id: reflectionClip
         anchors.left: parent.left
         anchors.right: parent.right
@@ -101,79 +133,7 @@ Decoration {
         frameIndex: 0
     }
 
-    // Outline pieces. Frame 0 is active, frame 1 is inactive when the strip has two.
-    Repeater {
-        model: [
-            { role: "outlineTopLeft", ax: "left", ay: "top" },
-            { role: "outlineTopRight", ax: "right", ay: "top" },
-            { role: "outlineBottomLeft", ax: "left", ay: "bottom" },
-            { role: "outlineBottomRight", ax: "right", ay: "bottom" }
-        ]
-        delegate: FrameImage {
-            required property var modelData
-            readonly property int partId: Theme.roleId(modelData.role)
-            readonly property var entry: root.frameOf(partId)
-            visible: partId !== 0 && entry
-            imageSource: root.partUrl(partId)
-            frameCount: entry ? entry.imageCount : 1
-            frameIndex: root.active ? 0 : 1
-            width: entry ? entry.frameWidth : 0
-            height: entry ? entry.frameHeight : 0
-            x: modelData.ax === "right" ? root.width - width : 0
-            y: modelData.ay === "bottom" ? root.height - height : 0
-        }
-    }
-
-    FrameImage {
-        readonly property int partId: Theme.roleId("outlineTop")
-        readonly property var entry: root.frameOf(partId)
-        visible: partId !== 0 && entry
-        imageSource: root.partUrl(partId)
-        frameCount: entry ? entry.imageCount : 1
-        frameIndex: root.active ? 0 : 1
-        x: Theme.part(Theme.roleId("outlineTopLeft")) ? Theme.part(Theme.roleId("outlineTopLeft")).frameWidth : 0
-        y: 0
-        width: Math.max(0, root.width - x - (Theme.part(Theme.roleId("outlineTopRight")) ? Theme.part(Theme.roleId("outlineTopRight")).frameWidth : 0))
-        height: entry ? entry.frameHeight : 0
-    }
-    FrameImage {
-        readonly property int partId: Theme.roleId("outlineBottom")
-        readonly property var entry: root.frameOf(partId)
-        visible: partId !== 0 && entry
-        imageSource: root.partUrl(partId)
-        frameCount: entry ? entry.imageCount : 1
-        frameIndex: root.active ? 0 : 1
-        x: Theme.part(Theme.roleId("outlineBottomLeft")) ? Theme.part(Theme.roleId("outlineBottomLeft")).frameWidth : 0
-        y: root.height - (entry ? entry.frameHeight : 0)
-        width: Math.max(0, root.width - x - (Theme.part(Theme.roleId("outlineBottomRight")) ? Theme.part(Theme.roleId("outlineBottomRight")).frameWidth : 0))
-        height: entry ? entry.frameHeight : 0
-    }
-    FrameImage {
-        readonly property int partId: Theme.roleId("outlineLeft")
-        readonly property var entry: root.frameOf(partId)
-        visible: partId !== 0 && entry
-        imageSource: root.partUrl(partId)
-        frameCount: entry ? entry.imageCount : 1
-        frameIndex: root.active ? 0 : 1
-        x: 0
-        y: Theme.part(Theme.roleId("outlineTopLeft")) ? Theme.part(Theme.roleId("outlineTopLeft")).frameHeight : root.captionH
-        width: entry ? entry.frameWidth : 0
-        height: Math.max(0, root.height - y - (Theme.part(Theme.roleId("outlineBottomLeft")) ? Theme.part(Theme.roleId("outlineBottomLeft")).frameHeight : 0))
-    }
-    FrameImage {
-        readonly property int partId: Theme.roleId("outlineRight")
-        readonly property var entry: root.frameOf(partId)
-        visible: partId !== 0 && entry
-        imageSource: root.partUrl(partId)
-        frameCount: entry ? entry.imageCount : 1
-        frameIndex: root.active ? 0 : 1
-        x: root.width - (entry ? entry.frameWidth : 0)
-        y: Theme.part(Theme.roleId("outlineTopRight")) ? Theme.part(Theme.roleId("outlineTopRight")).frameHeight : root.captionH
-        width: entry ? entry.frameWidth : 0
-        height: Math.max(0, root.height - y - (Theme.part(Theme.roleId("outlineBottomRight")) ? Theme.part(Theme.roleId("outlineBottomRight")).frameHeight : 0))
-    }
-
-    Item {
+        Item {
         id: titleRow
         x: root.borders.left
         y: 0
@@ -272,11 +232,20 @@ Decoration {
             z: 0
         }
     }
+    }
+
+    Rectangle {
+        id: cornerMask
+        visible: false
+        layer.enabled: true
+        anchors.fill: parent
+        radius: root.cornerRadius
+        color: "white"
+    }
 
     KSvg.FrameSvgItem {
         id: maskItem
         anchors.fill: parent
-        anchors.margins: 1
         imagePath: Qt.resolvedUrl("mask.svg")
         opacity: 0
     }

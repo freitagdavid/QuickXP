@@ -466,7 +466,7 @@ const metrics = {
       "height": 350,
       "frameWidth": 228,
       "frameHeight": 175,
-      "opacity": 0.29411764705882354
+      "partOpacity": 0.29411764705882354
     },
     "35": {
       "image": "images/35.png",
@@ -551,7 +551,7 @@ const metrics = {
       "height": 604,
       "frameWidth": 802,
       "frameHeight": 604,
-      "opacity": 0.35294117647058826
+      "partOpacity": 0.35294117647058826
     },
     "41": {
       "image": "images/41.png",
@@ -574,7 +574,7 @@ const metrics = {
       "height": 350,
       "frameWidth": 228,
       "frameHeight": 175,
-      "opacity": 0.29411764705882354
+      "partOpacity": 0.29411764705882354
     },
     "43": {
       "image": "images/43.png",

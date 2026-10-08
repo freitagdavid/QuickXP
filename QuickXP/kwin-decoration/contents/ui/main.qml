@@ -14,7 +14,10 @@ Decoration {
     readonly property var metrics: Theme.metrics
     readonly property int captionH: metrics.borderTop
     readonly property color plate: metrics.plateColor || "#409EFE"
-    readonly property real plateAlpha: (root.active ? metrics.activePlateAlpha : metrics.inactivePlateAlpha) || 0
+    // The theme byte is only ~9% active. Item opacity on these rects was too
+    // faint to read, so the alpha is painted into the color at about half.
+    readonly property real plateAlpha: Math.min(1, ((root.active ? metrics.activePlateAlpha : metrics.inactivePlateAlpha) || 0) * 6)
+    readonly property color plateFill: Qt.rgba(plate.r, plate.g, plate.b, plateAlpha)
     // Keep the curve inside the frame. A larger radius than the border leaves
     // a gap where the side strip and the bottom cap do not meet.
     readonly property int cornerRadius: Math.max(1, Math.min(
@@ -58,32 +61,28 @@ Decoration {
                 width: parent.width
                 height: root.cornerRadius * 2
                 radius: root.cornerRadius
-                color: root.plate
-                opacity: root.plateAlpha
+                color: root.plateFill
             }
         }
         Rectangle {
             y: topCap.height
             width: parent.width
             height: Math.max(0, root.captionH - topCap.height)
-            color: root.plate
-            opacity: root.plateAlpha
+            color: root.plateFill
         }
         Rectangle {
             x: 0
             y: root.captionH
             width: borders.left
             height: Math.max(0, parent.height - root.captionH - root.cornerRadius)
-            color: root.plate
-            opacity: root.plateAlpha
+            color: root.plateFill
         }
         Rectangle {
             x: parent.width - borders.right
             y: root.captionH
             width: borders.right
             height: Math.max(0, parent.height - root.captionH - root.cornerRadius)
-            color: root.plate
-            opacity: root.plateAlpha
+            color: root.plateFill
         }
         Item {
             y: parent.height - root.cornerRadius
@@ -95,8 +94,7 @@ Decoration {
                 width: parent.width
                 height: root.cornerRadius * 2
                 radius: root.cornerRadius
-                color: root.plate
-                opacity: root.plateAlpha
+                color: root.plateFill
             }
         }
 
@@ -109,7 +107,7 @@ Decoration {
         clip: true
         visible: Theme.roleId("reflection") !== 0
         readonly property var entry: root.frameOf(Theme.roleId("reflection"))
-        opacity: entry && entry.opacity !== undefined ? entry.opacity : 1
+        opacity: entry && entry.partOpacity !== undefined ? entry.partOpacity : 1
         Image {
             source: root.partUrl(Theme.roleId("reflection"))
             smooth: true
@@ -129,7 +127,7 @@ Decoration {
         imageSource: root.partUrl(highlightId)
         frameCount: entry ? entry.imageCount : 1
         frameIndex: 0
-        opacity: entry && entry.opacity !== undefined ? entry.opacity : 1
+        opacity: (entry && entry.partOpacity !== undefined ? entry.partOpacity : 1) * 0.35
     }
 
         Item {

@@ -41,7 +41,7 @@ def _part_payload(part: dict, image_name: str) -> dict:
     active = states.get("1") or states.get(1) or {}
     if isinstance(active, dict) and active.get("opacity") not in (None, ""):
         try:
-            payload["opacity"] = max(0.0, min(1.0, int(active["opacity"]) / 255.0))
+            payload["partOpacity"] = max(0.0, min(1.0, int(active["opacity"]) / 255.0))
         except (TypeError, ValueError):
             pass
     return payload

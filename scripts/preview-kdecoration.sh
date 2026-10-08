@@ -110,8 +110,8 @@ theme=$plugin_id
 theme=$plugin_id
 
 [Plugins]
-blurEnabled=true
-contrastEnabled=true
+blurEnabled=false
+contrastEnabled=false
 EOF
 }
 

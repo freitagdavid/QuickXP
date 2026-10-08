@@ -152,6 +152,9 @@ Singleton {
     return themeGeneration
   }
 
+  // Vista/7 shell chrome (taskbar, Start, peek). Classic and XP stay opaque.
+  readonly property bool glass: shell === "vista" || shell === "win7"
+
   function normalize(value, fallback): string {
     return GenerationNormalize.normalize(value, fallback)
   }

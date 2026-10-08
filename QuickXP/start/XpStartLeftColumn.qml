@@ -132,7 +132,9 @@ Item {
   // White face — ProgList bitmap center is white (FillColorHint is only a fallback hint).
   Rectangle {
     anchors.fill: parent
-    color: String(Theme.value("startPanel", "mfuFill", "#FFFFFF"))
+    color: GenerationPolicy.glass
+      ? "transparent"
+      : String(Theme.value("startPanel", "mfuFill", "#FFFFFF"))
   }
 
   // Left seam fallback when MFU art is missing.
@@ -152,7 +154,9 @@ Item {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    height: Number(Theme.value("startPanel", "mfuBorderTop", 3))
+    height: GenerationPolicy.glass
+      ? parent.height
+      : Number(Theme.value("startPanel", "mfuBorderTop", 3))
     source: {
       const path = Theme.image("startPanelMfuBackgroundImage")
       return path ? ("file://" + path) : ""
@@ -160,7 +164,9 @@ Item {
     border.left: Number(Theme.value("startPanel", "mfuBorderLeft", 2))
     border.right: Number(Theme.value("startPanel", "mfuBorderRight", 153))
     border.top: Number(Theme.value("startPanel", "mfuBorderTop", 3))
-    border.bottom: 0
+    border.bottom: GenerationPolicy.glass
+      ? Number(Theme.value("startPanel", "mfuBorderBottom", 0))
+      : 0
     horizontalTileMode: BorderImage.Stretch
     verticalTileMode: BorderImage.Stretch
     visible: status === Image.Ready
@@ -323,6 +329,11 @@ Item {
                 root.resultHovered(resultDelegate.index)
                 if (root.submenuOpen)
                   root.closeSubmenus()
+              }
+              onContextMenuRequested: {
+                if (!modelData || modelData.kind !== "app")
+                  return
+                root.openAppContextMenu(this, modelData.entryId || modelData.id, false)
               }
             }
           }

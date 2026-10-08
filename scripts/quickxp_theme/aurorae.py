@@ -89,10 +89,89 @@ def nine_slice(image: Image.Image, margins: tuple[int, int, int, int]) -> dict[s
     }
 
 
+def stretch_frame(
+    image: Image.Image,
+    width: int,
+    height: int,
+    margins: tuple[int, int, int, int],
+) -> Image.Image:
+    """Nine-slice enlarge. Aero min/max/help strips are a few pixels wide."""
+    width = max(image.width, int(width))
+    height = max(image.height, int(height))
+    if image.size == (width, height):
+        return image
+    parts = nine_slice(image, margins)
+    out = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    left_w = parts["topleft"].width
+    right_w = parts["topright"].width
+    top_h = parts["topleft"].height
+    bottom_h = parts["bottomleft"].height
+    mid_w = max(0, width - left_w - right_w)
+    mid_h = max(0, height - top_h - bottom_h)
+
+    def paste(part: Image.Image, box: tuple[int, int, int, int]) -> None:
+        x0, y0, x1, y1 = box
+        if x1 <= x0 or y1 <= y0 or part.width < 1 or part.height < 1:
+            return
+        scaled = part.resize((x1 - x0, y1 - y0), Image.Resampling.NEAREST)
+        out.alpha_composite(scaled, (x0, y0))
+
+    paste(parts["topleft"], (0, 0, left_w, top_h))
+    paste(parts["top"], (left_w, 0, left_w + mid_w, top_h))
+    paste(parts["topright"], (width - right_w, 0, width, top_h))
+    paste(parts["left"], (0, top_h, left_w, top_h + mid_h))
+    paste(parts["center"], (left_w, top_h, left_w + mid_w, top_h + mid_h))
+    paste(parts["right"], (width - right_w, top_h, width, top_h + mid_h))
+    paste(parts["bottomleft"], (0, height - bottom_h, left_w, height))
+    paste(parts["bottom"], (left_w, height - bottom_h, left_w + mid_w, height))
+    paste(parts["bottomright"], (width - right_w, height - bottom_h, width, height))
+    return out
+
+
+def fit_glyph(glyph: Image.Image, box_w: int, box_h: int) -> Image.Image:
+    """Scale a caption glyph down so it stays inside the glass button."""
+    if glyph.width <= box_w and glyph.height <= box_h:
+        return glyph
+    scale = min(box_w / glyph.width, box_h / glyph.height)
+    nw = max(1, int(round(glyph.width * scale)))
+    nh = max(1, int(round(glyph.height * scale)))
+    return glyph.resize((nw, nh), Image.Resampling.LANCZOS)
+
+
+def _opacity_unit(value: int) -> float:
+    """DWM opacity records are percentages. Values above 100 are 0–255."""
+    if value <= 0:
+        return 0.0
+    if value <= 100:
+        return value / 100.0
+    return min(1.0, value / 255.0)
+
+
+def glass_plate_alpha(
+    color_alpha: int | None,
+    opacity: int | None,
+    colorization_opacity: int | None,
+) -> int | None:
+    """Plate alpha from the loaded colorization alpha and DWM opacities.
+
+    Returns None when the theme did not supply any of them.
+    """
+    if color_alpha is None and opacity is None and colorization_opacity is None:
+        return None
+    base = 255 if color_alpha is None else max(0, min(255, int(color_alpha)))
+    factor = 1.0
+    if opacity is not None:
+        factor *= _opacity_unit(int(opacity))
+    if colorization_opacity is not None:
+        factor *= _opacity_unit(int(colorization_opacity))
+    return max(0, min(255, int(round(base * factor))))
+
+
 def composite_button(bg: Image.Image, glyph: Image.Image | None) -> Image.Image:
     out = bg.copy()
     if glyph is None:
         return out
+    glyph = fit_glyph(glyph, out.width, out.height)
     gx = max(0, (out.width - glyph.width) // 2)
     gy = max(0, (out.height - glyph.height) // 2)
     out.alpha_composite(glyph, (gx, gy))
@@ -108,7 +187,12 @@ def _png_data_uri(image: Image.Image) -> str:
     return f"data:image/png;base64,{encoded}"
 
 
-def _image_group(element_id: str, image: Image.Image, x: int = 0, y: int = 0) -> str:
+def _image_group(
+    element_id: str,
+    image: Image.Image,
+    x: int = 0,
+    y: int = 0,
+) -> str:
     href = _png_data_uri(image)
     return (
         f'  <g id="{escape(element_id)}">\n'
@@ -268,65 +352,105 @@ def write_rc(
     border_right: int,
     border_bottom: int,
     button_margin_top: int | None = None,
+    menu_width: int | None = None,
+    center_buttons: bool = False,
 ) -> None:
-    # Horizontal caption SizingMargins reserve the left/right corner caps for
-    # title text. Vertical SizingMargins are nine-slice seams inside the caption
-    # bitmap — NOT Aurorae TitleEdge* padding. Using them as TitleEdgeTop/Bottom
-    # doubles the restored (non-maximized) titlebar; maximized edges default to 0.
-    #
-    # Button top padding comes from Window.CloseButton Offset y (XP SysMetrics
-    # CaptionBarHeight + caption frame height size the bar).
-    title_border_left = int(caption.get("borderLeft") or 0)
-    title_border_right = int(caption.get("borderRight") or 0)
+    # SizingMargins are nine-slice seams inside the caption bitmap, not the
+    # title inset. Outer inset is CAPTIONMARGINS. The icon box and the title's
+    # top inset are the caption sizing template's CONTENTMARGINS.
     title_h = max(16, int(caption_height))
     bw, bh = button_size
     bw = max(12, int(bw))
     bh = max(12, int(bh))
-    if button_margin_top is None:
+    if center_buttons:
+        if bh > title_h:
+            title_h = bh
+        margin = max(0, (title_h - bh) // 2)
+    elif button_margin_top is None:
         margin = max(0, (title_h - bh) // 2)
     else:
         margin = max(0, int(button_margin_top))
-    # Keep a touch of space below the buttons when Offset + glyph exceed metric.
-    if margin + bh >= title_h:
-        title_h = margin + bh + max(1, min(margin, 4))
+        if margin + bh >= title_h:
+            title_h = margin + bh + max(1, min(margin, 4))
     active = hex_to_rgb_csv(colors.get("titleActiveText"), "#FFFFFF")
     inactive = hex_to_rgb_csv(colors.get("titleInactiveText"), "#D8E4F8")
-    path.write_text(
-        "\n".join(
-            [
-                "[General]",
-                f"ActiveTextColor={active}",
-                f"InactiveTextColor={inactive}",
-                "TitleAlignment=Left",
-                "TitleVerticalAlignment=Center",
-                "Animation=0",
-                "",
-                "[Layout]",
-                f"BorderLeft={max(1, border_left)}",
-                f"BorderRight={max(1, border_right)}",
-                f"BorderBottom={max(1, border_bottom)}",
-                "TitleEdgeTop=0",
-                "TitleEdgeBottom=0",
-                "TitleEdgeLeft=4",
-                "TitleEdgeRight=4",
-                "TitleEdgeTopMaximized=0",
-                "TitleEdgeBottomMaximized=0",
-                "TitleEdgeLeftMaximized=0",
-                "TitleEdgeRightMaximized=0",
-                f"TitleBorderLeft={max(0, title_border_left)}",
-                f"TitleBorderRight={max(0, title_border_right)}",
-                f"TitleHeight={title_h}",
-                f"ButtonWidth={bw}",
-                f"ButtonHeight={bh}",
-                "ButtonSpacing=0",
-                f"ButtonMarginTop={margin}",
-                f"ButtonMarginTopMaximized={margin}",
-                "ExplicitButtonSpacer=0",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    edge_left = int(caption["captionMarginLeft"]) if "captionMarginLeft" in caption else 4
+    edge_right = int(caption["captionMarginRight"]) if "captionMarginRight" in caption else 4
+    edge_top = int(caption["captionMarginTop"]) if "captionMarginTop" in caption else 0
+    if center_buttons:
+        # Buttons are anchored to the outer window edge. Clear the side frame
+        # so they sit on the caption instead of in the corner.
+        edge_left = max(edge_left, int(border_left))
+        edge_right = max(edge_right, int(border_right))
+    if "templateContentLeft" in caption:
+        box = int(caption.get("templateContentLeft") or 0)
+        menu = int(menu_width) if menu_width is not None else box
+        title_border_left = max(0, box - menu)
+        title_border_right = max(0, int(caption.get("templateContentRight") or 0))
+    elif "contentLeft" in caption or "contentRight" in caption:
+        title_border_left = max(0, int(caption.get("contentLeft") or 0))
+        title_border_right = max(0, int(caption.get("contentRight") or 0))
+    else:
+        title_border_left = 0
+        title_border_right = 0
+    lines = [
+        "[General]",
+        f"ActiveTextColor={active}",
+        f"InactiveTextColor={inactive}",
+        "TitleAlignment=Left",
+        "TitleVerticalAlignment=Center",
+        "Animation=0",
+    ]
+    glow_color = caption.get("glowColor")
+    glow_size = caption.get("textGlowSize")
+    if glow_color or glow_size is not None:
+        lines.append("UseTextShadow=true")
+        lines.append("HaloActive=true")
+        lines.append("HaloInactive=true")
+        if glow_color:
+            glow_csv = hex_to_rgb_csv(str(glow_color), "#FFFFFF")
+            lines.append(f"ActiveTextShadowColor={glow_csv}")
+            lines.append(f"InactiveTextShadowColor={glow_csv}")
+        offset_x = int(caption.get("textShadowOffsetX") or 0)
+        offset_y = int(caption.get("textShadowOffsetY") or 0)
+        lines.append(f"TextShadowOffsetX={offset_x}")
+        lines.append(f"TextShadowOffsetY={offset_y}")
+        if glow_size is not None:
+            lines.append(f"TextGlowSize={int(glow_size)}")
+    lines.extend(
+        [
+            "",
+            "[Layout]",
+            f"BorderLeft={max(1, border_left)}",
+            f"BorderRight={max(1, border_right)}",
+            f"BorderBottom={max(1, border_bottom)}",
+            f"TitleEdgeTop={max(0, edge_top)}",
+            "TitleEdgeBottom=0",
+            f"TitleEdgeLeft={max(0, edge_left)}",
+            f"TitleEdgeRight={max(0, edge_right)}",
+            "TitleEdgeTopMaximized=0",
+            "TitleEdgeBottomMaximized=0",
+            "TitleEdgeLeftMaximized=0",
+            "TitleEdgeRightMaximized=0",
+            f"TitleBorderLeft={title_border_left}",
+            f"TitleBorderRight={title_border_right}",
+            f"TitleHeight={title_h}",
+            f"ButtonWidth={bw}",
+            f"ButtonHeight={bh}",
+        ]
     )
+    if menu_width is not None:
+        lines.append(f"ButtonWidthMenu={max(1, int(menu_width))}")
+    lines.extend(
+        [
+            "ButtonSpacing=0",
+            f"ButtonMarginTop={margin}",
+            f"ButtonMarginTopMaximized={margin}",
+            "ExplicitButtonSpacer=0",
+            "",
+        ]
+    )
+    path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def emit_aurorae(
@@ -429,9 +553,17 @@ def emit_aurorae(
         ("help", "helpButtonImage", "helpGlyphImage", "help.svg"),
     ]
     button_w = button_h = 21
-    layout = str((doc.get("captionButton") or {}).get("imageLayout") or "vertical").lower()
-    frames = int((doc.get("captionButton") or {}).get("frames") or 8)
+    caption_button = doc.get("captionButton") if isinstance(doc.get("captionButton"), dict) else {}
+    layout = str(caption_button.get("imageLayout") or "vertical").lower()
+    frames = int(caption_button.get("frames") or 8)
+    button_margins = (
+        int(caption_button.get("borderLeft") or 0),
+        int(caption_button.get("borderRight") or 0),
+        int(caption_button.get("borderTop") or 0),
+        int(caption_button.get("borderBottom") or 0),
+    )
 
+    prepared: list[tuple[str, list, list | None]] = []
     for _name, bg_key, glyph_key, filename in button_jobs:
         bg_img = _open_png(root, images.get(bg_key))
         if bg_img is None:
@@ -442,8 +574,16 @@ def emit_aurorae(
         bgs = slice_strip(bg_img, frames, layout)
         glyph_img = _open_png(root, images.get(glyph_key))
         glyphs = slice_strip(glyph_img, frames, layout) if glyph_img is not None else None
-        write_button_svg(out_dir / filename, bgs, glyphs)
-        button_w, button_h = bgs[0].size
+        prepared.append((filename, bgs, glyphs))
+
+    if prepared:
+        button_w = max(part.width for _filename, bgs, _glyphs in prepared for part in bgs)
+        button_h = max(part.height for _filename, bgs, _glyphs in prepared for part in bgs)
+        for filename, bgs, glyphs in prepared:
+            fitted = [
+                stretch_frame(part, button_w, button_h, button_margins) for part in bgs
+            ]
+            write_button_svg(out_dir / filename, fitted, glyphs)
 
     # Prefer the active caption frame height so the bitmap isn't squashed; never
     # go below SysMetrics CaptionBarHeight when present.
@@ -451,11 +591,16 @@ def emit_aurorae(
     frame_h = int(active.height) if active is not None else 0
     caption_height = max(metric_h, frame_h, 16)
     caption_button = doc.get("captionButton") if isinstance(doc.get("captionButton"), dict) else {}
-    # Window.CloseButton Offset y (Luna/Concave = 5) — top padding above buttons.
     offset_top = caption_button.get("offsetTop")
     if offset_top is None:
         offset_top = caption_button.get("offsetY")
-    button_margin_top = abs(int(offset_top)) if offset_top is not None else 5
+    if offset_top is not None:
+        button_margin_top = abs(int(offset_top))
+    elif "templateContentTop" in caption:
+        button_margin_top = int(caption.get("templateContentTop") or 0)
+    else:
+        button_margin_top = None
+    menu_width = int(caption["templateContentLeft"]) if "templateContentLeft" in caption else None
 
     border_left = int(frame.get("leftBorderLeft") or frame.get("leftBorderRight") or 4)
     if left_frames:
@@ -477,6 +622,7 @@ def emit_aurorae(
         border_right=border_right,
         border_bottom=border_bottom,
         button_margin_top=button_margin_top,
+        menu_width=menu_width,
     )
     write_metadata_desktop(
         out_dir / "metadata.desktop",
@@ -551,5 +697,15 @@ def generate_for_theme_root(
     result["warnings"].extend(warnings)
     result["errors"].extend(errors)
     result["aurorae"] = summary
+    from . import kdecoration
+
+    kdeco_summary, kdeco_warnings, kdeco_errors = kdecoration.emit_kdecoration(
+        root,
+        slug=slug or root.name,
+        document=doc,
+    )
+    result["warnings"].extend(kdeco_warnings)
+    result["errors"].extend(kdeco_errors)
+    result["kdecoration"] = kdeco_summary
     result["ok"] = bool(summary.get("ok"))
     return result

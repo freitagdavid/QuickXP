@@ -1,4 +1,5 @@
 import Quickshell // for PanelWindow
+import Quickshell.Wayland
 import QtQuick // for Text
 import QtQuick.Dialogs
 import qs.QuickXP
@@ -21,6 +22,30 @@ PanelWindow {
         right: true
     }
 
+    color: "transparent"
+
+    // Vista's orb sits on the bar and clears the top edge by only a few pixels.
+    readonly property int barHeight: Config.options.taskbarHeight > 0
+        ? Config.options.taskbarHeight
+        : Theme.sizes.taskbarHeight
+    readonly property int startOverhang: startButton.nativeFrame ? 6 : 0
+    implicitHeight: barHeight + startOverhang
+    exclusiveZone: barHeight
+
+    readonly property bool glass: GenerationPolicy.glass
+
+    mask: Region {
+        item: taskbarBand
+        Region { item: startButton }
+    }
+
+    BackgroundEffect.blurRegion: glass ? taskbarGlass : null
+
+    Region {
+        id: taskbarGlass
+        item: taskbarBand
+    }
+
     function themeImage(key: string): string {
         const path = Theme.image(key)
         if (path === "" || path.startsWith("file:"))
@@ -41,14 +66,28 @@ PanelWindow {
         source: themeImage("taskbarImage")
     }
 
+    Item {
+        id: taskbarBand
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height: taskbarWindow.barHeight
+    }
+
     Rectangle {
-        anchors.fill: parent
+        anchors.left: taskbarBand.left
+        anchors.right: taskbarBand.right
+        anchors.top: taskbarBand.top
+        anchors.bottom: taskbarBand.bottom
         color: Theme.color("taskbar", "#245EDC")
         visible: taskbarSprite.sourceSize.width <= 0
     }
 
     BorderImage {
-        anchors.fill: parent
+        anchors.left: taskbarBand.left
+        anchors.right: taskbarBand.right
+        anchors.top: taskbarBand.top
+        anchors.bottom: taskbarBand.bottom
         source: taskbarSprite.source
         border.left: taskbarWindow.clampBorder(Theme.value("taskbar", "borderLeft", 0), taskbarSprite.sourceSize.width, 0)
         border.right: taskbarWindow.clampBorder(Theme.value("taskbar", "borderRight", 0), taskbarSprite.sourceSize.width, 0)
@@ -62,13 +101,18 @@ PanelWindow {
     Item {
         id: startButton
 
-        // Tiny top inset = taskbar drag/grip strip; flush to the bottom edge (XP Classic).
+        // Stretch (XP) sits on the bottom edge with a small top grip inset.
+        // TrueSize (Vista orb) is bottom-flush and a few pixels taller than the
+        // bar, so only the top of the pearl hangs over.
         anchors.left: parent.left
-        anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.topMargin: Math.max(0, Number(Theme.value("startButton", "contentTop", 2)))
+        readonly property int topInset: Math.max(0, Number(Theme.value("startButton", "contentTop", 2)))
+        readonly property bool nativeFrame: trueSize && sprite.sourceSize.height > 0
         anchors.bottomMargin: 0
-        clip: true
+        height: nativeFrame
+            ? taskbarWindow.barHeight + taskbarWindow.startOverhang
+            : Math.max(1, taskbarWindow.barHeight - topInset)
+        z: 1
 
         readonly property int frames: Math.max(1, Number(Theme.value("startButton", "frames", 3)))
         readonly property int frame: area.containsPress ? 2 : area.containsMouse ? 1 : 0
@@ -325,8 +369,8 @@ PanelWindow {
     QuickLaunch {
         id: quickLaunch
         anchors.left: startButton.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        anchors.top: taskbarBand.top
+        anchors.bottom: taskbarBand.bottom
         anchors.leftMargin: visible ? 2 : 0
         width: visible ? implicitWidth : 0
     }
@@ -334,16 +378,16 @@ PanelWindow {
     TaskbarToolbars {
         id: extraToolbars
         anchors.left: quickLaunch.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        anchors.top: taskbarBand.top
+        anchors.bottom: taskbarBand.bottom
         anchors.leftMargin: visible && width > 0 ? 2 : 0
     }
 
     TaskList {
         anchors.left: extraToolbars.right
         anchors.right: tray.left
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        anchors.top: taskbarBand.top
+        anchors.bottom: taskbarBand.bottom
         anchors.leftMargin: 4
         anchors.rightMargin: 4
         anchors.topMargin: 3
@@ -353,8 +397,8 @@ PanelWindow {
     Tray {
         id: tray
         anchors.right: showDesktopEdge.visible ? showDesktopEdge.left : parent.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        anchors.top: taskbarBand.top
+        anchors.bottom: taskbarBand.bottom
         anchors.rightMargin: showDesktopEdge.visible ? 0 : 0
     }
 
@@ -364,8 +408,8 @@ PanelWindow {
         readonly property bool active: String(GenerationPolicy.forItem("showDesktop") || "") === "win7"
         visible: active
         anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        anchors.top: taskbarBand.top
+        anchors.bottom: taskbarBand.bottom
         width: visible ? 6 : 0
         color: Qt.rgba(1, 1, 1, showDesktopEdgeArea.containsMouse ? 0.35 : 0.15)
 
@@ -379,7 +423,7 @@ PanelWindow {
 
     // Empty-band Toolbars context menu (Epic 4 / BAR-20 stub).
     MouseArea {
-        anchors.fill: parent
+        anchors.fill: taskbarBand
         z: -1
         acceptedButtons: Qt.RightButton
         onClicked: (mouse) => {
@@ -505,7 +549,4 @@ PanelWindow {
         }
     }
 
-    implicitHeight: Config.options.taskbarHeight > 0
-        ? Config.options.taskbarHeight
-        : Theme.sizes.taskbarHeight
 }

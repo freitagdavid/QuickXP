@@ -58,7 +58,9 @@ Item {
   // Opaque underlay so magenta-keyed corners never show MFU orange through the header.
   Rectangle {
     anchors.fill: parent
-    color: String(Theme.value("startPanel", "userFill", Theme.color("titleActive", "#0054E3")))
+    color: GenerationPolicy.glass
+      ? "transparent"
+      : String(Theme.value("startPanel", "userFill", Theme.color("titleActive", "#0054E3")))
   }
 
   BorderImage {

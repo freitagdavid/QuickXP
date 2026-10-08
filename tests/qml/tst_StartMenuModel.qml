@@ -5,6 +5,20 @@ import "../../QuickXP/StartMenuModel.js" as StartMenuModel
 TestCase {
   name: "StartMenuModel"
 
+  function test_openLocationCommand_kio_uses_dolphin() {
+    const computer = StartMenuModel.openLocationCommand("computer:///")
+    compare(computer[0], "sh")
+    compare(computer[4], "computer:///")
+    const network = StartMenuModel.openLocationCommand("network:///")
+    compare(network[4], "network:///")
+    const file = StartMenuModel.openLocationCommand("/home/davidf")
+    compare(file[0], "xdg-open")
+    compare(file[1], "/home/davidf")
+    const web = StartMenuModel.openLocationCommand("https://example.com")
+    compare(web[0], "xdg-open")
+    compare(StartMenuModel.openLocationCommand("  ").length, 0)
+  }
+
   function test_normalizeSource() {
     compare(StartMenuModel.normalizeSource(""), "xdgMenu")
     compare(StartMenuModel.normalizeSource("xdgMenu"), "xdgMenu")

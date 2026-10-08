@@ -24,7 +24,17 @@ cd QuickXP
 quickshell
 ```
 
-`scripts/setup.sh` checks for Quickshell / Python D-Bus deps, builds the KWin peek helper, and runs [`deploy.sh`](deploy.sh) (symlink the `QuickXP/` module into `~/.config/quickshell/default`). On Plasma, hide or disable the stock panel so it does not cover the QuickXP taskbar.
+`scripts/setup.sh` checks for Quickshell / Python D-Bus deps, builds the KWin peek helper, runs [`deploy.sh`](deploy.sh) (symlink the `QuickXP/` module into `~/.config/quickshell/default`), and installs a Wayland session. On Plasma, hide or disable the stock panel so it does not cover the QuickXP taskbar.
+
+## Wayland session without Plasma
+
+[`session/quickxp-session`](session/quickxp-session) starts KWin (`kwin_wayland`) and Quickshell only. It does not start Plasma, `plasmashell`, or the Plasma lock screen. `scripts/setup.sh` links it to `~/.local/bin/quickxp-session` and into SDDM’s session directory (`/usr/share/wayland-sessions`, which needs root). Log out and choose **QuickXP** in the display manager.
+
+Install the session again after moving the checkout:
+
+```sh
+./scripts/install-session.sh
+```
 
 Rebuild only the peek helper:
 

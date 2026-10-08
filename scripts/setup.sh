@@ -8,7 +8,7 @@ cd "$root"
 # Versioned git hooks (pre-push runs ./scripts/run-tests.sh).
 if git rev-parse --git-dir >/dev/null 2>&1; then
   git config core.hooksPath .githooks
-  chmod +x .githooks/pre-push scripts/run-tests.sh scripts/run-qml-tests.sh scripts/smoke-notes.sh scripts/install-git-hooks.sh 2>/dev/null || true
+  chmod +x .githooks/pre-push scripts/run-tests.sh scripts/run-qml-tests.sh scripts/smoke-notes.sh scripts/install-git-hooks.sh scripts/install-session.sh session/quickxp-session 2>/dev/null || true
 fi
 
 ok=1
@@ -46,8 +46,9 @@ if have python3; then
   fi
 fi
 
-if [ "${XDG_CURRENT_DESKTOP:-}" != "${XDG_CURRENT_DESKTOP#*KDE}" ] || [ "${KDE_FULL_SESSION:-}" = "true" ]; then
-  echo "  session: KDE detected (KWin bridge will be used)"
+desktop_upper=$(printf '%s' "${XDG_CURRENT_DESKTOP:-}" | tr '[:lower:]' '[:upper:]')
+if [ "$desktop_upper" != "${desktop_upper#*KDE}" ] || [ "$desktop_upper" != "${desktop_upper#*QUICKXP}" ] || [ "${KDE_FULL_SESSION:-}" = "true" ]; then
+  echo "  session: KWin detected (task bridge will be used)"
   if ! have qdbus6 && ! have qdbus; then
     echo "  qdbus6: MISSING (used to talk to the task bridge)" >&2
     ok=0
@@ -55,7 +56,7 @@ if [ "${XDG_CURRENT_DESKTOP:-}" != "${XDG_CURRENT_DESKTOP#*KDE}" ] || [ "${KDE_F
     echo "  qdbus: ok"
   fi
 else
-  echo "  session: not KDE (foreign-toplevel task list; peeks limited)"
+  echo "  session: not KWin (foreign-toplevel task list; peeks limited)"
 fi
 
 if [ "$ok" -ne 1 ]; then
@@ -79,9 +80,15 @@ fi
 echo "==> Deploying into ~/.config/quickshell/default"
 "$root/deploy.sh"
 
+echo "==> Installing QuickXP Wayland session"
+if ! "$root/scripts/install-session.sh"; then
+  echo "  session desktop was not linked into SDDM; re-run ./scripts/install-session.sh" >&2
+fi
+
 echo ""
 echo "Setup complete. Start or reload Quickshell:"
 echo "  quickshell"
 echo ""
+echo "Or log out and choose QuickXP in SDDM to run KWin and Quickshell without Plasma."
 echo "On Plasma, hide or disable the stock panel so it does not sit on top of QuickXP."
 echo "Roadmap: docs/ROADMAP.md"

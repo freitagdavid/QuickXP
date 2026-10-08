@@ -1,0 +1,10 @@
+{
+    "KPackageStructure": "KWin/Decoration",
+    "KPlugin": {
+        "Id": "kwin4_decoration_qml_quickxp_theme",
+        "Name": "QuickXP",
+        "Description": "QuickXP Vista/7 glass window decoration",
+        "License": "GPL",
+        "EnabledByDefault": true
+    }
+}

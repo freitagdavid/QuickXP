@@ -82,6 +82,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 - [ ] Epic C — Tray system controls (volume mixer, BT, brightness, network, drives, battery)
 - [ ] Epic A — Alt+Tab switcher (adapt quickshell-overview UI; KWin/Hypr backends)
 - [ ] Epic 6 — Desktop wallpaper, icons, special objects, Recycle Bin
+- [ ] Epic G — Vista Sidebar gadgets (docked sidebar first; free placement later)
 - [ ] Epic 8 — Tray notification queue (view/dismiss) plus balloons and attention flash
 - [ ] Epic 7 — Session dialogs + Windows-style lock screen
 - [ ] Epic 9 — Explorer (later track)
@@ -108,6 +109,7 @@ flowchart TB
   trayCtl[Tray controls]
   altTab[Alt Tab switcher]
   desktop[Desktop]
+  sidebar[Sidebar gadgets]
   attention[Attention]
   session[Session]
   explorer[Explorer later]
@@ -124,6 +126,7 @@ flowchart TB
   settings --> ql
   settings --> taskband
   settings --> desktop
+  desktop --> sidebar
   settings --> trayCtl
   taskband --> altTab
   foundation --> attention
@@ -140,6 +143,7 @@ Where stock XP and later/modern shell behavior disagree, generation (or an expli
 | Win+Tab | Cycles **taskbar button focus** | Flip 3D / overview | XP default = taskbar cycle (Epic H); Super+Tab overview is optional modern/generation policy (Epic A), not XP default |
 | Taskbar grouping | Crowd-triggered when space is tight (TSK-16) | Always-grouped combined buttons | Support both; “Windows XP taskbar” preset = crowding-triggered; modern preset may keep always-on |
 | Live peeks | No stock Aero thumbnails (TSK-22) | Icon-only thumbnail strips | Gated by `iconsOnly` / generation (Epic 5); XP list groups stay title menus |
+| Desktop gadgets | None (Active Desktop out of scope) | Vista Sidebar dock; Win7 free gadgets | Off for `generation: xp`; Sidebar for `vista`; free placement later for `win7` (Epic G) |
 
 ## Already implemented (baseline)
 
@@ -538,7 +542,34 @@ Settings → Taskbar (or a small “Window switching” section): classic vs pre
 - **Desktop context menu** — Refresh, Paste, New, Properties → `Settings.open("desktop")`.
 - **Multi-monitor** — Icon placement recovery after resolution/topology changes (DES-24).
 - **Desktop Cleanup Wizard (later)** — Unused shortcuts → Unused Desktop Shortcuts folder (DES-21–23).
-- **Active Desktop** — Out of scope.
+- **Active Desktop** — Out of scope. Vista/7 inbox gadgets are Epic G, not HTML wallpaper.
+
+---
+
+## Epic G — Vista Sidebar gadgets
+
+Docked Vista Sidebar first. Free-floating placement (Windows 7) is a later slice in this epic and reuses the same gadget instances. On for `generation: vista` and an explicit setting. Off for `generation: xp`. `generation: win7` stays off until free placement; that slice is the Win7 default.
+
+Built-in gadgets only. No third-party `.gadget` packages, ActiveX/HTML hosts, or the online gadget gallery. One feature per inbox gadget. Vista shipped Calendar, Clock, Contacts, CPU Meter, Currency, Feed Headlines, Notes, Picture Puzzle, Slide Show, Stocks, and Weather. Windows 7 dropped Contacts, Notes, and Stocks and added Windows Media Center. Network-backed gadgets (Feed Headlines, Weather, Stocks, Currency) are built-ins, not a license to load arbitrary web gadgets.
+
+- **Sidebar host** — Right-edge dock (left optional); show/hide; above the desktop icon layer; generation-gated.
+- **Gadget frame** — Chrome, close, in-bar reorder, per-gadget opacity.
+- **Built-in gallery** — Add from a fixed catalog, not downloaded packages.
+- **Persistence** — Which gadgets, order, and options in the existing config store.
+- **Sidebar properties** — Side, always on top, start with the shell.
+- **Clock** — Vista and Windows 7.
+- **Calendar** — Vista and Windows 7.
+- **Contacts** — Vista only.
+- **CPU Meter** — Vista and Windows 7.
+- **Currency** — Vista and Windows 7.
+- **Feed Headlines** — Vista and Windows 7.
+- **Notes** — Vista only.
+- **Picture Puzzle** — Vista and Windows 7.
+- **Slide Show** — Vista and Windows 7.
+- **Stocks** — Vista only.
+- **Weather** — Vista and Windows 7.
+- **Windows Media Center** — Windows 7 only. The full Media Center / Royale product stays out of scope.
+- **Free-floating placement (later)** — Undock onto the desktop; Win7 default.
 
 ---
 
@@ -634,7 +665,7 @@ Tracked here so the inventory is not forgotten, but not blocking the near-term e
 
 ### Explicitly out of near-term scope
 
-Full Explorer §§10–16 / 18–26 depth, Control Panel applet recreation, Magnifier/Narrator/OSK suite, COM shell-extension ABI, Active Desktop, Media Center/Royale, domain logon as stock requirements, and inventory-excluded modernisms (jump lists, Aero Snap, Action Center history as XP default, address breadcrumbs, libraries).
+Full Explorer §§10–16 / 18–26 depth, Control Panel applet recreation, Magnifier/Narrator/OSK suite, COM shell-extension ABI, Active Desktop (HTML wallpaper; inbox gadgets are Epic G), Media Center/Royale as a product (the Windows 7 Media Center gadget is Epic G), domain logon as stock requirements, and inventory-excluded modernisms (jump lists, Aero Snap, Action Center history as XP default, address breadcrumbs, libraries). Third-party `.gadget` packages and the online gadget gallery stay out.
 
 ---
 
@@ -656,11 +687,12 @@ Full Explorer §§10–16 / 18–26 depth, Control Panel applet recreation, Magn
 14. Tray system controls — volume mixer first, then network / BT / brightness / drives / battery + clock Properties
 15. Tray notification queue + per-icon Customize + Notification Area tab polish (XP retention policy)
 16. Desktop + special icons + Recycle Bin + Desktop tab
-17. Taskband chrome menu + cascade/tile + auto-hide + keep-on-top / work area
-18. Optional Super+Tab full overview / Hyprland adapter (not XP Win+Tab default)
-19. Vista/7 Start search + Vista/7 lock/theme skins + Appearance/Classic style polish
-20. Explorer (+ Search Companion / sound scheme / toolkit theming from backlog as capacity allows)
-21. Expand QML tests / smoke / CI as features stabilize
+17. Vista Sidebar gadgets (Epic G) after the desktop surface exists; free placement follows
+18. Taskband chrome menu + cascade/tile + auto-hide + keep-on-top / work area
+19. Optional Super+Tab full overview / Hyprland adapter (not XP Win+Tab default)
+20. Vista/7 Start search + Vista/7 lock/theme skins + Appearance/Classic style polish
+21. Explorer (+ Search Companion / sound scheme / toolkit theming from backlog as capacity allows)
+22. Expand QML tests / smoke / CI as features stabilize
 
 Note: Epic 8’s queue can be pulled earlier (after foundation / tray exists) if you want notifications before Start work finishes — [QuickXP/tray/Tray.qml](QuickXP/tray/Tray.qml) is already in place.
 

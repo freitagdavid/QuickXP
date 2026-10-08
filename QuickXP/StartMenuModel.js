@@ -84,6 +84,26 @@ function separatorNode(id) {
   }
 }
 
+// Plasma's xdg-open calls kde-open, which rejects KIO places such as
+// computer:/// (exit 1) so the Start item appears to do nothing.
+function isKioUri(target) {
+  const text = String(target || "").trim()
+  const colon = text.indexOf(":")
+  if (colon <= 0)
+    return false
+  const scheme = text.substring(0, colon).toLowerCase()
+  return scheme !== "file" && scheme !== "http" && scheme !== "https" && scheme !== "mailto"
+}
+
+function openLocationCommand(target) {
+  const text = String(target || "").trim()
+  if (!text)
+    return []
+  if (isKioUri(text))
+    return ["sh", "-c", "dolphin --new-window \"$1\" || xdg-open \"$1\"", "quickxp-open", text]
+  return ["xdg-open", text]
+}
+
 function actionNode(action, label, icon, mnemonic) {
   return {
     kind: "action",

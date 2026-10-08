@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from . import extract
+from . import aero_binary, extract
 
 XP_INI_MARKERS = (
     "[button.pushbutton]",
@@ -68,6 +68,9 @@ def _scan_pe(path: Path) -> dict:
     bitmaps = 0
     pngs = 0
     other_images = 0
+    has_variant = False
+    has_cmap = False
+    file_version = ""
     try:
         resources = list(extract.iter_resources(data))
     except ValueError as error:
@@ -82,6 +85,14 @@ def _scan_pe(path: Path) -> dict:
 
     for ident, blob in resources:
         restype = ident[0]
+        if restype == "VARIANT":
+            has_variant = True
+        elif restype == "CMAP":
+            has_cmap = True
+        elif restype == extract.RT_VERSION or restype == 16:
+            found = aero_binary.file_version_from_blob(blob)
+            if found:
+                file_version = found
         if restype in extract.TEXT_TYPES or (
             isinstance(restype, str) and restype.upper() in extract.TEXT_TYPES
         ):
@@ -107,6 +118,11 @@ def _scan_pe(path: Path) -> dict:
         reasons.append(f"{pngs} embedded PNG resource(s)")
     if other_images:
         reasons.append(f"{other_images} other image resource(s)")
+    aero = has_variant and has_cmap
+    if aero:
+        reasons.append("VARIANT+CMAP property store")
+    if file_version:
+        reasons.append(f"file version {file_version}")
 
     name = path.name.lower()
     for hint in VISTA_NAME_HINTS:
@@ -118,6 +134,8 @@ def _scan_pe(path: Path) -> dict:
         "bitmaps": bitmaps,
         "pngs": pngs,
         "other_images": other_images,
+        "aero": aero,
+        "file_version": file_version,
         "reasons": reasons,
     }
 
@@ -131,6 +149,24 @@ def _classify(tree: dict | None, pe: dict | None, name_hint: str) -> dict:
 
     xp_score = 0
     vista_score = 0
+
+    if pe and pe.get("aero"):
+        version = str(pe.get("file_version") or "")
+        lower_name = name_hint.lower()
+        if version.startswith("6.1") or "win7" in lower_name:
+            generation = "win7"
+        elif "7" in lower_name and "aero" in lower_name and not version.startswith("6.0"):
+            generation = "win7"
+        else:
+            generation = "vista"
+        reasons.append(f"Aero property store classified as {generation}")
+        return {
+            "generation": generation,
+            "confidence": 0.92 if version else 0.8,
+            "reasons": reasons,
+            "xp_score": 0,
+            "vista_score": 6,
+        }
 
     if tree:
         xp_score += min(tree["ini_hits"], 6)

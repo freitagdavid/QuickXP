@@ -215,6 +215,13 @@ CLI extract/convert exists; gap is generation detection, INI→logical-key proje
         feat("K", ek, "[Epic K] Sync decoration on Apply", "Install to ~/.local/share/aurorae/themes/<id>/ and select active decoration when Match window borders is on."),
         feat("K", ek, "[Epic K] Regenerate for installed themes", "CLI/GUI action for themes with extract but no Aurorae package yet (incl. Luna)."),
         feat("K", ek, "[Epic K] Titlebar preview in Theme tab", "Fake titlebar using same assets before Apply."),
+        feat(
+            "K",
+            ek,
+            "[Epic K] Vista/7 glass decoration (QML)",
+            "QuickXP KWin QML decoration paints the loaded DWMWindow atlas (plate, reflection, highlight, outline, grouped caption buttons, title glow) and asks KWin to blur behind the frame. XP and Classic stay on Aurorae SVG.",
+            "status:done",
+        ),
     ]
 
     # --- Epic QA ---
@@ -432,6 +439,40 @@ CLI extract/convert exists; gap is generation detection, INI→logical-key proje
         feat("6", e6, "[Epic 6] Desktop Cleanup Wizard (later)", "Unused shortcuts → Unused Desktop Shortcuts (DES-21–23)."),
     ]
 
+    # --- Epic G ---
+    eg = "Epic G — Vista Sidebar gadgets"
+    items.append(
+        epic(
+            "G",
+            eg,
+            """Docked Vista Sidebar first. Free-floating placement (Windows 7) is a later slice and reuses the same gadget instances.
+
+On for generation vista and an explicit setting. Off for generation xp. generation win7 stays off until free placement, which is the Win7 default.
+
+Built-in gadgets only. No third-party .gadget packages, ActiveX/HTML hosts, or the online gadget gallery. Active Desktop stays out of scope (Epic 6).""",
+        )
+    )
+    items += [
+        feat("G", eg, "[Epic G] Sidebar host", "Right-edge dock (left optional); show/hide; above the desktop icon layer; generation-gated."),
+        feat("G", eg, "[Epic G] Gadget frame", "Chrome, close, in-bar reorder, per-gadget opacity."),
+        feat("G", eg, "[Epic G] Built-in gallery", "Add from a fixed catalog, not downloaded packages."),
+        feat("G", eg, "[Epic G] Gadget persistence", "Which gadgets, order, and options in the existing config store."),
+        feat("G", eg, "[Epic G] Sidebar properties", "Side, always on top, start with the shell."),
+        feat("G", eg, "[Epic G] Clock gadget", "Vista and Windows 7."),
+        feat("G", eg, "[Epic G] Calendar gadget", "Vista and Windows 7."),
+        feat("G", eg, "[Epic G] Contacts gadget", "Vista only."),
+        feat("G", eg, "[Epic G] CPU Meter gadget", "Vista and Windows 7."),
+        feat("G", eg, "[Epic G] Currency gadget", "Vista and Windows 7."),
+        feat("G", eg, "[Epic G] Feed Headlines gadget", "Vista and Windows 7."),
+        feat("G", eg, "[Epic G] Notes gadget", "Vista only."),
+        feat("G", eg, "[Epic G] Picture Puzzle gadget", "Vista and Windows 7."),
+        feat("G", eg, "[Epic G] Slide Show gadget", "Vista and Windows 7."),
+        feat("G", eg, "[Epic G] Stocks gadget", "Vista only."),
+        feat("G", eg, "[Epic G] Weather gadget", "Vista and Windows 7."),
+        feat("G", eg, "[Epic G] Windows Media Center gadget", "Windows 7 only. The full Media Center / Royale product stays out of scope."),
+        feat("G", eg, "[Epic G] Free-floating placement (later)", "Undock onto the desktop; Win7 default."),
+    ]
+
     # --- Epic 7 ---
     e7 = "Epic 7 — Session dialogs and lock screen"
     items.append(
@@ -484,6 +525,61 @@ CLI extract/convert exists; gap is generation detection, INI→logical-key proje
         feat("9", e9, "[Epic 9] Explorer navigation", "Back, Up, address bar."),
         feat("9", e9, "[Epic 9] Explorer views", "Icons / list / details."),
         feat("9", e9, "[Epic 9] Tasks pane", "XP common tasks sidebar."),
+    ]
+
+    # --- Epic 10 ---
+    e10 = "Epic 10 — Computer window"
+    items.append(
+        epic(
+            "10",
+            e10,
+            "Generation-skinned Computer root (XP My Computer, Vista/7 Computer). "
+            "Drive groups, open/eject/properties, XP tasks pane, Vista/7 command bar. "
+            "Start and Win+E open this window. Folder browsing stays Epic 9.",
+        )
+    )
+    items += [
+        feat(
+            "10",
+            e10,
+            "[Epic 10] Computer window shell and generation chrome",
+            "One window skinned by generation: XP My Computer menus/toolbar/address/status; "
+            "Vista/7 Computer breadcrumb, command bar, and panes.",
+        ),
+        feat(
+            "10",
+            e10,
+            "[Epic 10] Drive groups",
+            "Fixed mounts, removable disks (DrivesBridge), mounted network filesystems, "
+            "and the XP user-folder group (home and ~/Public).",
+        ),
+        feat(
+            "10",
+            e10,
+            "[Epic 10] Open, eject, and properties",
+            "Open a mount in the system file manager, eject removable media, "
+            "General-style properties (label, file system, used, free).",
+        ),
+        feat(
+            "10",
+            e10,
+            "[Epic 10] XP tasks pane, menus, toolbar, address, status",
+            "Common Tasks (System Tasks, Other Places, Details), menu bar, standard toolbar, "
+            "text address, status bar.",
+        ),
+        feat(
+            "10",
+            e10,
+            "[Epic 10] Vista/7 command bar, breadcrumb, search, nav, details",
+            "Organize command bar, breadcrumb address, search filter, navigation pane, "
+            "bottom details pane. Win7 omits Open Control Panel. Libraries deferred.",
+        ),
+        feat(
+            "10",
+            e10,
+            "[Epic 10] Start and Win+E open Computer",
+            "Start → My Computer and Win+E open this window instead of computer:///.",
+        ),
     ]
 
     # --- Spec backlog ---

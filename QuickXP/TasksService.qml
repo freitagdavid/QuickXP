@@ -10,11 +10,9 @@ import "TasksModel.js" as TasksModel
 Singleton {
     id: root
 
-    readonly property bool useKwin: {
-        const desktop = String(Quickshell.env("XDG_CURRENT_DESKTOP") || "")
-        const session = String(Quickshell.env("KDE_FULL_SESSION") || "")
-        return desktop.toUpperCase().indexOf("KDE") !== -1 || session === "true"
-    }
+    readonly property bool useKwin: TasksModel.useKwinSession(
+        Quickshell.env("XDG_CURRENT_DESKTOP"),
+        Quickshell.env("KDE_FULL_SESSION"))
     readonly property string stateFile: Quickshell.statePath("quickxp-tasks.json")
     readonly property string scriptFile: Quickshell.shellPath("QuickXP/services/kwin/tasks.js")
 

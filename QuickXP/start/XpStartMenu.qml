@@ -218,7 +218,7 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    color: root.outerBorder
+    color: GenerationPolicy.glass ? "transparent" : root.outerBorder
   }
 
   Column {

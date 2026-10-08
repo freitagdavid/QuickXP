@@ -1,7 +1,7 @@
 # QuickXP shell roadmap (epics and features)
 
 > Canonical product roadmap for future work. Also mirrored at [`.cursor/plans/xp_shell_gap_analysis.plan.md`](../.cursor/plans/xp_shell_gap_analysis.plan.md).
-> Last saved: 2026-10-01 (Spec-derived shell gaps: Epic R/H, fidelity policy, Start/taskband/tray/session expansions).
+> Last saved: 2026-10-08 (Epic G — Vista Sidebar gadgets).
 
 Long-form XP shell inventory (reference checklist, not epic sizing): research attachment *Windows XP Shell Clone Specification* (~814 items). This roadmap stays epic-sized; IDs like STA-*/TSK-* below point at that inventory.
 
@@ -9,7 +9,7 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 
 - [x] Epic 0 — Shell foundation (generation policy, theme seams, config store, Start popup host, app catalog, shared controls atlas)
 - [ ] Epic S — Central tabbed Settings window (Theme, Taskbar, Desktop, Appearance, …) — partial: host + Theme/Taskbar stubs + Start right-click entry; Import/other tabs later
-- [ ] Epic T — Theme import (partial: XP detect → project → user-data install → Settings Import…; Vista/7 #32 still open)
+- [ ] Epic T — Theme import (partial: XP + Vista Aero project → user-data install → Settings Import…; Win7 map #32 still open)
 - [x] Epic K — Generate and sync matching KWin Aurorae window decorations
 - [ ] Epic QA — Testing (partial: harness + detect/project/pipeline/aurorae + extract/convert/list_themes + QML normalize + smoke checklist; bridges/CI later)
 - [ ] Epic H — Shell hotkeys (Win/Ctrl+Esc, Win+R/E/F/D/M/L, Alt+Esc, Win+Tab taskbar cycle, …)
@@ -22,13 +22,15 @@ Long-form XP shell inventory (reference checklist, not epic sizing): research at
 - [x] Epic C — Tray system controls (volume mixer, BT, brightness, network, drives, battery)
 - [ ] Epic A — Alt+Tab switcher (adapt quickshell-overview UI; KWin/Hypr backends)
 - [ ] Epic 6 — Desktop wallpaper, icons, special objects, Recycle Bin
+- [ ] Epic G — Vista Sidebar gadgets (docked sidebar first; free placement later)
 - [ ] Epic 8 — Tray notification queue (view/dismiss) plus balloons and attention flash
 - [ ] Epic 7 — Session dialogs + Windows-style lock screen
 - [ ] Epic 9 — Explorer (later track)
+- [ ] Epic 10 — Computer window (generation-skinned root; not full folder browsing)
 
 ---
 
-Scope is the desktop shell (taskbar, Start, tray, desktop, session, theme import). Explorer folder windows are a later epic.
+Scope is the desktop shell (taskbar, Start, tray, desktop, session, theme import). The Computer root is Epic 10. Explorer folder windows stay a later epic.
 
 Vista and 7 are presentation policy on shared backends, not a fork. Theme/shell key: `generation: "xp" | "vista" | "win7"` in [QuickXP/themes/luna/theme.json](QuickXP/themes/luna/theme.json) / [QuickXP/themes/aero/theme.json](QuickXP/themes/aero/theme.json). [QuickXP/Theme.qml](QuickXP/Theme.qml) already merges arbitrary JSON groups and live-reloads `theme.json`. Runtime policy: [QuickXP/GenerationPolicy.qml](QuickXP/GenerationPolicy.qml) resolves shell generation (follow theme or `Config.options.generation`) and per-feature overrides in `Config.options.generationOverrides` (empty = follow shell). Consumers call `GenerationPolicy.forItem("startMenu")` etc.
 
@@ -48,8 +50,10 @@ flowchart TB
   trayCtl[Tray controls]
   altTab[Alt Tab switcher]
   desktop[Desktop]
+  sidebar[Sidebar gadgets]
   attention[Attention]
   session[Session]
+  computer[Computer window]
   explorer[Explorer later]
   foundation --> settings
   settings --> themes
@@ -64,10 +68,13 @@ flowchart TB
   settings --> ql
   settings --> taskband
   settings --> desktop
+  desktop --> sidebar
   settings --> trayCtl
   taskband --> altTab
   foundation --> attention
   themes --> xpStart
+  hotkeys --> computer
+  computer --> explorer
 ```
 
 ## Fidelity policy
@@ -80,6 +87,7 @@ Where stock XP and later/modern shell behavior disagree, generation (or an expli
 | Win+Tab | Cycles **taskbar button focus** | Flip 3D / overview | XP default = taskbar cycle (Epic H); Super+Tab overview is optional modern/generation policy (Epic A), not XP default |
 | Taskbar grouping | Crowd-triggered when space is tight (TSK-16) | Always-grouped combined buttons | Support both; “Windows XP taskbar” preset = crowding-triggered; modern preset may keep always-on |
 | Live peeks | No stock Aero thumbnails (TSK-22) | Icon-only thumbnail strips | Gated by `iconsOnly` / generation (Epic 5); XP list groups stay title menus |
+| Desktop gadgets | None (Active Desktop out of scope) | Vista Sidebar dock; Win7 free gadgets | Off for `generation: xp`; Sidebar for `vista`; free placement later for `win7` (Epic G) |
 
 ## Already implemented (baseline)
 
@@ -172,8 +180,8 @@ flowchart LR
   pick --> detect --> extract --> convert --> project --> deco --> install --> apply
 ```
 
-- [x] **Pick input** — Settings file dialog for `.msstyles` (folder / `.theme` later). CLI: [`scripts/import_xp_theme.py`](../scripts/import_xp_theme.py).
-- [x] **Detect generation** — [`quickxp_theme.detect`](../scripts/quickxp_theme/detect.py): TEXTFILE/BMP → `xp`; PNG-heavy / no INI → `vista`/`win7`/`unknown`. XP Import refuses non-XP until #32.
+- [x] **Pick input** — Settings file dialog for `.msstyles` and `.theme`. CLI: [`scripts/import_xp_theme.py`](../scripts/import_xp_theme.py).
+- [x] **Detect generation** — [`quickxp_theme.detect`](../scripts/quickxp_theme/detect.py): TEXTFILE/BMP → `xp`; `VARIANT`+`CMAP` → `vista` (file version 6.0) or `win7` (6.1). Win7 still has no part map.
 - [x] **Extract** — Library at [`scripts/quickxp_theme/extract.py`](../scripts/quickxp_theme/extract.py); thin CLI [`scripts/extract_xp_theme.py`](../scripts/extract_xp_theme.py). Bitmaps + TEXTFILE/INI land in a theme working tree.
 - [x] **Convert transparency** — Library at [`scripts/quickxp_theme/convert.py`](../scripts/quickxp_theme/convert.py); thin CLI [`scripts/convert-theme-bmps.py`](../scripts/convert-theme-bmps.py). PNGs keep the extract layout so INI paths resolve 1:1.
 - [x] **Project INI → `theme.json`** — [`quickxp_theme.project`](../scripts/quickxp_theme/project.py) + [`class_key_map`](../scripts/quickxp_theme/class_key_map.py). Parses size/color INI; resolves `ImageFile` → `BLUE_*_BMP.png`; emits colors/sizes/control groups. Missing keys omit (Theme defaults); warnings collected.
@@ -187,18 +195,20 @@ flowchart LR
 - [x] **Import…** — Browse `.msstyles` → probe → install one theme with all schemes in `schemeData` → refresh registry. ([`ThemeTab.qml`](../QuickXP/settings/ThemeTab.qml))
 - [x] **Color scheme picker** — Theme list + scheme dropdown for the selected pack (`Config.themeScheme` / `Theme.scheme`); schemes listed by [`quickxp_theme.schemes`](../scripts/quickxp_theme/schemes.py).
 - [x] **Delete** — Removes user-data themes only (`delete_theme.py`); builtins stay.
-- [x] **Error reporting** — JSON `{ ok, warnings, errors }` from probe/install; `XpMessageBox` + status text. Vista+ blocked with clear message.
+- [x] **Error reporting** — JSON `{ ok, warnings, errors }` from probe/install; `XpMessageBox` + status text. Win7 import explains that the part map is not in yet.
 
 ### Generation-specific work
 
 - [x] **XP** — Proven on checked-in Luna extract (pytest golden) + alternate `ImageFile` names fixture; Settings Import wired for real `.msstyles`. Homestead/Metallic are the same projector with a different INI path.
-- [ ] **Vista / 7 (#32)** — Extend for Aero binary property store + PNG/TGA; use msstyleEditor/`libmsstyle` as reference. Not in this XP pass.
+- [x] **Vista (#32)** — [`quickxp_theme.aero_binary`](../scripts/quickxp_theme/aero_binary.py) decodes the shared Aero property store (CMAP / VMAP / VARIANT / IMAGE). [`aero_vista`](../scripts/quickxp_theme/aero_vista.py) maps Vista parts onto the existing logical keys. Stock Vista Aero ships as [`QuickXP/themes/aero`](../QuickXP/themes/aero). Shell glass (taskbar, Start, peek) follows generation `vista`/`win7`. Apply with “Match window borders” turns KWin blur and contrast on for those generations and off for XP/Classic. Aero caption, taskbar, and Start images keep the alpha stored in the theme; Luna frames stay opaque.
+- [ ] **Windows 7 (#32)** — [`aero_win7.BINDINGS`](../scripts/quickxp_theme/aero_win7.py) is the same binding shape and is still empty. A 6.1 file parses, then import stops with “Win7 map is not implemented yet”.
 
 ### Acceptance (Epic T XP slice)
 
 - [x] Settings → Theme → Import… XP `.msstyles` → scheme pick if needed → install under data path → Apply live-reloads chrome without hand JSON.
 - [x] pytest covers detect + Luna Blue projection (+ alt ImageFile fixture) + pipeline install.
-- [ ] Vista/7 (#32) remains open — epic stays partial until then.
+- [x] Vista projection: pytest covers a synthetic property store plus the stock Vista pack when that `.msstyles` is present. Builtin `themes/aero` is that projection.
+- [ ] Win7 part map (#32) remains open — epic stays partial until then.
 
 ### Out of scope for v1 of this epic
 
@@ -228,13 +238,14 @@ Goal: when the shell theme is applied, **window titlebars and caption buttons ma
 
 - [x] **Regenerate** — CLI [`scripts/generate_aurorae.py`](../scripts/generate_aurorae.py) / Settings “Regenerate borders”; `import_xp_theme.py --aurorae-only`.
 - [x] **Preview** — Theme tab Sample shows fake active titlebar + close chrome from caption assets.
+- [x] **Vista/7 glass decoration (QML)** — KWin QML decoration draws the loaded theme's DWMWindow atlas (glass plate, reflection, caption highlight, outline, grouped caption buttons, title glow) and sets a blur mask. XP and Classic keep the Aurorae SVG path. Aurorae SVG for Vista/7 stays the opaque Basic fallback.
 - [x] **pytest** — [`tests/theme/test_aurorae.py`](../tests/theme/test_aurorae.py) (Luna emission + sync install-only).
 
 ### Risks / notes
 
 - Aurorae SVG layout is finicky; Luna Blue is the golden reference — third-party packs may need margin tweaks.
 - Maximized borderless / no-border apps stay compositor policy.
-- True Aero glass blur is compositor-side; decoration assets are opaque bitmap approximations.
+- Aero glass: shell panels blur behind the theme’s own alpha bitmaps; KWin blur/contrast is toggled with border sync. Luna frames stay opaque, and the blur plugin is turned off with that theme.
 
 ---
 
@@ -244,7 +255,7 @@ Central shortcut ownership so Start, Run, session, and taskband do not each inve
 
 - **Start** — Windows key or Ctrl+Esc opens Start; Esc / outside click dismisses (Epic 1 host).
 - **Run** — Win+R → Epic R.
-- **Explorer** — Win+E opens Computer / folder window (Epic 9 when ready; stub may launch system file manager).
+- **Explorer** — Win+E opens the Computer window (Epic 10). Until that lands, a stub may launch the system file manager. Descending into folders is Epic 9.
 - **Search** — Win+F opens XP Search Companion path when that lands; until then stub or system search. Distinct from Vista Start search box (Epic 3).
 - **Desktop** — Win+D toggles Show Desktop; Win+M minimizes eligible windows; Shift+Win+M restores (Epic 4 / Epic 5).
 - **Lock** — Win+L → Epic 7 lock.
@@ -466,7 +477,34 @@ Settings → Taskbar (or a small “Window switching” section): classic vs pre
 - **Desktop context menu** — Refresh, Paste, New, Properties → `Settings.open("desktop")`.
 - **Multi-monitor** — Icon placement recovery after resolution/topology changes (DES-24).
 - **Desktop Cleanup Wizard (later)** — Unused shortcuts → Unused Desktop Shortcuts folder (DES-21–23).
-- **Active Desktop** — Out of scope.
+- **Active Desktop** — Out of scope. Vista/7 inbox gadgets are Epic G, not HTML wallpaper.
+
+---
+
+## Epic G — Vista Sidebar gadgets
+
+Docked Vista Sidebar first. Free-floating placement (Windows 7) is a later slice in this epic and reuses the same gadget instances. On for `generation: vista` and an explicit setting. Off for `generation: xp`. `generation: win7` stays off until free placement; that slice is the Win7 default.
+
+Built-in gadgets only. No third-party `.gadget` packages, ActiveX/HTML hosts, or the online gadget gallery. One feature per inbox gadget. Vista shipped Calendar, Clock, Contacts, CPU Meter, Currency, Feed Headlines, Notes, Picture Puzzle, Slide Show, Stocks, and Weather. Windows 7 dropped Contacts, Notes, and Stocks and added Windows Media Center. Network-backed gadgets (Feed Headlines, Weather, Stocks, Currency) are built-ins, not a license to load arbitrary web gadgets.
+
+- **Sidebar host** — Right-edge dock (left optional); show/hide; above the desktop icon layer; generation-gated.
+- **Gadget frame** — Chrome, close, in-bar reorder, per-gadget opacity.
+- **Built-in gallery** — Add from a fixed catalog, not downloaded packages.
+- **Persistence** — Which gadgets, order, and options in the existing config store.
+- **Sidebar properties** — Side, always on top, start with the shell.
+- **Clock** — Vista and Windows 7.
+- **Calendar** — Vista and Windows 7.
+- **Contacts** — Vista only.
+- **CPU Meter** — Vista and Windows 7.
+- **Currency** — Vista and Windows 7.
+- **Feed Headlines** — Vista and Windows 7.
+- **Notes** — Vista only.
+- **Picture Puzzle** — Vista and Windows 7.
+- **Slide Show** — Vista and Windows 7.
+- **Stocks** — Vista only.
+- **Weather** — Vista and Windows 7.
+- **Windows Media Center** — Windows 7 only. The full Media Center / Royale product stays out of scope.
+- **Free-floating placement (later)** — Undock onto the desktop; Win7 default.
 
 ---
 
@@ -524,13 +562,80 @@ Suggested early slice (can ship before Start menu polish): Server + tray button 
 
 ## Epic 9 — Explorer (later track)
 
-Not started until Start, Quick Launch, and desktop exist.
+Not started until Start, Quick Launch, and desktop exist. The Computer root itself is Epic 10; this epic is descending into folders and the rest of the file window.
 
 - **Folder windows** — Browse filesystem with Luna chrome.
 - **Navigation** — Back, Up, address bar.
 - **Views** — Icons / list / details.
 - **Tasks pane** — XP common tasks sidebar.
 - Deeper inventory (Folder Options, ZIP/CD, Search Companion UI, Open/Save dialogs, Control Panel applets, COM extensions) stays in the long-form spec — do not block shell epics on those.
+
+---
+
+## Epic 10 — Computer window
+
+Shell-owned Computer root. Start → My Computer currently opens `computer:///` in the system file manager. This epic replaces that with one generation-skinned window of disks and special places. Descending into a folder stays Epic 9. Win+E (Epic H) opens this window.
+
+Computer is a virtual folder, not a directory. XP, Vista, and Windows 7 all list storage in groups and open a drive on double-click. Generation changes the chrome, not the disk list.
+
+### Windows XP — title “My Computer”
+
+- Menu bar is always on: File, Edit, View, Favorites, Tools, Help.
+- Standard toolbar: Back, Forward, Up, Search, Folders, Views. Cut, Copy, Paste, Delete, and Properties can be added; they are not the default set.
+- Separate address band (text, “My Computer”) and a status bar (object count, free space).
+- Left side defaults to Common Tasks. The Folders button swaps that for the folder tree. Folder Options can turn tasks off (“Use Windows classic folders”).
+- System Tasks on this folder: View system information, Add or remove programs, Change a setting.
+- Other Places: My Network Places, My Documents, Shared Documents, Control Panel.
+- Details: name, type, file system, used and free space. A thumbnail appears only after you are inside a folder and select a picture.
+- Groups, Tiles view by default:
+  - Files Stored on This Computer (workgroup PCs only): Shared Documents and each user’s documents. Hidden when the PC is on a domain.
+  - Hard Disk Drives, with label, file system, and free/total.
+  - Devices with Removable Storage: floppy, CD/DVD, Zip, USB.
+  - Network Drives when any are mapped.
+- Views: Thumbnails, Tiles, Icons, List, Details. Filmstrip is for picture folders, not this root. Details columns: Name, Type, Total Size, Free Space, Comments.
+- Drive menu: Open, Explore, Search, Sharing and Security, Format, Eject (optical and removable), Rename, Create Shortcut, Properties.
+- Empty optical drive: insert-disc prompt. Properties is General (label, type, file system, used/free pie) plus Tools, Hardware, Sharing, and Quota. Only General belongs in the first slice.
+
+### Windows Vista — title “Computer”
+
+- Menu bar hidden until Alt, or pinned from Organize → Layout.
+- Back and Forward stay. The Up button is gone (Alt+Up or the breadcrumb). Address bar is breadcrumbs (Desktop > Computer) plus a search box that filters this view.
+- Command bar for this folder: Organize, System properties, Uninstall or change a program, Map network drive, Open Control Panel. Properties shows when a drive is selected. Views is a split button.
+- Organize covers cut/copy/paste, layout, folder options, rename, delete, and close.
+- Left side is the Navigation pane: Favorite Links (Documents, Pictures, Music, Recently Changed, Searches) and a Folders tree. The XP task list is gone.
+- Details pane along the bottom is on by default. Preview pane is off until Organize → Layout.
+- Groups: Hard Disk Drives, Devices with Removable Storage, Network Location. “Files Stored on This Computer” is gone; those folders moved to Favorite Links and the user folder.
+- Tiles remain the default and show a used-space meter. Details adds a File System column.
+- Drive menu: Open, Open in new window, Share, Format, Eject, Rename, Create Shortcut, Properties.
+
+### Windows 7 — still “Computer”
+
+Same shell as Vista, with these Computer-window differences:
+
+- Navigation pane sections: Favorites, Libraries, Computer, Network. Libraries (Documents, Music, Pictures, Videos as combined folders) are new here. Show the heading later; do not implement library membership in this epic.
+- Command bar: Organize, System properties, Uninstall or change a program, Map network drive. Open Control Panel is no longer on this toolbar. A preview-pane toggle sits by Views and Help.
+- Details pane can be dragged taller to show more properties.
+- Groups and Tiles default match Vista, including the capacity bar.
+- Win+E opens Computer. The taskbar’s Explorer pin often opens Libraries instead; that second entry point is not this epic.
+
+### QuickXP shape
+
+One window, skinned by `generation`:
+
+- XP: “My Computer”, menu bar, standard toolbar, text address, status bar, Common Tasks.
+- Vista: “Computer”, breadcrumb address, search filter, command bar including Open Control Panel, nav pane, bottom details.
+- Windows 7: Vista chrome, command bar without Open Control Panel, preview toggle. Libraries section deferred.
+
+Data, not drive letters: fixed mounts, removable disks from the existing UDisks path in [QuickXP/services/DrivesBridge.py](../QuickXP/services/DrivesBridge.py), and mounted network filesystems. XP’s “files stored on this computer” maps to the home folder and `~/Public` when that directory exists.
+
+v1 actions: open a mount with the system file manager, eject removable media, and a General-style properties dialog (label, file system, used, free). System properties and “change a setting” open existing Settings or a short system-info page. Add/remove programs, map network drive, format, and disk tools stay labeled stubs.
+
+- **Computer window shell** — Generation chrome (title, frame, and the bars above).
+- **Drive groups** — Fixed, removable, and network, plus the XP user-folder group.
+- **Open, eject, and properties** — Open hands the mount to the system file manager; eject uses the drives bridge; properties is the General page only.
+- **XP tasks pane** — Menus, toolbar, address, status, System Tasks, Other Places, Details.
+- **Vista/7 chrome** — Command bar, breadcrumb, search filter, nav pane, details pane. Win7 omits Open Control Panel and adds the preview toggle.
+- **Launch** — Start → My Computer and Win+E open this window instead of `computer:///`.
 
 ---
 
@@ -560,7 +665,7 @@ Tracked here so the inventory is not forgotten, but not blocking the near-term e
 
 ### Explicitly out of near-term scope
 
-Full Explorer §§10–16 / 18–26 depth, Control Panel applet recreation, Magnifier/Narrator/OSK suite, COM shell-extension ABI, Active Desktop, Media Center/Royale, domain logon as stock requirements, and inventory-excluded modernisms (jump lists, Aero Snap, Action Center history as XP default, address breadcrumbs, libraries).
+Full Explorer §§10–16 / 18–26 depth, Control Panel applet recreation, Magnifier/Narrator/OSK suite, COM shell-extension ABI, Active Desktop (HTML wallpaper; inbox gadgets are Epic G), Media Center/Royale as a product (the Windows 7 Media Center gadget is Epic G), domain logon as stock requirements, and inventory-excluded modernisms (jump lists, Aero Snap, Action Center history as XP default, libraries). Third-party `.gadget` packages and the online gadget gallery stay out. Vista/7 address breadcrumbs on the Computer window are Epic 10, not a general Explorer rewrite. Libraries stay deferred.
 
 ---
 
@@ -582,11 +687,13 @@ Full Explorer §§10–16 / 18–26 depth, Control Panel applet recreation, Magn
 14. Tray system controls — volume mixer first, then network / BT / brightness / drives / battery + clock Properties
 15. Tray notification queue + per-icon Customize + Notification Area tab polish (XP retention policy)
 16. Desktop + special icons + Recycle Bin + Desktop tab
-17. Taskband chrome menu + cascade/tile + auto-hide + keep-on-top / work area
-18. Optional Super+Tab full overview / Hyprland adapter (not XP Win+Tab default)
-19. Vista/7 Start search + Vista/7 lock/theme skins + Appearance/Classic style polish
-20. Explorer (+ Search Companion / sound scheme / toolkit theming from backlog as capacity allows)
-21. Expand QML tests / smoke / CI as features stabilize
+17. Vista Sidebar gadgets (Epic G) after the desktop surface exists; free placement follows
+18. Taskband chrome menu + cascade/tile + auto-hide + keep-on-top / work area
+19. Optional Super+Tab full overview / Hyprland adapter (not XP Win+Tab default)
+20. Vista/7 Start search + Vista/7 lock/theme skins + Appearance/Classic style polish
+21. Computer window (Epic 10) — root only, before full folder browsing
+22. Explorer (+ Search Companion / sound scheme / toolkit theming from backlog as capacity allows)
+23. Expand QML tests / smoke / CI as features stabilize
 
 Note: Epic 8’s queue can be pulled earlier (after foundation / tray exists) if you want notifications before Start work finishes — [QuickXP/tray/Tray.qml](QuickXP/tray/Tray.qml) is already in place.
 

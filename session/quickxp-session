@@ -1,0 +1,41 @@
+#!/bin/sh
+# Wayland session: KWin compositor and Quickshell only.
+# SDDM's wayland-session wrapper does not clear the greeter display variables.
+set -eu
+
+unset WAYLAND_DISPLAY
+unset DISPLAY
+
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=QuickXP
+export XDG_SESSION_DESKTOP=quickxp
+export DESKTOP_SESSION=quickxp
+
+export QT_QPA_PLATFORM=wayland
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export GDK_BACKEND=wayland,x11
+export MOZ_ENABLE_WAYLAND=1
+
+kwin=/usr/sbin/kwin_wayland
+if [ ! -x "$kwin" ]; then
+  echo "quickxp-session: $kwin is missing" >&2
+  exit 1
+fi
+
+qs=""
+if command -v quickshell >/dev/null 2>&1; then
+  qs=$(command -v quickshell)
+elif command -v qs >/dev/null 2>&1; then
+  qs=$(command -v qs)
+else
+  echo "quickxp-session: quickshell is not installed" >&2
+  exit 1
+fi
+
+# Quickshell is only the --exit-with-session client so KWin does not start it twice.
+exec "$kwin" \
+  --drm \
+  --xwayland \
+  --no-lockscreen \
+  --no-kactivities \
+  --exit-with-session "$qs"

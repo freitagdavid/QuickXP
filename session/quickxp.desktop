@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=QuickXP
+Comment=KWin with Quickshell, without Plasma
+Exec=quickxp-session
+TryExec=quickxp-session
+Type=Application
+DesktopNames=QuickXP

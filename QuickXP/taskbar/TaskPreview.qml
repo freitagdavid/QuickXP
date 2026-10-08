@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Wayland
 import qs.QuickXP
 
 PopupWindow {
@@ -19,7 +20,15 @@ PopupWindow {
     signal closedOut()
 
     visible: false
-    color: Theme.color("menu", "white")
+    readonly property bool glass: GenerationPolicy.glass
+    color: glass ? "transparent" : Theme.color("menu", "white")
+
+    BackgroundEffect.blurRegion: glass ? previewGlass : null
+
+    Region {
+        id: previewGlass
+        item: previewCard
+    }
     // Hover peek: do not steal grab — grabFocus makes the task button lose
     // containsMouse and the leave timer immediately dismisses the peek.
     grabFocus: false
@@ -99,10 +108,23 @@ PopupWindow {
     }
 
     Rectangle {
+        id: previewCard
         anchors.fill: parent
-        color: Theme.color("menu", "white")
-        border.width: 1
+        color: preview.glass ? "transparent" : Theme.color("menu", "white")
+        border.width: preview.glass ? 0 : 1
         border.color: Theme.color("border", "#003C74")
+
+        BorderImage {
+            anchors.fill: parent
+            visible: preview.glass
+            source: preview.themeImage("taskbarImage")
+            border.left: 0
+            border.right: 0
+            border.top: 8
+            border.bottom: 8
+            horizontalTileMode: BorderImage.Stretch
+            verticalTileMode: BorderImage.Stretch
+        }
 
         HoverHandler {
             onHoveredChanged: {

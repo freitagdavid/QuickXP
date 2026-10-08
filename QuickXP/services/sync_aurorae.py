@@ -16,6 +16,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+GLASS_GENERATIONS = {"vista", "win7"}
+
 
 def aurorae_home() -> Path:
     xdg = os.environ.get("XDG_DATA_HOME")
@@ -95,14 +97,106 @@ def install_package(theme_root: Path, dest_root: Path | None = None) -> dict:
     return result
 
 
-def select_decoration(deco_id: str) -> dict:
-    """Point KWin at the Aurorae theme via kwriteconfig + reconfigure."""
+def theme_wants_glass(theme_root: Path) -> bool:
+    """Vista/7 themes frost the shell; XP and Classic stay solid."""
+    path = theme_root / "theme.json"
+    if not path.is_file():
+        return False
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return False
+    generation = str(doc.get("generation") or "").strip().lower()
+    return generation in GLASS_GENERATIONS
+
+
+def kwin_glass_argv(kwrite: str, enabled: bool) -> list[list[str]]:
+    flag = "true" if enabled else "false"
+    return [
+        [kwrite, "--file", "kwinrc", "--group", "Plugins", "--key", "blurEnabled", flag],
+        [kwrite, "--file", "kwinrc", "--group", "Plugins", "--key", "contrastEnabled", flag],
+    ]
+
+
+def kwin_decoration_home() -> Path:
+    xdg = os.environ.get("XDG_DATA_HOME")
+    base = Path(xdg) if xdg else Path.home() / ".local" / "share"
+    return base / "kwin" / "decorations"
+
+
+def read_kdecoration_id(package: Path) -> str | None:
+    meta_path = package / "metadata.json"
+    if not meta_path.is_file():
+        return None
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    plugin = meta.get("KPlugin") if isinstance(meta, dict) else None
+    if isinstance(plugin, dict):
+        ident = str(plugin.get("Id") or "").strip()
+        return ident or None
+    return None
+
+
+def install_kdecoration(theme_root: Path, dest_root: Path | None = None) -> dict:
+    src = theme_root / "kdecoration"
+    result: dict = {
+        "ok": False,
+        "skipped": False,
+        "id": None,
+        "installedPath": None,
+        "warnings": [],
+        "errors": [],
+    }
+    if not src.is_dir():
+        result["skipped"] = True
+        result["warnings"].append(f"no kdecoration/ package under {theme_root}")
+        return result
+    deco_id = read_kdecoration_id(src) or f"kwin4_decoration_qml_quickxp_{theme_root.name}"
+    dest_root = dest_root or kwin_decoration_home()
+    dest = dest_root / deco_id
+    dest_root.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(src, dest)
+    result.update({"ok": True, "id": deco_id, "installedPath": str(dest)})
+    return result
+
+
+def preferred_decoration(theme_root: Path) -> dict:
+    """Vista/7 use the QML package when it exists. XP and Classic stay on Aurorae."""
+    aurorae_id = None
+    aurorae_dir = theme_root / "aurorae"
+    if aurorae_dir.is_dir():
+        aurorae_id = read_deco_id(aurorae_dir) or f"quickxp-{theme_root.name}"
+    qml_id = None
+    qml_dir = theme_root / "kdecoration"
+    if qml_dir.is_dir():
+        qml_id = read_kdecoration_id(qml_dir)
+    if theme_wants_glass(theme_root) and qml_id:
+        return {"id": qml_id, "qml": True, "auroraeId": aurorae_id}
+    return {"id": aurorae_id, "qml": False, "auroraeId": aurorae_id}
+
+
+def decoration_config_argv(kwrite: str, deco_id: str, *, qml: bool) -> list[list[str]]:
+    theme_value = deco_id if qml else f"__aurorae__svg__{deco_id}"
+    return [
+        [kwrite, "--file", "kwinrc", "--group", "org.kde.kdecoration2", "--key", "library", "org.kde.kwin.aurorae"],
+        [kwrite, "--file", "kwinrc", "--group", "org.kde.kdecoration2", "--key", "theme", theme_value],
+        [kwrite, "--file", "kwinrc", "--group", "org.kde.kwin.aurorae", "--key", "theme", theme_value],
+    ]
+
+
+def select_decoration(deco_id: str, *, glass: bool | None = None, qml: bool = False) -> dict:
+    """Point KWin at an Aurorae SVG theme or a QuickXP QML decoration."""
     result: dict = {
         "ok": False,
         "skipped": False,
         "warnings": [],
         "errors": [],
         "selected": deco_id,
+        "qml": qml,
     }
     kwrite = which("kwriteconfig6") or which("kwriteconfig5") or which("kwriteconfig")
     if kwrite is None:
@@ -110,17 +204,18 @@ def select_decoration(deco_id: str) -> dict:
         result["warnings"].append("kwriteconfig not found; not on Plasma/KWin?")
         return result
 
-    theme_value = f"__aurorae__svg__{deco_id}"
-    steps = [
-        [kwrite, "--file", "kwinrc", "--group", "org.kde.kdecoration2", "--key", "library", "org.kde.kwin.aurorae"],
-        [kwrite, "--file", "kwinrc", "--group", "org.kde.kdecoration2", "--key", "theme", theme_value],
-        # Some Plasma versions also read the Aurorae group.
-        [kwrite, "--file", "kwinrc", "--group", "org.kde.kwin.aurorae", "--key", "theme", theme_value],
-    ]
+    steps = decoration_config_argv(kwrite, deco_id, qml=qml)
     for argv in steps:
         ok, detail = run_cmd(argv)
         if not ok:
             result["warnings"].append(f"{' '.join(argv)}: {detail}")
+
+    if glass is not None:
+        for argv in kwin_glass_argv(kwrite, glass):
+            ok, detail = run_cmd(argv)
+            if not ok:
+                result["warnings"].append(f"{' '.join(argv)}: {detail}")
+        result["glass"] = glass
 
     reconfigure = None
     for candidate in (
@@ -145,21 +240,33 @@ def select_decoration(deco_id: str) -> dict:
 
 def sync_theme(theme_root: Path, *, install_only: bool = False) -> dict:
     installed = install_package(theme_root)
+    kdec = install_kdecoration(theme_root)
+    choice = preferred_decoration(theme_root)
+    chosen_id = choice.get("id")
     payload: dict = {
-        "ok": installed.get("ok", False),
+        "ok": bool(installed.get("ok") or kdec.get("ok")),
         "skipped": False,
         "themeRoot": str(theme_root),
-        "id": installed.get("id"),
-        "installedPath": installed.get("installedPath"),
-        "warnings": list(installed.get("warnings") or []),
-        "errors": list(installed.get("errors") or []),
+        "id": chosen_id,
+        "installedPath": kdec.get("installedPath") if choice.get("qml") else installed.get("installedPath"),
+        "warnings": list(installed.get("warnings") or []) + list(kdec.get("warnings") or []),
+        "errors": list(installed.get("errors") or []) + list(kdec.get("errors") or []),
         "selected": False,
+        "qml": bool(choice.get("qml")),
     }
-    if not installed.get("ok"):
+    if not chosen_id:
+        payload["ok"] = False
+        if not payload["errors"]:
+            payload["errors"].append(f"no decoration package under {theme_root}")
         return payload
     if install_only:
         return payload
-    selected = select_decoration(str(installed["id"]))
+    selected = select_decoration(
+        str(chosen_id),
+        glass=theme_wants_glass(theme_root),
+        qml=bool(choice.get("qml")),
+    )
+    payload["glass"] = selected.get("glass")
     payload["warnings"].extend(selected.get("warnings") or [])
     payload["errors"].extend(selected.get("errors") or [])
     payload["skipped"] = bool(selected.get("skipped"))

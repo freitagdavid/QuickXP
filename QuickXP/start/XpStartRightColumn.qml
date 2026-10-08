@@ -99,7 +99,9 @@ Item {
   // sunburst only — full-height BorderImage stretches them into a vertical stripe.
   Rectangle {
     anchors.fill: parent
-    color: String(Theme.value("startPanel", "placesFill", "#D3E5FA"))
+    color: GenerationPolicy.glass
+      ? "transparent"
+      : String(Theme.value("startPanel", "placesFill", "#D3E5FA"))
   }
 
   // Top sunburst only (height locked to SizingMargins top).
@@ -108,7 +110,9 @@ Item {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    height: Number(Theme.value("startPanel", "placesBorderTop", 3))
+    height: GenerationPolicy.glass
+      ? parent.height
+      : Number(Theme.value("startPanel", "placesBorderTop", 3))
     source: {
       const path = Theme.image("startPanelPlacesBackgroundImage")
       return path ? ("file://" + path) : ""
@@ -116,7 +120,9 @@ Item {
     border.left: Number(Theme.value("startPanel", "placesBorderLeft", 172))
     border.right: Number(Theme.value("startPanel", "placesBorderRight", 7))
     border.top: Number(Theme.value("startPanel", "placesBorderTop", 3))
-    border.bottom: 0
+    border.bottom: GenerationPolicy.glass
+      ? Number(Theme.value("startPanel", "placesBorderBottom", 0))
+      : 0
     horizontalTileMode: BorderImage.Stretch
     verticalTileMode: BorderImage.Stretch
     visible: status === Image.Ready

@@ -1,32 +1,3087 @@
 {
   "name": "Windows Aero",
   "generation": "vista",
+  "activeScheme": "NormalColor",
+  "schemes": [
+    {
+      "id": "NormalColor",
+      "label": "Normal"
+    }
+  ],
+  "schemeData": {
+    "NormalColor": {
+      "colors": {
+        "desktop": "#409EFE",
+        "button": "#F0F0F0",
+        "window": "#F0F0F0",
+        "windowText": "#000000",
+        "buttonText": "#000000",
+        "menuText": "#000000",
+        "menu": "#F0F0F0",
+        "highlight": "#FF9933",
+        "highlightText": "#FFFFFF",
+        "titleActive": "#409EFE",
+        "titleActiveText": "#000000",
+        "titleInactive": "#DBCDBF",
+        "titleInactiveText": "#544E43",
+        "buttonFace": "#F0F0F0",
+        "classicMenu": "#F0F0F0",
+        "taskbarText": "#FFFFFF",
+        "glass": "#409EFE",
+        "taskbar": "#409EFE",
+        "glassAlpha": "69"
+      },
+      "sizes": {
+        "fontSize": 12,
+        "taskbarHeight": 30,
+        "captionBarHeight": 19,
+        "sizingBorderWidth": 1,
+        "captionBarWidth": 19,
+        "smallCaptionBarWidth": 17,
+        "smallCaptionBarHeight": 17,
+        "paddedBorderWidth": 4,
+        "scrollBarWidth": 17
+      },
+      "images": {
+        "buttonImage": "images/515.png",
+        "checkBoxImage": "images/508.png",
+        "radioButtonImage": "images/516.png",
+        "groupBoxImage": "images/514.png",
+        "comboButtonImage": "images/519.png",
+        "comboButtonGlyphImage": "images/520.png",
+        "scrollArrowImage": "images/666.png",
+        "scrollThumbVerticalImage": "images/678.png",
+        "scrollShaftVerticalImage": "images/674.png",
+        "spinUpBackgroundImage": "images/685.png",
+        "spinDownBackgroundImage": "images/679.png",
+        "tabItemTopImage": "images/730.png",
+        "tabPaneEdgeImage": "images/725.png",
+        "tabBackgroundImage": "images/723.png",
+        "tooltipCloseImage": "images/769.png",
+        "previewCloseImage": "images/769.png",
+        "taskbarImage": "images/743.png",
+        "taskButtonImage": "images/745.png",
+        "taskScrollArrowImage": "images/666.png",
+        "taskScrollArrowGlyphImage": "images/890.png",
+        "trayImage": "images/913.png",
+        "trayChevronImage": "images/911.png",
+        "trayChevronOpenImage": "images/914.png",
+        "captionImage": "images/813.png",
+        "captionSizingTemplateImage": "images/814.png",
+        "frameLeftImage": "images/820.png",
+        "frameRightImage": "images/821.png",
+        "frameBottomImage": "images/819.png",
+        "closeButtonImage": "images/815.png",
+        "closeGlyphImage": "images/818.png",
+        "minButtonImage": "images/835.png",
+        "minGlyphImage": "images/838.png",
+        "maxButtonImage": "images/826.png",
+        "maxGlyphImage": "images/829.png",
+        "restoreButtonImage": "images/826.png",
+        "restoreGlyphImage": "images/842.png",
+        "helpButtonImage": "images/822.png",
+        "helpGlyphImage": "images/825.png",
+        "startUserPanelImage": "images/691.png",
+        "startUserTileImage": "images/692.png",
+        "startPanelMfuBackgroundImage": "images/717.png",
+        "startPanelProgramsSeparatorImage": "images/720.png",
+        "startPanelMoreProgBackgroundImage": "images/714.png",
+        "startPanelPlacesBackgroundImage": "images/715.png",
+        "startPanelPlacesSeparatorImage": "images/716.png",
+        "startPanelLogoffBackgroundImage": "images/693.png",
+        "startPanelLogoffButtonsImage": "images/695.png",
+        "startGroupBackgroundImage": "images/883.png",
+        "startButtonImage": "images/868.png",
+        "captionActiveImage": "images/caption_frames/813-active.png",
+        "captionInactiveImage": "images/caption_frames/813-inactive.png"
+      },
+      "fonts": {
+        "ui": "Segoe UI"
+      },
+      "button": {
+        "frames": 6,
+        "borderLeft": 4,
+        "borderRight": 4,
+        "borderTop": 4,
+        "borderBottom": 4,
+        "imageLayout": "vertical",
+        "sizingType": "stretch",
+        "disabledText": "#838383"
+      },
+      "checkBox": {
+        "frames": 20
+      },
+      "radioButton": {
+        "frames": 8
+      },
+      "groupBox": {
+        "edgeShadow": "#B4B4B4",
+        "edgeHighlight": "#FCF7F4",
+        "edgeLight": "#B4B4B4",
+        "edgeDkShadow": "#646464"
+      },
+      "combo": {
+        "frames": 4,
+        "borderLeft": 5,
+        "borderRight": 5,
+        "borderTop": 7,
+        "borderBottom": 8,
+        "buttonWidth": 17
+      },
+      "scrollBar": {
+        "arrowFrames": 20,
+        "borderLeft": 8,
+        "borderRight": 8,
+        "borderTop": 8,
+        "borderBottom": 8,
+        "thumbFrames": 5,
+        "thumbBorderLeft": 8,
+        "thumbBorderRight": 8,
+        "thumbBorderTop": 5,
+        "thumbBorderBottom": 5,
+        "shaftFrames": 5
+      },
+      "spin": {
+        "frames": 4,
+        "borderLeft": 4,
+        "borderRight": 3,
+        "borderTop": 9,
+        "borderBottom": 3,
+        "buttonWidth": 15
+      },
+      "tab": {
+        "frames": 5,
+        "borderLeft": 2,
+        "borderRight": 2,
+        "borderTop": 13,
+        "borderBottom": 4
+      },
+      "taskbar": {
+        "borderLeft": 0,
+        "borderRight": 0,
+        "borderTop": 15,
+        "borderBottom": 14,
+        "fill": "#423330"
+      },
+      "taskButton": {
+        "frames": 8,
+        "borderLeft": 3,
+        "borderRight": 3,
+        "borderTop": 13,
+        "borderBottom": 4,
+        "imageLayout": "vertical"
+      },
+      "tray": {
+        "borderLeft": 1,
+        "borderRight": 1,
+        "borderTop": 14,
+        "borderBottom": 15
+      },
+      "caption": {
+        "frames": 2,
+        "borderLeft": 28,
+        "borderRight": 35,
+        "borderTop": 9,
+        "borderBottom": 17,
+        "contentLeft": 0,
+        "contentRight": 0,
+        "contentTop": 0,
+        "contentBottom": 0,
+        "imageLayout": "vertical",
+        "sizingType": "stretch",
+        "templateContentLeft": 18,
+        "templateContentRight": 18,
+        "templateContentTop": 8,
+        "templateContentBottom": 0,
+        "captionMarginLeft": 4,
+        "captionMarginRight": 3,
+        "captionMarginTop": 0,
+        "captionMarginBottom": 0,
+        "textShadowOffsetX": 0,
+        "textShadowOffsetY": 0,
+        "textShadowColor": "#620200",
+        "textGlowSize": 12,
+        "glowIntensity": 305,
+        "glowColor": "#FFFFFF",
+        "composited": true
+      },
+      "frame": {
+        "leftFrames": 2,
+        "leftBorderLeft": 2,
+        "leftBorderRight": 1,
+        "leftBorderTop": 91,
+        "leftBorderBottom": 0,
+        "imageLayout": "vertical",
+        "rightFrames": 2,
+        "rightBorderLeft": 1,
+        "rightBorderRight": 2,
+        "rightBorderTop": 91,
+        "rightBorderBottom": 0,
+        "bottomFrames": 2,
+        "bottomBorderLeft": 2,
+        "bottomBorderRight": 2,
+        "bottomBorderTop": 0,
+        "bottomBorderBottom": 2
+      },
+      "captionButton": {
+        "frames": 8,
+        "borderLeft": 2,
+        "borderRight": 2,
+        "borderTop": 7,
+        "borderBottom": 7,
+        "imageLayout": "vertical"
+      },
+      "startPanel": {
+        "userBorderLeft": 8,
+        "userBorderRight": 8,
+        "userBorderTop": 8,
+        "userBorderBottom": 6,
+        "userNameColor": "#FFFFFF",
+        "userFill": "#4E4E4E",
+        "tileBorderLeft": 10,
+        "tileBorderRight": 10,
+        "tileBorderTop": 12,
+        "tileBorderBottom": 12,
+        "tileContentLeft": 9,
+        "tileContentRight": 7,
+        "tileContentTop": 8,
+        "tileContentBottom": 7,
+        "mfuBorderLeft": 13,
+        "mfuBorderRight": 6,
+        "mfuBorderTop": 13,
+        "mfuBorderBottom": 0,
+        "mfuContentLeft": 9,
+        "mfuContentRight": 2,
+        "mfuContentTop": 11,
+        "mfuContentBottom": 0,
+        "mfuText": "#282828",
+        "mfuFill": "#F5F1F0",
+        "moreProgBorderLeft": 13,
+        "moreProgBorderRight": 6,
+        "moreProgBorderTop": 4,
+        "moreProgBorderBottom": 18,
+        "placesBorderLeft": 0,
+        "placesBorderRight": 7,
+        "placesBorderTop": 7,
+        "placesBorderBottom": 2,
+        "placesContentLeft": 3,
+        "placesContentRight": 5,
+        "placesContentTop": 0,
+        "placesContentBottom": 5,
+        "placesText": "#FFFFFF",
+        "placesFill": "#FFFFFF",
+        "logoffBorderLeft": 2,
+        "logoffBorderRight": 2,
+        "logoffBorderTop": 0,
+        "logoffBorderBottom": 2,
+        "logoffText": "#FFFFFF",
+        "logoffFill": "#1A0001"
+      },
+      "startGroup": {
+        "borderLeft": 28,
+        "borderRight": 2,
+        "borderTop": 1,
+        "borderBottom": 1,
+        "fill": "#000000"
+      },
+      "startButton": {
+        "frames": 3,
+        "imageLayout": "vertical",
+        "sizingType": "truesize",
+        "borderLeft": 0,
+        "borderRight": 0,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "contentLeft": 0,
+        "contentRight": 0,
+        "contentTop": 7,
+        "contentBottom": 8,
+        "composeFlag": false,
+        "text": "",
+        "extraWidth": 0,
+        "font": "Segoe UI"
+      },
+      "dwmWindow": {
+        "parts": {
+          "1": {
+            "imageCount": 2,
+            "sizingMargins": [
+              0,
+              0,
+              2,
+              6
+            ],
+            "rect": [
+              15,
+              594,
+              36,
+              616
+            ],
+            "image": "images/dwm/1.png",
+            "width": 21,
+            "height": 22
+          },
+          "2": {
+            "imageCount": 2,
+            "sizingMargins": [
+              30,
+              29,
+              0,
+              0
+            ],
+            "rect": [
+              107,
+              190,
+              169,
+              234
+            ],
+            "image": "images/dwm/2.png",
+            "width": 62,
+            "height": 44
+          },
+          "3": {
+            "states": {
+              "0": {
+                "contentLeft": 2,
+                "contentRight": 3,
+                "contentTop": 2,
+                "contentBottom": 4
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              12,
+              12,
+              6,
+              8
+            ],
+            "contentMargins": [
+              2,
+              3,
+              2,
+              4
+            ],
+            "rect": [
+              61,
+              336,
+              89,
+              416
+            ],
+            "image": "images/dwm/3.png",
+            "width": 28,
+            "height": 80
+          },
+          "4": {
+            "states": {
+              "0": {
+                "contentLeft": 2,
+                "contentRight": 3,
+                "contentTop": 2,
+                "contentBottom": 4
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              12,
+              12,
+              6,
+              8
+            ],
+            "contentMargins": [
+              2,
+              3,
+              2,
+              4
+            ],
+            "rect": [
+              61,
+              176,
+              89,
+              256
+            ],
+            "image": "images/dwm/4.png",
+            "width": 28,
+            "height": 80
+          },
+          "5": {
+            "states": {
+              "0": {
+                "contentLeft": 3,
+                "contentRight": 1,
+                "contentTop": 2,
+                "contentBottom": 4
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              12,
+              12,
+              6,
+              8
+            ],
+            "contentMargins": [
+              3,
+              1,
+              2,
+              4
+            ],
+            "rect": [
+              61,
+              416,
+              89,
+              496
+            ],
+            "image": "images/dwm/5.png",
+            "width": 28,
+            "height": 80
+          },
+          "6": {
+            "states": {
+              "0": {
+                "contentLeft": 3,
+                "contentRight": 1,
+                "contentTop": 2,
+                "contentBottom": 4
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              12,
+              12,
+              6,
+              8
+            ],
+            "contentMargins": [
+              3,
+              1,
+              2,
+              4
+            ],
+            "rect": [
+              61,
+              256,
+              89,
+              336
+            ],
+            "image": "images/dwm/6.png",
+            "width": 28,
+            "height": 80
+          },
+          "7": {
+            "states": {
+              "0": {
+                "contentLeft": 1,
+                "contentRight": 2,
+                "contentTop": 2,
+                "contentBottom": 4
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              20,
+              20,
+              6,
+              8
+            ],
+            "contentMargins": [
+              1,
+              2,
+              2,
+              4
+            ],
+            "rect": [
+              61,
+              614,
+              107,
+              694
+            ],
+            "image": "images/dwm/7.png",
+            "width": 46,
+            "height": 80
+          },
+          "8": {
+            "states": {
+              "0": {
+                "contentLeft": 1,
+                "contentRight": 2,
+                "contentTop": 2,
+                "contentBottom": 4
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              20,
+              20,
+              6,
+              8
+            ],
+            "contentMargins": [
+              1,
+              2,
+              2,
+              4
+            ],
+            "rect": [
+              61,
+              694,
+              107,
+              774
+            ],
+            "image": "images/dwm/8.png",
+            "width": 46,
+            "height": 80
+          },
+          "9": {
+            "states": {
+              "0": {
+                "contentLeft": 2,
+                "contentRight": 1,
+                "contentTop": 2,
+                "contentBottom": 4
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              20,
+              20,
+              6,
+              8
+            ],
+            "contentMargins": [
+              2,
+              1,
+              2,
+              4
+            ],
+            "rect": [
+              107,
+              0,
+              153,
+              80
+            ],
+            "image": "images/dwm/9.png",
+            "width": 46,
+            "height": 80
+          },
+          "10": {
+            "states": {
+              "0": {
+                "contentLeft": 2,
+                "contentRight": 1,
+                "contentTop": 2,
+                "contentBottom": 4
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              20,
+              20,
+              6,
+              8
+            ],
+            "contentMargins": [
+              2,
+              1,
+              2,
+              4
+            ],
+            "rect": [
+              61,
+              496,
+              106,
+              576
+            ],
+            "image": "images/dwm/10.png",
+            "width": 45,
+            "height": 80
+          },
+          "11": {
+            "sizingMargins": [
+              9,
+              8,
+              8,
+              7
+            ],
+            "rect": [
+              107,
+              152,
+              168,
+              190
+            ],
+            "image": "images/dwm/11.png",
+            "width": 61,
+            "height": 38
+          },
+          "12": {
+            "imageCount": 4,
+            "rect": [
+              0,
+              460,
+              13,
+              516
+            ],
+            "image": "images/dwm/12.png",
+            "width": 13,
+            "height": 56
+          },
+          "13": {
+            "imageCount": 4,
+            "rect": [
+              15,
+              250,
+              32,
+              318
+            ],
+            "image": "images/dwm/13.png",
+            "width": 17,
+            "height": 68
+          },
+          "14": {
+            "imageCount": 4,
+            "rect": [
+              36,
+              80,
+              57,
+              160
+            ],
+            "image": "images/dwm/14.png",
+            "width": 21,
+            "height": 80
+          },
+          "15": {
+            "imageCount": 4,
+            "rect": [
+              61,
+              0,
+              86,
+              88
+            ],
+            "image": "images/dwm/15.png",
+            "width": 25,
+            "height": 88
+          },
+          "16": {
+            "sizingMargins": [
+              9,
+              9,
+              8,
+              7
+            ],
+            "rect": [
+              61,
+              576,
+              107,
+              614
+            ],
+            "image": "images/dwm/16.png",
+            "width": 46,
+            "height": 38
+          },
+          "17": {
+            "imageCount": 4,
+            "rect": [
+              0,
+              284,
+              10,
+              340
+            ],
+            "image": "images/dwm/17.png",
+            "width": 10,
+            "height": 56
+          },
+          "18": {
+            "imageCount": 4,
+            "rect": [
+              15,
+              522,
+              32,
+              594
+            ],
+            "image": "images/dwm/18.png",
+            "width": 17,
+            "height": 72
+          },
+          "19": {
+            "imageCount": 4,
+            "rect": [
+              36,
+              240,
+              57,
+              320
+            ],
+            "image": "images/dwm/19.png",
+            "width": 21,
+            "height": 80
+          },
+          "20": {
+            "imageCount": 4,
+            "rect": [
+              36,
+              677,
+              61,
+              765
+            ],
+            "image": "images/dwm/20.png",
+            "width": 25,
+            "height": 88
+          },
+          "21": {
+            "imageCount": 4,
+            "rect": [
+              15,
+              60,
+              31,
+              116
+            ],
+            "image": "images/dwm/21.png",
+            "width": 16,
+            "height": 56
+          },
+          "22": {
+            "imageCount": 4,
+            "rect": [
+              15,
+              454,
+              32,
+              522
+            ],
+            "image": "images/dwm/22.png",
+            "width": 17,
+            "height": 68
+          },
+          "23": {
+            "imageCount": 4,
+            "rect": [
+              36,
+              0,
+              57,
+              80
+            ],
+            "image": "images/dwm/23.png",
+            "width": 21,
+            "height": 80
+          },
+          "24": {
+            "imageCount": 4,
+            "rect": [
+              36,
+              589,
+              61,
+              677
+            ],
+            "image": "images/dwm/24.png",
+            "width": 25,
+            "height": 88
+          },
+          "25": {
+            "imageCount": 4,
+            "rect": [
+              0,
+              516,
+              14,
+              572
+            ],
+            "image": "images/dwm/25.png",
+            "width": 14,
+            "height": 56
+          },
+          "26": {
+            "imageCount": 4,
+            "rect": [
+              15,
+              386,
+              32,
+              454
+            ],
+            "image": "images/dwm/26.png",
+            "width": 17,
+            "height": 68
+          },
+          "27": {
+            "imageCount": 4,
+            "rect": [
+              36,
+              320,
+              57,
+              400
+            ],
+            "image": "images/dwm/27.png",
+            "width": 21,
+            "height": 80
+          },
+          "28": {
+            "imageCount": 4,
+            "rect": [
+              36,
+              501,
+              61,
+              589
+            ],
+            "image": "images/dwm/28.png",
+            "width": 25,
+            "height": 88
+          },
+          "29": {
+            "imageCount": 4,
+            "rect": [
+              0,
+              572,
+              14,
+              628
+            ],
+            "image": "images/dwm/29.png",
+            "width": 14,
+            "height": 56
+          },
+          "30": {
+            "imageCount": 4,
+            "rect": [
+              15,
+              318,
+              32,
+              386
+            ],
+            "image": "images/dwm/30.png",
+            "width": 17,
+            "height": 68
+          },
+          "31": {
+            "imageCount": 4,
+            "rect": [
+              36,
+              160,
+              57,
+              240
+            ],
+            "image": "images/dwm/31.png",
+            "width": 21,
+            "height": 80
+          },
+          "32": {
+            "imageCount": 4,
+            "rect": [
+              61,
+              88,
+              86,
+              176
+            ],
+            "image": "images/dwm/32.png",
+            "width": 25,
+            "height": 88
+          },
+          "33": {
+            "imageCount": 2,
+            "sizingMargins": [
+              6,
+              2,
+              0,
+              0
+            ],
+            "rect": [
+              0,
+              352,
+              11,
+              358
+            ],
+            "image": "images/dwm/33.png",
+            "width": 11,
+            "height": 6
+          },
+          "34": {
+            "states": {
+              "1": {
+                "opacity": 75
+              },
+              "2": {
+                "opacity": 75
+              },
+              "3": {
+                "opacity": 0
+              },
+              "4": {
+                "opacity": 0
+              }
+            },
+            "imageCount": 2,
+            "rect": [
+              169,
+              0,
+              397,
+              350
+            ],
+            "image": "images/dwm/34.png",
+            "width": 228,
+            "height": 350
+          },
+          "35": {
+            "imageCount": 2,
+            "sizingMargins": [
+              0,
+              0,
+              17,
+              17
+            ],
+            "rect": [
+              15,
+              116,
+              31,
+              190
+            ],
+            "image": "images/dwm/35.png",
+            "width": 16,
+            "height": 74
+          },
+          "36": {
+            "imageCount": 2,
+            "sizingMargins": [
+              0,
+              0,
+              2,
+              6
+            ],
+            "rect": [
+              15,
+              616,
+              36,
+              638
+            ],
+            "image": "images/dwm/36.png",
+            "width": 21,
+            "height": 22
+          },
+          "37": {
+            "imageCount": 2,
+            "sizingMargins": [
+              6,
+              2,
+              0,
+              0
+            ],
+            "rect": [
+              0,
+              340,
+              11,
+              346
+            ],
+            "image": "images/dwm/37.png",
+            "width": 11,
+            "height": 6
+          },
+          "38": {
+            "imageCount": 2,
+            "sizingMargins": [
+              2,
+              6,
+              0,
+              0
+            ],
+            "rect": [
+              0,
+              346,
+              11,
+              352
+            ],
+            "image": "images/dwm/38.png",
+            "width": 11,
+            "height": 6
+          },
+          "39": {
+            "states": {
+              "0": {
+                "contentLeft": 9,
+                "contentRight": 0,
+                "contentTop": 0,
+                "contentBottom": 0
+              },
+              "1": {
+                "opacity": 80,
+                "colorizationOpacity": 100,
+                "glowColor": "#FFFFFF"
+              },
+              "2": {
+                "opacity": 45,
+                "colorizationOpacity": 55,
+                "glowColor": "#FFFFFF"
+              }
+            },
+            "imageCount": 2,
+            "sizingMargins": [
+              0,
+              0,
+              6,
+              2
+            ],
+            "contentMargins": [
+              9,
+              0,
+              0,
+              0
+            ],
+            "rect": [
+              15,
+              638,
+              36,
+              692
+            ],
+            "image": "images/dwm/39.png",
+            "width": 21,
+            "height": 54
+          },
+          "40": {
+            "states": {
+              "1": {
+                "opacity": 90
+              },
+              "2": {
+                "opacity": 40
+              },
+              "3": {
+                "opacity": 50
+              },
+              "4": {
+                "opacity": 20
+              }
+            },
+            "rect": [
+              397,
+              0,
+              1199,
+              604
+            ],
+            "image": "images/dwm/40.png",
+            "width": 802,
+            "height": 604
+          },
+          "41": {
+            "imageCount": 2,
+            "sizingMargins": [
+              2,
+              6,
+              0,
+              0
+            ],
+            "rect": [
+              0,
+              358,
+              11,
+              364
+            ],
+            "image": "images/dwm/41.png",
+            "width": 11,
+            "height": 6
+          },
+          "42": {
+            "states": {
+              "1": {
+                "opacity": 75
+              },
+              "2": {
+                "opacity": 75
+              },
+              "3": {
+                "opacity": 0
+              },
+              "4": {
+                "opacity": 0
+              }
+            },
+            "imageCount": 2,
+            "rect": [
+              169,
+              350,
+              397,
+              700
+            ],
+            "image": "images/dwm/42.png",
+            "width": 228,
+            "height": 350
+          },
+          "43": {
+            "imageCount": 2,
+            "sizingMargins": [
+              0,
+              0,
+              17,
+              17
+            ],
+            "rect": [
+              36,
+              400,
+              58,
+              474
+            ],
+            "image": "images/dwm/43.png",
+            "width": 22,
+            "height": 74
+          },
+          "44": {
+            "states": {
+              "1": {
+                "opacity": 100
+              },
+              "2": {
+                "opacity": 50
+              }
+            },
+            "imageCount": 2,
+            "sizingMargins": [
+              0,
+              0,
+              0,
+              2
+            ],
+            "rect": [
+              0,
+              0,
+              7,
+              236
+            ],
+            "image": "images/dwm/44.png",
+            "width": 7,
+            "height": 236
+          },
+          "45": {
+            "imageCount": 2,
+            "sizingMargins": [
+              6,
+              6,
+              3,
+              2
+            ],
+            "rect": [
+              15,
+              190,
+              32,
+              206
+            ],
+            "image": "images/dwm/45.png",
+            "width": 17,
+            "height": 16
+          },
+          "46": {
+            "states": {
+              "0": {
+                "contentLeft": 5,
+                "contentRight": 5,
+                "contentTop": 5,
+                "contentBottom": 5
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "contentMargins": [
+              5,
+              5,
+              5,
+              5
+            ],
+            "rect": [
+              0,
+              628,
+              15,
+              688
+            ],
+            "image": "images/dwm/46.png",
+            "width": 15,
+            "height": 60
+          },
+          "47": {
+            "states": {
+              "0": {
+                "contentLeft": 5,
+                "contentRight": 5,
+                "contentTop": 5,
+                "contentBottom": 5
+              }
+            },
+            "imageCount": 4,
+            "sizingMargins": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "contentMargins": [
+              5,
+              5,
+              5,
+              5
+            ],
+            "rect": [
+              15,
+              0,
+              30,
+              60
+            ],
+            "image": "images/dwm/47.png",
+            "width": 15,
+            "height": 60
+          },
+          "48": {
+            "sizingMargins": [
+              5,
+              5,
+              5,
+              5
+            ],
+            "rect": [
+              36,
+              474,
+              61,
+              501
+            ],
+            "image": "images/dwm/48.png",
+            "width": 25,
+            "height": 27
+          },
+          "49": {
+            "imageCount": 4,
+            "rect": [
+              0,
+              248,
+              9,
+              284
+            ],
+            "image": "images/dwm/49.png",
+            "width": 9,
+            "height": 36
+          },
+          "50": {
+            "imageCount": 4,
+            "rect": [
+              0,
+              364,
+              11,
+              408
+            ],
+            "image": "images/dwm/50.png",
+            "width": 11,
+            "height": 44
+          },
+          "51": {
+            "imageCount": 4,
+            "rect": [
+              0,
+              408,
+              13,
+              460
+            ],
+            "image": "images/dwm/51.png",
+            "width": 13,
+            "height": 52
+          },
+          "52": {
+            "imageCount": 4,
+            "rect": [
+              0,
+              688,
+              15,
+              748
+            ],
+            "image": "images/dwm/52.png",
+            "width": 15,
+            "height": 60
+          },
+          "53": {
+            "imageCount": 2,
+            "sizingMargins": [
+              3,
+              3,
+              0,
+              0
+            ],
+            "rect": [
+              0,
+              236,
+              9,
+              242
+            ],
+            "image": "images/dwm/53.png",
+            "width": 9,
+            "height": 6
+          },
+          "54": {
+            "imageCount": 2,
+            "sizingMargins": [
+              3,
+              3,
+              0,
+              0
+            ],
+            "rect": [
+              0,
+              242,
+              9,
+              248
+            ],
+            "image": "images/dwm/54.png",
+            "width": 9,
+            "height": 6
+          },
+          "55": {
+            "states": {
+              "0": {
+                "contentLeft": 7,
+                "contentRight": 0,
+                "contentTop": 0,
+                "contentBottom": 0
+              },
+              "1": {
+                "opacity": 80,
+                "colorizationOpacity": 100,
+                "glowColor": "#FFFFFF"
+              },
+              "2": {
+                "opacity": 45,
+                "colorizationOpacity": 40,
+                "glowColor": "#FFFFFF"
+              }
+            },
+            "imageCount": 2,
+            "sizingMargins": [
+              6,
+              6,
+              2,
+              2
+            ],
+            "contentMargins": [
+              7,
+              0,
+              0,
+              0
+            ],
+            "rect": [
+              15,
+              206,
+              32,
+              250
+            ],
+            "image": "images/dwm/55.png",
+            "width": 17,
+            "height": 44
+          },
+          "56": {
+            "states": {
+              "0": {
+                "contentLeft": 17,
+                "contentRight": 17,
+                "contentTop": 8,
+                "contentBottom": 10
+              }
+            },
+            "sizingMargins": [
+              24,
+              24,
+              17,
+              17
+            ],
+            "contentMargins": [
+              17,
+              17,
+              8,
+              10
+            ],
+            "rect": [
+              107,
+              80,
+              159,
+              120
+            ],
+            "image": "images/dwm/56.png",
+            "width": 52,
+            "height": 40
+          },
+          "57": {
+            "states": {
+              "0": {
+                "contentLeft": 9,
+                "contentRight": 0,
+                "contentTop": 0,
+                "contentBottom": 0
+              },
+              "1": {
+                "opacity": 80,
+                "colorizationOpacity": 100,
+                "glowColor": "#FFFFFF"
+              },
+              "2": {
+                "opacity": 45,
+                "colorizationOpacity": 55,
+                "glowColor": "#FFFFFF"
+              },
+              "3": {
+                "opacity": 0,
+                "colorizationOpacity": 75,
+                "glowColor": "#000000"
+              },
+              "4": {
+                "opacity": 0,
+                "colorizationOpacity": 75,
+                "glowColor": "#000000"
+              }
+            },
+            "imageCount": 2,
+            "sizingMargins": [
+              0,
+              0,
+              6,
+              2
+            ],
+            "contentMargins": [
+              9,
+              0,
+              0,
+              0
+            ],
+            "rect": [
+              15,
+              692,
+              36,
+              746
+            ],
+            "image": "images/dwm/57.png",
+            "width": 21,
+            "height": 54
+          },
+          "58": {
+            "imageCount": 2,
+            "sizingMargins": [
+              28,
+              28,
+              0,
+              0
+            ],
+            "rect": [
+              107,
+              120,
+              166,
+              152
+            ],
+            "image": "images/dwm/58.png",
+            "width": 59,
+            "height": 32
+          }
+        },
+        "platePart": 39,
+        "activeOpacity": 80,
+        "activeColorizationOpacity": 100,
+        "inactiveOpacity": 45,
+        "inactiveColorizationOpacity": 55,
+        "roles": {
+          "reflection": 40,
+          "captionHighlightActive": 34,
+          "captionHighlightInactive": 42,
+          "titleGlow": 56,
+          "buttonBgActive": 3,
+          "buttonBgInactive": 4,
+          "buttonBgActiveAlt": 5,
+          "buttonBgInactiveAlt": 6,
+          "closeBgActive": 7,
+          "closeBgInactive": 8,
+          "closeBgActiveAlt": 9,
+          "closeBgInactiveAlt": 10,
+          "closeGlyphs": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "helpGlyphs": [
+            17,
+            18,
+            19,
+            20
+          ],
+          "maxGlyphs": [
+            21,
+            22,
+            23,
+            24
+          ],
+          "minGlyphs": [
+            25,
+            26,
+            27,
+            28
+          ],
+          "restoreGlyphs": [
+            29,
+            30,
+            31,
+            32
+          ],
+          "outlineTopLeft": 39,
+          "outlineTopRight": 57,
+          "outlineBottomLeft": 1,
+          "outlineBottomRight": 36,
+          "outlineLeft": 35,
+          "outlineRight": 43,
+          "outlineTop": 33,
+          "outlineBottom": 37,
+          "outlineTopAlt": 38,
+          "outlineBottomAlt": 41
+        }
+      },
+      "edit": {
+        "fill": "#FFFFFF",
+        "border": "#B3ADAB",
+        "disabledFill": "#EDCEB1",
+        "disabledText": "#808080"
+      },
+      "toolTip": {
+        "fill": "#FFFFE1",
+        "border": "#000000",
+        "text": "#000000"
+      },
+      "messageBox": {
+        "minWidth": 280,
+        "minHeight": 120
+      },
+      "focusRect": {
+        "color": "#000000"
+      }
+    }
+  },
   "colors": {
-    "desktop": "#6BA3D6",
-    "taskbar": "#1B1B1B",
-    "taskbarText": "#FFFFFF",
-    "window": "#F5F6F7",
-    "windowText": "#000000",
-    "titleActive": "#9DC7E8",
-    "titleActiveText": "#000000",
-    "titleInactive": "#D0D6DC",
-    "titleInactiveText": "#444444",
+    "desktop": "#409EFE",
     "button": "#F0F0F0",
+    "window": "#F0F0F0",
+    "windowText": "#000000",
     "buttonText": "#000000",
-    "highlight": "#3399FF",
+    "menuText": "#000000",
+    "menu": "#F0F0F0",
+    "highlight": "#FF9933",
     "highlightText": "#FFFFFF",
-    "border": "#6D6D6D",
-    "menu": "#F2F2F2",
-    "menuText": "#000000"
+    "titleActive": "#409EFE",
+    "titleActiveText": "#000000",
+    "titleInactive": "#DBCDBF",
+    "titleInactiveText": "#544E43",
+    "buttonFace": "#F0F0F0",
+    "classicMenu": "#F0F0F0",
+    "taskbarText": "#FFFFFF",
+    "glass": "#409EFE",
+    "taskbar": "#409EFE",
+    "glassAlpha": "69"
   },
   "sizes": {
-    "taskbarHeight": 40,
-    "fontSize": 12
+    "fontSize": 12,
+    "taskbarHeight": 30,
+    "captionBarHeight": 19,
+    "sizingBorderWidth": 1,
+    "captionBarWidth": 19,
+    "smallCaptionBarWidth": 17,
+    "smallCaptionBarHeight": 17,
+    "paddedBorderWidth": 4,
+    "scrollBarWidth": 17
   },
   "images": {
-    "wallpaper": "wallpaper.png"
+    "buttonImage": "images/515.png",
+    "checkBoxImage": "images/508.png",
+    "radioButtonImage": "images/516.png",
+    "groupBoxImage": "images/514.png",
+    "comboButtonImage": "images/519.png",
+    "comboButtonGlyphImage": "images/520.png",
+    "scrollArrowImage": "images/666.png",
+    "scrollThumbVerticalImage": "images/678.png",
+    "scrollShaftVerticalImage": "images/674.png",
+    "spinUpBackgroundImage": "images/685.png",
+    "spinDownBackgroundImage": "images/679.png",
+    "tabItemTopImage": "images/730.png",
+    "tabPaneEdgeImage": "images/725.png",
+    "tabBackgroundImage": "images/723.png",
+    "tooltipCloseImage": "images/769.png",
+    "previewCloseImage": "images/769.png",
+    "taskbarImage": "images/743.png",
+    "taskButtonImage": "images/745.png",
+    "taskScrollArrowImage": "images/666.png",
+    "taskScrollArrowGlyphImage": "images/890.png",
+    "trayImage": "images/913.png",
+    "trayChevronImage": "images/911.png",
+    "trayChevronOpenImage": "images/914.png",
+    "captionImage": "images/813.png",
+    "captionSizingTemplateImage": "images/814.png",
+    "frameLeftImage": "images/820.png",
+    "frameRightImage": "images/821.png",
+    "frameBottomImage": "images/819.png",
+    "closeButtonImage": "images/815.png",
+    "closeGlyphImage": "images/818.png",
+    "minButtonImage": "images/835.png",
+    "minGlyphImage": "images/838.png",
+    "maxButtonImage": "images/826.png",
+    "maxGlyphImage": "images/829.png",
+    "restoreButtonImage": "images/826.png",
+    "restoreGlyphImage": "images/842.png",
+    "helpButtonImage": "images/822.png",
+    "helpGlyphImage": "images/825.png",
+    "startUserPanelImage": "images/691.png",
+    "startUserTileImage": "images/692.png",
+    "startPanelMfuBackgroundImage": "images/717.png",
+    "startPanelProgramsSeparatorImage": "images/720.png",
+    "startPanelMoreProgBackgroundImage": "images/714.png",
+    "startPanelPlacesBackgroundImage": "images/715.png",
+    "startPanelPlacesSeparatorImage": "images/716.png",
+    "startPanelLogoffBackgroundImage": "images/693.png",
+    "startPanelLogoffButtonsImage": "images/695.png",
+    "startGroupBackgroundImage": "images/883.png",
+    "startButtonImage": "images/868.png",
+    "captionActiveImage": "images/caption_frames/813-active.png",
+    "captionInactiveImage": "images/caption_frames/813-inactive.png"
   },
   "fonts": {
     "ui": "Segoe UI"
-  }
+  },
+  "button": {
+    "frames": 6,
+    "borderLeft": 4,
+    "borderRight": 4,
+    "borderTop": 4,
+    "borderBottom": 4,
+    "imageLayout": "vertical",
+    "sizingType": "stretch",
+    "disabledText": "#838383"
+  },
+  "checkBox": {
+    "frames": 20
+  },
+  "radioButton": {
+    "frames": 8
+  },
+  "groupBox": {
+    "edgeShadow": "#B4B4B4",
+    "edgeHighlight": "#FCF7F4",
+    "edgeLight": "#B4B4B4",
+    "edgeDkShadow": "#646464"
+  },
+  "combo": {
+    "frames": 4,
+    "borderLeft": 5,
+    "borderRight": 5,
+    "borderTop": 7,
+    "borderBottom": 8,
+    "buttonWidth": 17
+  },
+  "scrollBar": {
+    "arrowFrames": 20,
+    "borderLeft": 8,
+    "borderRight": 8,
+    "borderTop": 8,
+    "borderBottom": 8,
+    "thumbFrames": 5,
+    "thumbBorderLeft": 8,
+    "thumbBorderRight": 8,
+    "thumbBorderTop": 5,
+    "thumbBorderBottom": 5,
+    "shaftFrames": 5
+  },
+  "spin": {
+    "frames": 4,
+    "borderLeft": 4,
+    "borderRight": 3,
+    "borderTop": 9,
+    "borderBottom": 3,
+    "buttonWidth": 15
+  },
+  "tab": {
+    "frames": 5,
+    "borderLeft": 2,
+    "borderRight": 2,
+    "borderTop": 13,
+    "borderBottom": 4
+  },
+  "taskbar": {
+    "borderLeft": 0,
+    "borderRight": 0,
+    "borderTop": 15,
+    "borderBottom": 14,
+    "fill": "#423330"
+  },
+  "taskButton": {
+    "frames": 8,
+    "borderLeft": 3,
+    "borderRight": 3,
+    "borderTop": 13,
+    "borderBottom": 4,
+    "imageLayout": "vertical"
+  },
+  "tray": {
+    "borderLeft": 1,
+    "borderRight": 1,
+    "borderTop": 14,
+    "borderBottom": 15
+  },
+  "caption": {
+    "frames": 2,
+    "borderLeft": 28,
+    "borderRight": 35,
+    "borderTop": 9,
+    "borderBottom": 17,
+    "contentLeft": 0,
+    "contentRight": 0,
+    "contentTop": 0,
+    "contentBottom": 0,
+    "imageLayout": "vertical",
+    "sizingType": "stretch",
+    "templateContentLeft": 18,
+    "templateContentRight": 18,
+    "templateContentTop": 8,
+    "templateContentBottom": 0,
+    "captionMarginLeft": 4,
+    "captionMarginRight": 3,
+    "captionMarginTop": 0,
+    "captionMarginBottom": 0,
+    "textShadowOffsetX": 0,
+    "textShadowOffsetY": 0,
+    "textShadowColor": "#620200",
+    "textGlowSize": 12,
+    "glowIntensity": 305,
+    "glowColor": "#FFFFFF",
+    "composited": true
+  },
+  "frame": {
+    "leftFrames": 2,
+    "leftBorderLeft": 2,
+    "leftBorderRight": 1,
+    "leftBorderTop": 91,
+    "leftBorderBottom": 0,
+    "imageLayout": "vertical",
+    "rightFrames": 2,
+    "rightBorderLeft": 1,
+    "rightBorderRight": 2,
+    "rightBorderTop": 91,
+    "rightBorderBottom": 0,
+    "bottomFrames": 2,
+    "bottomBorderLeft": 2,
+    "bottomBorderRight": 2,
+    "bottomBorderTop": 0,
+    "bottomBorderBottom": 2
+  },
+  "captionButton": {
+    "frames": 8,
+    "borderLeft": 2,
+    "borderRight": 2,
+    "borderTop": 7,
+    "borderBottom": 7,
+    "imageLayout": "vertical"
+  },
+  "startPanel": {
+    "userBorderLeft": 8,
+    "userBorderRight": 8,
+    "userBorderTop": 8,
+    "userBorderBottom": 6,
+    "userNameColor": "#FFFFFF",
+    "userFill": "#4E4E4E",
+    "tileBorderLeft": 10,
+    "tileBorderRight": 10,
+    "tileBorderTop": 12,
+    "tileBorderBottom": 12,
+    "tileContentLeft": 9,
+    "tileContentRight": 7,
+    "tileContentTop": 8,
+    "tileContentBottom": 7,
+    "mfuBorderLeft": 13,
+    "mfuBorderRight": 6,
+    "mfuBorderTop": 13,
+    "mfuBorderBottom": 0,
+    "mfuContentLeft": 9,
+    "mfuContentRight": 2,
+    "mfuContentTop": 11,
+    "mfuContentBottom": 0,
+    "mfuText": "#282828",
+    "mfuFill": "#F5F1F0",
+    "moreProgBorderLeft": 13,
+    "moreProgBorderRight": 6,
+    "moreProgBorderTop": 4,
+    "moreProgBorderBottom": 18,
+    "placesBorderLeft": 0,
+    "placesBorderRight": 7,
+    "placesBorderTop": 7,
+    "placesBorderBottom": 2,
+    "placesContentLeft": 3,
+    "placesContentRight": 5,
+    "placesContentTop": 0,
+    "placesContentBottom": 5,
+    "placesText": "#FFFFFF",
+    "placesFill": "#FFFFFF",
+    "logoffBorderLeft": 2,
+    "logoffBorderRight": 2,
+    "logoffBorderTop": 0,
+    "logoffBorderBottom": 2,
+    "logoffText": "#FFFFFF",
+    "logoffFill": "#1A0001"
+  },
+  "startGroup": {
+    "borderLeft": 28,
+    "borderRight": 2,
+    "borderTop": 1,
+    "borderBottom": 1,
+    "fill": "#000000"
+  },
+  "startButton": {
+    "frames": 3,
+    "imageLayout": "vertical",
+    "sizingType": "truesize",
+    "borderLeft": 0,
+    "borderRight": 0,
+    "borderTop": 0,
+    "borderBottom": 0,
+    "contentLeft": 0,
+    "contentRight": 0,
+    "contentTop": 7,
+    "contentBottom": 8,
+    "composeFlag": false,
+    "text": "",
+    "extraWidth": 0,
+    "font": "Segoe UI"
+  },
+  "dwmWindow": {
+    "parts": {
+      "1": {
+        "imageCount": 2,
+        "sizingMargins": [
+          0,
+          0,
+          2,
+          6
+        ],
+        "rect": [
+          15,
+          594,
+          36,
+          616
+        ],
+        "image": "images/dwm/1.png",
+        "width": 21,
+        "height": 22
+      },
+      "2": {
+        "imageCount": 2,
+        "sizingMargins": [
+          30,
+          29,
+          0,
+          0
+        ],
+        "rect": [
+          107,
+          190,
+          169,
+          234
+        ],
+        "image": "images/dwm/2.png",
+        "width": 62,
+        "height": 44
+      },
+      "3": {
+        "states": {
+          "0": {
+            "contentLeft": 2,
+            "contentRight": 3,
+            "contentTop": 2,
+            "contentBottom": 4
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          12,
+          12,
+          6,
+          8
+        ],
+        "contentMargins": [
+          2,
+          3,
+          2,
+          4
+        ],
+        "rect": [
+          61,
+          336,
+          89,
+          416
+        ],
+        "image": "images/dwm/3.png",
+        "width": 28,
+        "height": 80
+      },
+      "4": {
+        "states": {
+          "0": {
+            "contentLeft": 2,
+            "contentRight": 3,
+            "contentTop": 2,
+            "contentBottom": 4
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          12,
+          12,
+          6,
+          8
+        ],
+        "contentMargins": [
+          2,
+          3,
+          2,
+          4
+        ],
+        "rect": [
+          61,
+          176,
+          89,
+          256
+        ],
+        "image": "images/dwm/4.png",
+        "width": 28,
+        "height": 80
+      },
+      "5": {
+        "states": {
+          "0": {
+            "contentLeft": 3,
+            "contentRight": 1,
+            "contentTop": 2,
+            "contentBottom": 4
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          12,
+          12,
+          6,
+          8
+        ],
+        "contentMargins": [
+          3,
+          1,
+          2,
+          4
+        ],
+        "rect": [
+          61,
+          416,
+          89,
+          496
+        ],
+        "image": "images/dwm/5.png",
+        "width": 28,
+        "height": 80
+      },
+      "6": {
+        "states": {
+          "0": {
+            "contentLeft": 3,
+            "contentRight": 1,
+            "contentTop": 2,
+            "contentBottom": 4
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          12,
+          12,
+          6,
+          8
+        ],
+        "contentMargins": [
+          3,
+          1,
+          2,
+          4
+        ],
+        "rect": [
+          61,
+          256,
+          89,
+          336
+        ],
+        "image": "images/dwm/6.png",
+        "width": 28,
+        "height": 80
+      },
+      "7": {
+        "states": {
+          "0": {
+            "contentLeft": 1,
+            "contentRight": 2,
+            "contentTop": 2,
+            "contentBottom": 4
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          20,
+          20,
+          6,
+          8
+        ],
+        "contentMargins": [
+          1,
+          2,
+          2,
+          4
+        ],
+        "rect": [
+          61,
+          614,
+          107,
+          694
+        ],
+        "image": "images/dwm/7.png",
+        "width": 46,
+        "height": 80
+      },
+      "8": {
+        "states": {
+          "0": {
+            "contentLeft": 1,
+            "contentRight": 2,
+            "contentTop": 2,
+            "contentBottom": 4
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          20,
+          20,
+          6,
+          8
+        ],
+        "contentMargins": [
+          1,
+          2,
+          2,
+          4
+        ],
+        "rect": [
+          61,
+          694,
+          107,
+          774
+        ],
+        "image": "images/dwm/8.png",
+        "width": 46,
+        "height": 80
+      },
+      "9": {
+        "states": {
+          "0": {
+            "contentLeft": 2,
+            "contentRight": 1,
+            "contentTop": 2,
+            "contentBottom": 4
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          20,
+          20,
+          6,
+          8
+        ],
+        "contentMargins": [
+          2,
+          1,
+          2,
+          4
+        ],
+        "rect": [
+          107,
+          0,
+          153,
+          80
+        ],
+        "image": "images/dwm/9.png",
+        "width": 46,
+        "height": 80
+      },
+      "10": {
+        "states": {
+          "0": {
+            "contentLeft": 2,
+            "contentRight": 1,
+            "contentTop": 2,
+            "contentBottom": 4
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          20,
+          20,
+          6,
+          8
+        ],
+        "contentMargins": [
+          2,
+          1,
+          2,
+          4
+        ],
+        "rect": [
+          61,
+          496,
+          106,
+          576
+        ],
+        "image": "images/dwm/10.png",
+        "width": 45,
+        "height": 80
+      },
+      "11": {
+        "sizingMargins": [
+          9,
+          8,
+          8,
+          7
+        ],
+        "rect": [
+          107,
+          152,
+          168,
+          190
+        ],
+        "image": "images/dwm/11.png",
+        "width": 61,
+        "height": 38
+      },
+      "12": {
+        "imageCount": 4,
+        "rect": [
+          0,
+          460,
+          13,
+          516
+        ],
+        "image": "images/dwm/12.png",
+        "width": 13,
+        "height": 56
+      },
+      "13": {
+        "imageCount": 4,
+        "rect": [
+          15,
+          250,
+          32,
+          318
+        ],
+        "image": "images/dwm/13.png",
+        "width": 17,
+        "height": 68
+      },
+      "14": {
+        "imageCount": 4,
+        "rect": [
+          36,
+          80,
+          57,
+          160
+        ],
+        "image": "images/dwm/14.png",
+        "width": 21,
+        "height": 80
+      },
+      "15": {
+        "imageCount": 4,
+        "rect": [
+          61,
+          0,
+          86,
+          88
+        ],
+        "image": "images/dwm/15.png",
+        "width": 25,
+        "height": 88
+      },
+      "16": {
+        "sizingMargins": [
+          9,
+          9,
+          8,
+          7
+        ],
+        "rect": [
+          61,
+          576,
+          107,
+          614
+        ],
+        "image": "images/dwm/16.png",
+        "width": 46,
+        "height": 38
+      },
+      "17": {
+        "imageCount": 4,
+        "rect": [
+          0,
+          284,
+          10,
+          340
+        ],
+        "image": "images/dwm/17.png",
+        "width": 10,
+        "height": 56
+      },
+      "18": {
+        "imageCount": 4,
+        "rect": [
+          15,
+          522,
+          32,
+          594
+        ],
+        "image": "images/dwm/18.png",
+        "width": 17,
+        "height": 72
+      },
+      "19": {
+        "imageCount": 4,
+        "rect": [
+          36,
+          240,
+          57,
+          320
+        ],
+        "image": "images/dwm/19.png",
+        "width": 21,
+        "height": 80
+      },
+      "20": {
+        "imageCount": 4,
+        "rect": [
+          36,
+          677,
+          61,
+          765
+        ],
+        "image": "images/dwm/20.png",
+        "width": 25,
+        "height": 88
+      },
+      "21": {
+        "imageCount": 4,
+        "rect": [
+          15,
+          60,
+          31,
+          116
+        ],
+        "image": "images/dwm/21.png",
+        "width": 16,
+        "height": 56
+      },
+      "22": {
+        "imageCount": 4,
+        "rect": [
+          15,
+          454,
+          32,
+          522
+        ],
+        "image": "images/dwm/22.png",
+        "width": 17,
+        "height": 68
+      },
+      "23": {
+        "imageCount": 4,
+        "rect": [
+          36,
+          0,
+          57,
+          80
+        ],
+        "image": "images/dwm/23.png",
+        "width": 21,
+        "height": 80
+      },
+      "24": {
+        "imageCount": 4,
+        "rect": [
+          36,
+          589,
+          61,
+          677
+        ],
+        "image": "images/dwm/24.png",
+        "width": 25,
+        "height": 88
+      },
+      "25": {
+        "imageCount": 4,
+        "rect": [
+          0,
+          516,
+          14,
+          572
+        ],
+        "image": "images/dwm/25.png",
+        "width": 14,
+        "height": 56
+      },
+      "26": {
+        "imageCount": 4,
+        "rect": [
+          15,
+          386,
+          32,
+          454
+        ],
+        "image": "images/dwm/26.png",
+        "width": 17,
+        "height": 68
+      },
+      "27": {
+        "imageCount": 4,
+        "rect": [
+          36,
+          320,
+          57,
+          400
+        ],
+        "image": "images/dwm/27.png",
+        "width": 21,
+        "height": 80
+      },
+      "28": {
+        "imageCount": 4,
+        "rect": [
+          36,
+          501,
+          61,
+          589
+        ],
+        "image": "images/dwm/28.png",
+        "width": 25,
+        "height": 88
+      },
+      "29": {
+        "imageCount": 4,
+        "rect": [
+          0,
+          572,
+          14,
+          628
+        ],
+        "image": "images/dwm/29.png",
+        "width": 14,
+        "height": 56
+      },
+      "30": {
+        "imageCount": 4,
+        "rect": [
+          15,
+          318,
+          32,
+          386
+        ],
+        "image": "images/dwm/30.png",
+        "width": 17,
+        "height": 68
+      },
+      "31": {
+        "imageCount": 4,
+        "rect": [
+          36,
+          160,
+          57,
+          240
+        ],
+        "image": "images/dwm/31.png",
+        "width": 21,
+        "height": 80
+      },
+      "32": {
+        "imageCount": 4,
+        "rect": [
+          61,
+          88,
+          86,
+          176
+        ],
+        "image": "images/dwm/32.png",
+        "width": 25,
+        "height": 88
+      },
+      "33": {
+        "imageCount": 2,
+        "sizingMargins": [
+          6,
+          2,
+          0,
+          0
+        ],
+        "rect": [
+          0,
+          352,
+          11,
+          358
+        ],
+        "image": "images/dwm/33.png",
+        "width": 11,
+        "height": 6
+      },
+      "34": {
+        "states": {
+          "1": {
+            "opacity": 75
+          },
+          "2": {
+            "opacity": 75
+          },
+          "3": {
+            "opacity": 0
+          },
+          "4": {
+            "opacity": 0
+          }
+        },
+        "imageCount": 2,
+        "rect": [
+          169,
+          0,
+          397,
+          350
+        ],
+        "image": "images/dwm/34.png",
+        "width": 228,
+        "height": 350
+      },
+      "35": {
+        "imageCount": 2,
+        "sizingMargins": [
+          0,
+          0,
+          17,
+          17
+        ],
+        "rect": [
+          15,
+          116,
+          31,
+          190
+        ],
+        "image": "images/dwm/35.png",
+        "width": 16,
+        "height": 74
+      },
+      "36": {
+        "imageCount": 2,
+        "sizingMargins": [
+          0,
+          0,
+          2,
+          6
+        ],
+        "rect": [
+          15,
+          616,
+          36,
+          638
+        ],
+        "image": "images/dwm/36.png",
+        "width": 21,
+        "height": 22
+      },
+      "37": {
+        "imageCount": 2,
+        "sizingMargins": [
+          6,
+          2,
+          0,
+          0
+        ],
+        "rect": [
+          0,
+          340,
+          11,
+          346
+        ],
+        "image": "images/dwm/37.png",
+        "width": 11,
+        "height": 6
+      },
+      "38": {
+        "imageCount": 2,
+        "sizingMargins": [
+          2,
+          6,
+          0,
+          0
+        ],
+        "rect": [
+          0,
+          346,
+          11,
+          352
+        ],
+        "image": "images/dwm/38.png",
+        "width": 11,
+        "height": 6
+      },
+      "39": {
+        "states": {
+          "0": {
+            "contentLeft": 9,
+            "contentRight": 0,
+            "contentTop": 0,
+            "contentBottom": 0
+          },
+          "1": {
+            "opacity": 80,
+            "colorizationOpacity": 100,
+            "glowColor": "#FFFFFF"
+          },
+          "2": {
+            "opacity": 45,
+            "colorizationOpacity": 55,
+            "glowColor": "#FFFFFF"
+          }
+        },
+        "imageCount": 2,
+        "sizingMargins": [
+          0,
+          0,
+          6,
+          2
+        ],
+        "contentMargins": [
+          9,
+          0,
+          0,
+          0
+        ],
+        "rect": [
+          15,
+          638,
+          36,
+          692
+        ],
+        "image": "images/dwm/39.png",
+        "width": 21,
+        "height": 54
+      },
+      "40": {
+        "states": {
+          "1": {
+            "opacity": 90
+          },
+          "2": {
+            "opacity": 40
+          },
+          "3": {
+            "opacity": 50
+          },
+          "4": {
+            "opacity": 20
+          }
+        },
+        "rect": [
+          397,
+          0,
+          1199,
+          604
+        ],
+        "image": "images/dwm/40.png",
+        "width": 802,
+        "height": 604
+      },
+      "41": {
+        "imageCount": 2,
+        "sizingMargins": [
+          2,
+          6,
+          0,
+          0
+        ],
+        "rect": [
+          0,
+          358,
+          11,
+          364
+        ],
+        "image": "images/dwm/41.png",
+        "width": 11,
+        "height": 6
+      },
+      "42": {
+        "states": {
+          "1": {
+            "opacity": 75
+          },
+          "2": {
+            "opacity": 75
+          },
+          "3": {
+            "opacity": 0
+          },
+          "4": {
+            "opacity": 0
+          }
+        },
+        "imageCount": 2,
+        "rect": [
+          169,
+          350,
+          397,
+          700
+        ],
+        "image": "images/dwm/42.png",
+        "width": 228,
+        "height": 350
+      },
+      "43": {
+        "imageCount": 2,
+        "sizingMargins": [
+          0,
+          0,
+          17,
+          17
+        ],
+        "rect": [
+          36,
+          400,
+          58,
+          474
+        ],
+        "image": "images/dwm/43.png",
+        "width": 22,
+        "height": 74
+      },
+      "44": {
+        "states": {
+          "1": {
+            "opacity": 100
+          },
+          "2": {
+            "opacity": 50
+          }
+        },
+        "imageCount": 2,
+        "sizingMargins": [
+          0,
+          0,
+          0,
+          2
+        ],
+        "rect": [
+          0,
+          0,
+          7,
+          236
+        ],
+        "image": "images/dwm/44.png",
+        "width": 7,
+        "height": 236
+      },
+      "45": {
+        "imageCount": 2,
+        "sizingMargins": [
+          6,
+          6,
+          3,
+          2
+        ],
+        "rect": [
+          15,
+          190,
+          32,
+          206
+        ],
+        "image": "images/dwm/45.png",
+        "width": 17,
+        "height": 16
+      },
+      "46": {
+        "states": {
+          "0": {
+            "contentLeft": 5,
+            "contentRight": 5,
+            "contentTop": 5,
+            "contentBottom": 5
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "contentMargins": [
+          5,
+          5,
+          5,
+          5
+        ],
+        "rect": [
+          0,
+          628,
+          15,
+          688
+        ],
+        "image": "images/dwm/46.png",
+        "width": 15,
+        "height": 60
+      },
+      "47": {
+        "states": {
+          "0": {
+            "contentLeft": 5,
+            "contentRight": 5,
+            "contentTop": 5,
+            "contentBottom": 5
+          }
+        },
+        "imageCount": 4,
+        "sizingMargins": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "contentMargins": [
+          5,
+          5,
+          5,
+          5
+        ],
+        "rect": [
+          15,
+          0,
+          30,
+          60
+        ],
+        "image": "images/dwm/47.png",
+        "width": 15,
+        "height": 60
+      },
+      "48": {
+        "sizingMargins": [
+          5,
+          5,
+          5,
+          5
+        ],
+        "rect": [
+          36,
+          474,
+          61,
+          501
+        ],
+        "image": "images/dwm/48.png",
+        "width": 25,
+        "height": 27
+      },
+      "49": {
+        "imageCount": 4,
+        "rect": [
+          0,
+          248,
+          9,
+          284
+        ],
+        "image": "images/dwm/49.png",
+        "width": 9,
+        "height": 36
+      },
+      "50": {
+        "imageCount": 4,
+        "rect": [
+          0,
+          364,
+          11,
+          408
+        ],
+        "image": "images/dwm/50.png",
+        "width": 11,
+        "height": 44
+      },
+      "51": {
+        "imageCount": 4,
+        "rect": [
+          0,
+          408,
+          13,
+          460
+        ],
+        "image": "images/dwm/51.png",
+        "width": 13,
+        "height": 52
+      },
+      "52": {
+        "imageCount": 4,
+        "rect": [
+          0,
+          688,
+          15,
+          748
+        ],
+        "image": "images/dwm/52.png",
+        "width": 15,
+        "height": 60
+      },
+      "53": {
+        "imageCount": 2,
+        "sizingMargins": [
+          3,
+          3,
+          0,
+          0
+        ],
+        "rect": [
+          0,
+          236,
+          9,
+          242
+        ],
+        "image": "images/dwm/53.png",
+        "width": 9,
+        "height": 6
+      },
+      "54": {
+        "imageCount": 2,
+        "sizingMargins": [
+          3,
+          3,
+          0,
+          0
+        ],
+        "rect": [
+          0,
+          242,
+          9,
+          248
+        ],
+        "image": "images/dwm/54.png",
+        "width": 9,
+        "height": 6
+      },
+      "55": {
+        "states": {
+          "0": {
+            "contentLeft": 7,
+            "contentRight": 0,
+            "contentTop": 0,
+            "contentBottom": 0
+          },
+          "1": {
+            "opacity": 80,
+            "colorizationOpacity": 100,
+            "glowColor": "#FFFFFF"
+          },
+          "2": {
+            "opacity": 45,
+            "colorizationOpacity": 40,
+            "glowColor": "#FFFFFF"
+          }
+        },
+        "imageCount": 2,
+        "sizingMargins": [
+          6,
+          6,
+          2,
+          2
+        ],
+        "contentMargins": [
+          7,
+          0,
+          0,
+          0
+        ],
+        "rect": [
+          15,
+          206,
+          32,
+          250
+        ],
+        "image": "images/dwm/55.png",
+        "width": 17,
+        "height": 44
+      },
+      "56": {
+        "states": {
+          "0": {
+            "contentLeft": 17,
+            "contentRight": 17,
+            "contentTop": 8,
+            "contentBottom": 10
+          }
+        },
+        "sizingMargins": [
+          24,
+          24,
+          17,
+          17
+        ],
+        "contentMargins": [
+          17,
+          17,
+          8,
+          10
+        ],
+        "rect": [
+          107,
+          80,
+          159,
+          120
+        ],
+        "image": "images/dwm/56.png",
+        "width": 52,
+        "height": 40
+      },
+      "57": {
+        "states": {
+          "0": {
+            "contentLeft": 9,
+            "contentRight": 0,
+            "contentTop": 0,
+            "contentBottom": 0
+          },
+          "1": {
+            "opacity": 80,
+            "colorizationOpacity": 100,
+            "glowColor": "#FFFFFF"
+          },
+          "2": {
+            "opacity": 45,
+            "colorizationOpacity": 55,
+            "glowColor": "#FFFFFF"
+          },
+          "3": {
+            "opacity": 0,
+            "colorizationOpacity": 75,
+            "glowColor": "#000000"
+          },
+          "4": {
+            "opacity": 0,
+            "colorizationOpacity": 75,
+            "glowColor": "#000000"
+          }
+        },
+        "imageCount": 2,
+        "sizingMargins": [
+          0,
+          0,
+          6,
+          2
+        ],
+        "contentMargins": [
+          9,
+          0,
+          0,
+          0
+        ],
+        "rect": [
+          15,
+          692,
+          36,
+          746
+        ],
+        "image": "images/dwm/57.png",
+        "width": 21,
+        "height": 54
+      },
+      "58": {
+        "imageCount": 2,
+        "sizingMargins": [
+          28,
+          28,
+          0,
+          0
+        ],
+        "rect": [
+          107,
+          120,
+          166,
+          152
+        ],
+        "image": "images/dwm/58.png",
+        "width": 59,
+        "height": 32
+      }
+    },
+    "platePart": 39,
+    "activeOpacity": 80,
+    "activeColorizationOpacity": 100,
+    "inactiveOpacity": 45,
+    "inactiveColorizationOpacity": 55,
+    "roles": {
+      "reflection": 40,
+      "captionHighlightActive": 34,
+      "captionHighlightInactive": 42,
+      "titleGlow": 56,
+      "buttonBgActive": 3,
+      "buttonBgInactive": 4,
+      "buttonBgActiveAlt": 5,
+      "buttonBgInactiveAlt": 6,
+      "closeBgActive": 7,
+      "closeBgInactive": 8,
+      "closeBgActiveAlt": 9,
+      "closeBgInactiveAlt": 10,
+      "closeGlyphs": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "helpGlyphs": [
+        17,
+        18,
+        19,
+        20
+      ],
+      "maxGlyphs": [
+        21,
+        22,
+        23,
+        24
+      ],
+      "minGlyphs": [
+        25,
+        26,
+        27,
+        28
+      ],
+      "restoreGlyphs": [
+        29,
+        30,
+        31,
+        32
+      ],
+      "outlineTopLeft": 39,
+      "outlineTopRight": 57,
+      "outlineBottomLeft": 1,
+      "outlineBottomRight": 36,
+      "outlineLeft": 35,
+      "outlineRight": 43,
+      "outlineTop": 33,
+      "outlineBottom": 37,
+      "outlineTopAlt": 38,
+      "outlineBottomAlt": 41
+    }
+  },
+  "edit": {
+    "fill": "#FFFFFF",
+    "border": "#B3ADAB",
+    "disabledFill": "#EDCEB1",
+    "disabledText": "#808080"
+  },
+  "toolTip": {
+    "fill": "#FFFFE1",
+    "border": "#000000",
+    "text": "#000000"
+  },
+  "messageBox": {
+    "minWidth": 280,
+    "minHeight": 120
+  },
+  "focusRect": {
+    "color": "#000000"
+  },
+  "sourceHash": "sha256:28f19e5b096c502f46f2f5e372c87434bf05187651deb0f2e578b9191994303b",
+  "sourceFile": "aero.msstyles"
 }

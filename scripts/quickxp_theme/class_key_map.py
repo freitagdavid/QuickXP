@@ -102,6 +102,7 @@ OPTIONAL_IMAGES = frozenset(
         "captionImage",
         "captionActiveImage",
         "captionInactiveImage",
+        "captionSizingTemplateImage",
         "frameLeftImage",
         "frameRightImage",
         "frameBottomImage",

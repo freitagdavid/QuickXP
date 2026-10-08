@@ -9,7 +9,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from . import aurorae, convert, detect, extract, project, schemes
+from . import aero_binary, aero_project, aero_win7, aurorae, convert, detect, extract, kdecoration, project, schemes
 
 
 def sanitize_slug(value: str) -> str:
@@ -133,15 +133,148 @@ def find_msstyles(path: Path) -> Path | None:
         name = path.name.lower()
         if name.endswith(".msstyles") or name == "shellstyle.dll":
             return path
+        if name.endswith(".theme"):
+            return _msstyles_near(path.parent)
         return None
     if not path.is_dir():
         return None
-    matches = sorted(path.rglob("*.msstyles"))
+    return _msstyles_near(path)
+
+
+def _msstyles_near(root: Path) -> Path | None:
+    matches = [
+        item
+        for item in sorted(root.rglob("*.msstyles"))
+        if item.is_file() and "en-us" not in {part.lower() for part in item.parts}
+    ]
     if not matches:
         return None
-    # Prefer a style in the folder itself over nested copies.
-    top = [m for m in matches if m.parent == path]
+    top = [item for item in matches if item.parent == root]
     return (top or matches)[0]
+
+
+def _win7_unavailable(result: dict, style: Path | None) -> dict:
+    """Parse a Win7 property store, then stop. The map is intentionally empty."""
+    result["ok"] = False
+    parsed = 0
+    if style is not None:
+        try:
+            loaded = aero_binary.load(style)
+            parsed = len(loaded.class_names)
+            result["parsedClasses"] = parsed
+            result["fileVersion"] = loaded.file_version
+        except (OSError, ValueError) as error:
+            result["errors"].append(f"could not read Aero property store: {error}")
+            return result
+    if parsed:
+        result["errors"].append(aero_win7.NOT_IMPLEMENTED)
+    else:
+        result["errors"].append(
+            "Win7 map is not implemented yet (no Aero property store was found)"
+        )
+    return result
+
+
+def _import_vista(
+    result: dict,
+    source: Path,
+    style: Path | None,
+    dest_root: Path,
+    *,
+    content_hash: str,
+    ini: str | None,
+    slug: str | None,
+    name: str | None,
+) -> dict:
+    if style is None:
+        result["errors"].append(
+            "Vista import needs an .msstyles (or a .theme beside Aero.msstyles)"
+        )
+        return result
+    try:
+        loaded = aero_binary.load(style)
+    except (OSError, ValueError) as error:
+        result["errors"].append(f"could not read Aero property store: {error}")
+        return result
+    result["parsedClasses"] = len(loaded.class_names)
+    result["fileVersion"] = loaded.file_version
+
+    sidecar = aero_project.find_theme_sidecar(source)
+    if sidecar is None:
+        sidecar = aero_project.find_theme_sidecar(style)
+    theme_meta = aero_project.parse_theme_sidecar(sidecar) if sidecar else {}
+    colorization = theme_meta.get("colorization")
+    alpha_text = theme_meta.get("colorizationAlpha")
+    colorization_alpha = int(alpha_text) if alpha_text not in (None, "") else None
+    active = ini or theme_meta.get("colorStyle")
+
+    pack = name or pack_base_name(source, style)
+    final_slug, replaced = resolve_install_slug(
+        dest_root,
+        pack,
+        content_hash,
+        forced_slug=slug,
+    )
+    install_dir = dest_root / final_slug
+    if install_dir.exists():
+        shutil.rmtree(install_dir)
+    install_dir.mkdir(parents=True, exist_ok=True)
+
+    doc, warnings, errors = aero_project.project_style(
+        loaded,
+        install_dir,
+        name=pack,
+        generation="vista",
+        colorization=colorization,
+        colorization_alpha=colorization_alpha,
+        active_scheme=active,
+    )
+    result["warnings"].extend(warnings)
+    result["errors"].extend(errors)
+    result["schemes"] = doc.get("schemes", []) if doc else []
+    if errors and not (doc and doc.get("images")):
+        shutil.rmtree(install_dir, ignore_errors=True)
+        return result
+    if not doc:
+        shutil.rmtree(install_dir, ignore_errors=True)
+        return result
+
+    doc = project.ensure_start_flag(install_dir, doc)
+    if content_hash:
+        doc["sourceHash"] = content_hash
+    doc["sourceFile"] = style.name
+    project.write_theme_json(install_dir, doc)
+
+    aurorae_summary, aurorae_warnings, aurorae_errors = aurorae.emit_aurorae(
+        install_dir,
+        slug=final_slug,
+        document=doc,
+    )
+    result["warnings"].extend(aurorae_warnings)
+    if aurorae_errors:
+        result["warnings"].extend(aurorae_errors)
+    result["aurorae"] = aurorae_summary
+    kdeco_summary, kdeco_warnings, kdeco_errors = kdecoration.emit_kdecoration(
+        install_dir,
+        slug=final_slug,
+        document=doc,
+    )
+    result["warnings"].extend(kdeco_warnings)
+    if kdeco_errors:
+        result["warnings"].extend(kdeco_errors)
+    result["kdecoration"] = kdeco_summary
+    result["ok"] = True
+    result["slug"] = final_slug
+    result["replaced"] = replaced
+    result["path"] = str(install_dir)
+    result["scheme"] = doc.get("activeScheme")
+    result["theme"] = {
+        "name": doc.get("name"),
+        "generation": doc.get("generation"),
+        "imageCount": len(doc.get("images", {})),
+    }
+    result["entry"] = _registry_entry(final_slug, install_dir, doc)
+    return result
 
 
 def probe(path: str | Path) -> dict:
@@ -159,11 +292,36 @@ def probe(path: str | Path) -> dict:
         "errors": [],
         "warnings": [],
     }
+    if info["generation"] == "vista":
+        if style is None:
+            result["ok"] = False
+            result["errors"].append(
+                "Vista import needs an .msstyles (or a .theme beside Aero.msstyles)"
+            )
+            return result
+        try:
+            loaded = aero_binary.load(style)
+        except (OSError, ValueError) as error:
+            result["ok"] = False
+            result["errors"].append(f"could not read Aero property store: {error}")
+            return result
+        result["schemes"] = [
+            {"id": item["id"], "label": item["label"]}
+            for item in aero_project.scheme_entries(loaded)
+        ]
+        if not result["schemes"]:
+            result["ok"] = False
+            result["errors"].append("Aero file has no VARIANT property store")
+        return result
+
+    if info["generation"] == "win7":
+        return _win7_unavailable(result, style)
+
     if info["generation"] not in ("xp",):
         result["ok"] = False
         result["errors"].append(
-            f"unsupported generation '{info['generation']}' for XP import "
-            "(Vista/7 projection is not available yet)"
+            f"unsupported generation '{info['generation']}' "
+            "(expected xp, vista, or win7)"
         )
         return result
 
@@ -219,10 +377,24 @@ def import_theme(
     result["detect"] = info
     result["sourceHash"] = content_hash
 
+    if generation == "win7":
+        return _win7_unavailable(result, style)
+
+    if generation == "vista":
+        return _import_vista(
+            result,
+            source,
+            style,
+            dest_root,
+            content_hash=content_hash,
+            ini=ini,
+            slug=slug,
+            name=name,
+        )
+
     if generation != "xp":
         result["errors"].append(
-            f"unsupported generation '{generation}' for XP import "
-            "(Vista/7 projection is not available yet)"
+            f"unsupported generation '{generation}' (expected xp or vista)"
         )
         return result
 
@@ -289,6 +461,15 @@ def import_theme(
             # Caption/Aurorae is best-effort — shell theme still installs.
             result["warnings"].extend(aurorae_errors)
         result["aurorae"] = aurorae_summary
+        kdeco_summary, kdeco_warnings, kdeco_errors = kdecoration.emit_kdecoration(
+            install_dir,
+            slug=final_slug,
+            document=doc,
+        )
+        result["warnings"].extend(kdeco_warnings)
+        if kdeco_errors:
+            result["warnings"].extend(kdeco_errors)
+        result["kdecoration"] = kdeco_summary
 
         result["ok"] = True
         result["slug"] = final_slug

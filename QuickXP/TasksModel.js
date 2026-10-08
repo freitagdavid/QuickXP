@@ -35,6 +35,18 @@ function formatShowDesktop() {
     return "SHOWDESKTOP\n"
 }
 
+function useKwinSession(desktop, kdeFullSession) {
+    var name = String(desktop || "").toUpperCase()
+    var full = String(kdeFullSession || "")
+    if (full === "true")
+        return true
+    if (name.indexOf("KDE") !== -1)
+        return true
+    if (name.indexOf("QUICKXP") !== -1)
+        return true
+    return false
+}
+
 function parsePreviewReply(line) {
     var text = String(line || "").trim()
     if (!text)

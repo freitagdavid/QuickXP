@@ -167,7 +167,7 @@ def test_probe_extract_lists_schemes(tmp_path: Path):
     assert "NORMALHOMESTEAD" in ids
 
 
-def test_import_rejects_vista_tree(tmp_path: Path):
+def test_import_png_tree_without_msstyles_fails(tmp_path: Path):
     images = tmp_path / "images"
     images.mkdir()
     for i in range(6):

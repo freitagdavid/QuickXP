@@ -35,6 +35,20 @@ Item {
     return "file://" + entry.path + "/" + path
   }
 
+  function dwmPart(entry: var, partId: var): var {
+    if (entry === undefined || entry === null || !entry.dwmWindow || !entry.dwmWindow.parts)
+      return null
+    const part = entry.dwmWindow.parts[String(partId)]
+    return part || null
+  }
+
+  function dwmPartUrl(entry: var, partId: var): string {
+    const part = root.dwmPart(entry, partId)
+    if (part === null || !part.image || !entry.path)
+      return ""
+    return "file://" + entry.path + "/" + part.image
+  }
+
   readonly property var selected: {
     const entry = ThemeRegistry.themeBySlug(draft.theme)
     return entry === undefined ? null : entry
@@ -52,7 +66,10 @@ Item {
         path: entry.path,
         colors: variant.colors || entry.colors || ({}),
         images: variant.images || entry.images || ({}),
-        sizes: variant.sizes || entry.sizes || ({})
+        sizes: variant.sizes || entry.sizes || ({}),
+        dwmWindow: variant.dwmWindow || entry.dwmWindow || null,
+        caption: variant.caption || entry.caption || null,
+        generation: entry.generation || ""
       }
     }
     return entry
@@ -339,7 +356,7 @@ Item {
   FileDialog {
     id: importDialog
     title: "Import visual style"
-    nameFilters: ["Windows XP visual styles (*.msstyles)", "All files (*)"]
+    nameFilters: ["Windows visual styles (*.msstyles *.theme)", "All files (*)"]
     fileMode: FileDialog.OpenFile
     onAccepted: {
       const path = root.fileUrlToPath(selectedFile)
@@ -734,13 +751,108 @@ Item {
           border.color: Theme.value("edit", "border", "#7F9DB9")
           clip: true
 
-          // Fake active titlebar (Epic K preview).
+          // Fake active titlebar. Glass themes use the DWMWindow sheet.
           Item {
             id: titlePreview
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
             height: 26
+
+            readonly property var previewEntry: root.selectedVariant || root.selected
+            readonly property bool glass: {
+              const entry = previewEntry
+              if (!entry || !entry.dwmWindow || !entry.dwmWindow.roles)
+                return false
+              const generation = String(entry.generation || (root.selected && root.selected.generation) || "")
+              return generation === "vista" || generation === "win7"
+            }
+            readonly property var roles: glass && previewEntry.dwmWindow ? previewEntry.dwmWindow.roles : ({})
+
+            Rectangle {
+              anchors.fill: parent
+              visible: titlePreview.glass
+              color: {
+                const entry = titlePreview.previewEntry
+                const glass = entry && entry.colors && entry.colors.glass
+                return glass || "#409EFE"
+              }
+              opacity: {
+                const entry = titlePreview.previewEntry
+                const alpha = entry && entry.colors ? Number(entry.colors.glassAlpha || 0) : 0
+                const dwm = entry && entry.dwmWindow ? entry.dwmWindow : ({})
+                const opacity = Number(dwm.activeOpacity || 0) / 255
+                const tint = Number(dwm.activeColorizationOpacity || 0) / 255
+                if (!alpha)
+                  return 0.4
+                return Math.max(0, Math.min(1, (alpha / 255) * (opacity || 1) * (tint || 1)))
+              }
+            }
+
+            Image {
+              anchors.fill: parent
+              visible: titlePreview.glass && titlePreview.roles.captionHighlightActive
+              source: root.dwmPartUrl(titlePreview.previewEntry, titlePreview.roles.captionHighlightActive)
+              fillMode: Image.Stretch
+              smooth: true
+            }
+
+            Row {
+              anchors.right: parent.right
+              anchors.verticalCenter: parent.verticalCenter
+              spacing: 0
+              visible: titlePreview.glass
+
+              Image {
+                readonly property var bg: root.dwmPart(titlePreview.previewEntry, titlePreview.roles.buttonBgActive)
+                source: root.dwmPartUrl(titlePreview.previewEntry, titlePreview.roles.buttonBgActive)
+                width: bg && bg.width ? bg.width : 0
+                height: bg && bg.imageCount ? Math.round(bg.height / bg.imageCount) : 0
+                sourceClipRect: Qt.rect(0, 0, width, height)
+                smooth: false
+              }
+              Image {
+                readonly property var bg: root.dwmPart(titlePreview.previewEntry, titlePreview.roles.buttonBgActive)
+                source: root.dwmPartUrl(titlePreview.previewEntry, titlePreview.roles.buttonBgActive)
+                width: bg && bg.width ? bg.width : 0
+                height: bg && bg.imageCount ? Math.round(bg.height / bg.imageCount) : 0
+                sourceClipRect: Qt.rect(0, 0, width, height)
+                smooth: false
+              }
+              Image {
+                readonly property var bg: root.dwmPart(titlePreview.previewEntry, titlePreview.roles.closeBgActive)
+                source: root.dwmPartUrl(titlePreview.previewEntry, titlePreview.roles.closeBgActive)
+                width: bg && bg.width ? bg.width : 0
+                height: bg && bg.imageCount ? Math.round(bg.height / bg.imageCount) : 0
+                sourceClipRect: Qt.rect(0, 0, width, height)
+                smooth: false
+              }
+            }
+
+            Text {
+              visible: titlePreview.glass
+              anchors.left: parent.left
+              anchors.leftMargin: 22
+              anchors.verticalCenter: parent.verticalCenter
+              anchors.right: parent.right
+              anchors.rightMargin: 80
+              elide: Text.ElideRight
+              text: (root.selected && (root.selected.name || root.selected.slug)) || "Window"
+              color: {
+                const entry = titlePreview.previewEntry
+                if (entry && entry.colors && entry.colors.titleActiveText)
+                  return entry.colors.titleActiveText
+                return "#000000"
+              }
+              font.family: Theme.value("fonts", "ui", "Segoe UI")
+              font.pixelSize: Theme.size("fontSize", 11)
+              style: Text.Outline
+              styleColor: {
+                const entry = titlePreview.previewEntry
+                const caption = entry && entry.caption
+                return (caption && caption.glowColor) || "#FFFFFF"
+              }
+            }
 
             readonly property string captionSource: root.themeImageUrl(root.selectedVariant, "captionActiveImage")
               || root.themeImageUrl(root.selected, "captionActiveImage")
@@ -757,7 +869,7 @@ Item {
                   return entry.colors.titleActive
                 return Theme.color("titleActive", "#0054E3")
               }
-              visible: titlePreview.captionSource === ""
+              visible: titlePreview.captionSource === "" && !titlePreview.glass
             }
 
             BorderImage {
@@ -769,10 +881,11 @@ Item {
               border.bottom: 8
               horizontalTileMode: BorderImage.Stretch
               verticalTileMode: BorderImage.Stretch
-              visible: titlePreview.captionSource !== ""
+              visible: titlePreview.captionSource !== "" && !titlePreview.glass
             }
 
             Text {
+              visible: !titlePreview.glass
               anchors.left: parent.left
               anchors.leftMargin: 8
               anchors.verticalCenter: parent.verticalCenter
@@ -800,7 +913,7 @@ Item {
               height: 16
               source: titlePreview.closeSource
               fillMode: Image.PreserveAspectFit
-              visible: titlePreview.closeSource !== ""
+              visible: titlePreview.closeSource !== "" && !titlePreview.glass
               smooth: false
             }
           }

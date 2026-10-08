@@ -1,11 +1,13 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import qs.QuickXP
 import qs.QuickXP.controls
 import qs.QuickXP.settings
 import "StartMenuLayout.js" as StartMenuLayout
 import "StartPopupPolicy.js" as StartPopupPolicy
+import "../StartMenuModel.js" as StartMenuModel
 
 // Start popup host — Classic single-column or XP dual-column via GenerationPolicy.
 PopupWindow {
@@ -21,6 +23,14 @@ PopupWindow {
 
   visible: false
   color: "transparent"
+  readonly property bool glass: GenerationPolicy.glass
+
+  BackgroundEffect.blurRegion: glass ? startGlass : null
+
+  Region {
+    id: startGlass
+    item: host.activeMenu
+  }
   // grabFocus dismisses by setting visible=false (bypasses close()). Off while debugging
   // or for Meta/hotkey opens (see StartPopupPolicy.wantGrabFocus).
   grabFocus: StartPopupPolicy.wantGrabFocus(host.keepOpen, host.openedByHotkey)
@@ -226,15 +236,11 @@ PopupWindow {
       return
     }
     if (id === "computer") {
-      close()
-      uriProc.command = ["xdg-open", "computer:///"]
-      uriProc.running = true
+      launchLocation("computer:///")
       return
     }
     if (id === "network") {
-      close()
-      uriProc.command = ["xdg-open", "network:///"]
-      uriProc.running = true
+      launchLocation("network:///")
       return
     }
     if (id === "control-panel") {
@@ -314,13 +320,16 @@ PopupWindow {
     Settings.open(tab)
   }
 
-  function openUri(uri) {
-    const target = String(uri || "").trim()
-    if (!target)
+  function launchLocation(target) {
+    const argv = StartMenuModel.openLocationCommand(target)
+    if (!argv.length)
       return
     close()
-    uriProc.command = ["xdg-open", target]
-    uriProc.running = true
+    Quickshell.execDetached(argv)
+  }
+
+  function openUri(uri) {
+    launchLocation(uri)
   }
 
   function openUserDir(dirName, fallback) {
@@ -391,15 +400,6 @@ PopupWindow {
     command: ["true"]
     stderr: SplitParser {
       onRead: data => console.warn("QuickXP Start user-dir:", data.trim())
-    }
-  }
-
-  Process {
-    id: uriProc
-    running: false
-    command: ["true"]
-    stderr: SplitParser {
-      onRead: data => console.warn("QuickXP Start open-uri:", data.trim())
     }
   }
 

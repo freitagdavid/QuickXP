@@ -35,6 +35,16 @@ TestCase {
     compare(TasksModel.formatShowDesktop(), "SHOWDESKTOP\n")
   }
 
+  function test_useKwinSession() {
+    compare(TasksModel.useKwinSession("KDE", ""), true)
+    compare(TasksModel.useKwinSession("ubuntu:KDE", ""), true)
+    compare(TasksModel.useKwinSession("QuickXP", ""), true)
+    compare(TasksModel.useKwinSession("quickxp", ""), true)
+    compare(TasksModel.useKwinSession("Hyprland", "true"), true)
+    compare(TasksModel.useKwinSession("Hyprland", ""), false)
+    compare(TasksModel.useKwinSession("", ""), false)
+  }
+
   function test_parsePreviewReply() {
     const hit = TasksModel.parsePreviewReply("PREVIEW 3 /tmp/x.png")
     compare(hit.serial, 3)

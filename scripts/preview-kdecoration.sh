@@ -16,6 +16,7 @@ theme_root="$(CDPATH= cd -- "$theme_arg" && pwd)"
 template_ui="$root/QuickXP/kwin-decoration/contents/ui"
 theme_pkg="$theme_root/kdecoration"
 client_qml="$root/scripts/decoration-preview.qml"
+backdrop_qml="$root/scripts/decoration-preview-background.qml"
 
 for cmd in kwin_wayland qml6 inotifywait python3 setsid; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -54,8 +55,15 @@ client_launch="$preview_root/run-client.sh"
 cat >"$client_launch" <<EOF
 #!/usr/bin/bash
 unset QT_PLUGIN_PATH QT_QPA_PLATFORM_PLUGIN_PATH QML2_IMPORT_PATH
+# Backdrop stays undecorated and fullscreen. Only the preview window asks KWin
+# for the server-side glass frame.
+$(printf '%q' "$qml6_bin") $(printf '%q' "$backdrop_qml") &
+backdrop_pid=\$!
 export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
-exec $(printf '%q' "$qml6_bin") $(printf '%q' "$client_qml")
+$(printf '%q' "$qml6_bin") $(printf '%q' "$client_qml")
+status=\$?
+kill "\$backdrop_pid" 2>/dev/null || true
+exit "\$status"
 EOF
 chmod +x "$client_launch"
 kwin_pid=""

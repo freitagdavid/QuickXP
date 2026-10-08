@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Effects
 import org.kde.kwin.decoration
 import org.kde.kirigami as Kirigami
 import org.kde.ksvg as KSvg
@@ -45,13 +44,6 @@ Decoration {
     Item {
         id: shaped
         anchors.fill: parent
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            maskEnabled: true
-            maskSource: cornerMask
-            maskThresholdMin: 0.5
-            maskSpreadAtMin: 1
-        }
 
         Item {
             id: topCap
@@ -232,15 +224,6 @@ Decoration {
             z: 0
         }
     }
-    }
-
-    Rectangle {
-        id: cornerMask
-        visible: false
-        layer.enabled: true
-        anchors.fill: parent
-        radius: root.cornerRadius
-        color: "white"
     }
 
     KSvg.FrameSvgItem {

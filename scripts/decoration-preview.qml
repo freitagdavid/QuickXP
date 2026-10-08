@@ -5,6 +5,8 @@ Window {
     visible: true
     width: 720
     height: 420
+    x: Math.round((Screen.width - width) / 2)
+    y: Math.round((Screen.height - height) / 2)
     title: "QuickXP decoration preview"
     color: "#efece7"
 
